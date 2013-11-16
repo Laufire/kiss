@@ -1,0 +1,28 @@
+div
+{
+	padding: 1em;
+	border: 1px solid #eee;
+}
+
+#screen1
+{
+	display: none;
+}
+
+#screen1 #pane1
+{
+	background: #fee;
+}
+
+#screen2 #pane1
+{
+	background: #efe;
+}
+
+scrollbar
+{
+	display: block;
+	width: 1em;
+	min-height: 2em;
+	background: #888;
+}

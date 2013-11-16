@@ -1,0 +1,41 @@
+Goal
+{
+
+	To build a simple and powerful framework that enables "truly" rapid development.
+	
+	It shold work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).
+	
+	The learning curve should be very small; as unwanted complexity might hurt the agility.
+	
+	Meassures
+	{
+		Should support bootstrap.
+	}
+}
+	
+Questions
+{
+
+	Could html be automatically injected for collections without thee needed mark-up in the document?
+	
+	Could custom tag names be used to identify the class of the objects. Like: <Collection> <Item> <ScrollBar> etc?
+
+	Could the tag name be used to identify objects instead of their ids?
+	
+	Could the global object of the library be $_$ or O_O to represent a kiss?
+	
+	How does a spreadsheet acieve data bindings.?
+}
+
+Noted
+{
+	HTML's Custom tag names appear to be case insensitive.
+}
+
+Known Issues
+{
+	Have to find a way to hide the content still rendering finishes.
+	
+	This is a proof of concept. So it has to be checked for performance issues, memory leaks etc.
+}
+
