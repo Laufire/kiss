@@ -11,26 +11,36 @@
 
 <body>
 
-	<div id="header"><a id="logo">Logo</a></div>
+	<div id="simple">Example for values without ties (changes only once, when the object is loaded to the HTML)
+		<div><a id="simpleString">simpleString</a></div>
+		<div id="simpleFunction">simpleFunction</div>
+		<div id="independent">This element is not KISSed; so it's left intact.</div>
+	</div>
 	
-	<div id="screen1">Screen 1
-		<div id="pane1">Pane 1
+	<div id="table">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
 		
-			<div id="list">
-				<!--Programmatically insert item index here-->
-				<div>
-					Name: <span id="name"></span> is <span id="age"></span> years old.
-				</div>
+		<div id="title"></div>
+		
+		<div id="collection">
+			<!-- the item has to be wraapped within an element-->
+			<div class="item">
+				Name: <span id="name"></span> is <span id="age"></span> years old.
 			</div>
-		
 		</div>
+	
 	</div>
 	
-	<div id="screen2">Screen 2
-		<div id="title">Screen 2 title</div>
+	<div id="ties">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
+		<div id="tiedValue">bindableValue</div>
+		
+		<div>
+			<input id="tiedFunction" type="checkbox">A tied function sets the checked state of this checkbox</input>
+			<div id="tiedFunction_Call1">A tied function</div>
+			<div id="tiedFunction_Call2">A tied function called again</div>
+			<div id="presetTiedFunction">A preset tied function</div>
+		</div>
+		
 	</div>
-	
-	<div id="footer">Footer Content</div>
 	
 </body>
 

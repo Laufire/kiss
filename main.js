@@ -3,91 +3,161 @@
 var App, _K; //? it's in the global scope to make debugging easy
 
 require.config({
-	
+
 	paths: {
-	  
+
 		jquery: 'lib/jquery-2.0.2.min',
 		kiss: 'kiss',
 		develop: 'lib/develop' //? develop
+	},
+
+	shim: {
+
+		jquery: {
+
+			exports: '$'
+		},
+
+		kiss: {
+
+			deps: ['jquery']
+
+		}
 	}
 });
 
 define(['jquery', 'kiss', 'develop'], function($, O_O)
 {
 	_K = O_O; //? develop
-	
+
 	App = new O_O.nested(new function()
 	{
 		var App = this;
-		
-		this.data = {
-		
-			//message: 'This object shouldn\'t be changed, as the DOM has no reference to it',
-			message: new O_O.value('This is a dynamic value'),
-			message1: new O_O.value('This too is a dynamic value'),
-			
+
+		this.data = new function(){ //this object has no corresponding html elemrnt; it can serve as the data
+
+			this.tieableValue = new O_O.value('This is from a tied value');
+
+			this.tieableValue1 = new O_O.value(1);
+
+			this.tieableValue2 = new O_O.value(1);
+
+			this.tieableValue3 = new O_O.value(5);
+
+			this.tieableFunction = new O_O.function(function(val1, val2)
+			{
+				return [val1, ' X ', val2, ' = ', val1 * val2].join(' ');
+			});
+
+			this.presetTiedFunction = this.tieableFunction(3, this.tieableValue2);
+
+			this.truthy = new O_O.function(function(val)
+			{
+				if(val)
+					return true;
+
+				return false;
+			});
 		}
-		
-		this.header =  {
-		
-			logo: {
-				
-				$html: 'KISS - a stupid JS framework',
-				
-				$attr: {
-				
-					href : '/'
-					
+
+		this.simple =  { //example of simple values(without ties)
+
+			simpleString: {
+
+				$html: 'This is a simple string as the html of an element',
+
+				$attrs: {
+
+					href : 'a simple string applied to an attr'
+
+				}
+			},
+
+			simpleFunction : {
+
+				$html : function()
+				{
+					return 'This is a calculated value, as the html of an element';
 				}
 			}
 		}
-		
-		this.screen1 = new function(){
-		
-			this.$attr = {style: 'display:  none'};
-			
-			this.message = 'I\'m a view named Screen 1';
-			
-			this.pane1 = {
-			
-				list: new O_O.collection({
-				
-					data: [{name: 'a', age: 1}, {name: 'b', age: 2}, {name: 'c', age: 3}]
-				})
-			}
-		}
-		
-		this.screen2 = {			
-			
-			title: {
-				
-				$html : App.data.message
-			}			
-		},
-		
-		this.footer = {			
-			
-			$html : function()
+
+		this.table = { //example of collection
+
+			title:
 			{
-				console.log(this);
-				this.html(this.attr('id'));
-			}
+				$html: 'The title for this section'
+			},
+
+			collection: new O_O.collection({
+
+				data: [{name: 'a', age: 1}, {name: 'b', age: 2}, {name: 'c', age: 3}]
+			})
 		}
-	});
-	
-	$(document).ready(function()
-	{
-		App.load($('#App'));		
-		
-		//App.data.message('Message0 set via the value')
-		
-		//setTimeout(function(){App.screen2.title.$html('Message4 set set directly')}, 4000);
-		//setTimeout(function(){App.data.message('Message3 set via the value')}, 3000);
-		setTimeout(function(){App.screen2.title.$html('Message2 set directly')}, 2000);
-		setTimeout(function(){App.data.message('Message1 set via the value')}, 1000);
-		
-		//console.log(App.screen1.pane1.list.$node.html());
+
+		this.ties = {
+
+			tiedValue: {
+
+				$html : App.data.tieableValue
+			},
+
+			tiedFunction: {
+
+				$props : {
+
+					checked: this.data.truthy(App.data.tieableValue1)
+
+				}
+			},
+
+			tiedFunction_Call1: {
+
+				$html : App.data.tieableFunction(1, App.data.tieableValue2)
+			},
+
+			tiedFunction_Call2: {
+
+				//calling the same function twice creates two separate bindings
+				$html : App.data.tieableFunction(2, App.data.tieableValue2)
+			},
+
+			presetTiedFunction: {
+
+				//using preset tied functions a tiedFunction could be used multiple times.
+				$html : App.data.presetTiedFunction
+			},
+		}
 	});
 
-	
+	$(document).ready(function()
+	{
+		App.load($('#App'));
+
+		App.data.tieableValue('I\'m from a tieable value');
+
+		setTimeout(function(){
+
+			App.data.tieableValue2(1);
+			App.data.tieableValue1(0);
+
+		}, 1000);
+
+		setTimeout(function(){App.data.tieableValue2(2)}, 2000);
+		setTimeout(function(){App.data.presetTiedFunction(2, App.data.tieableValue3)}, 3000);
+		setTimeout(function(){App.data.tieableValue2(3)}, 4000);
+
+		setTimeout(function(){
+
+			App.data.tieableValue3(10);
+			App.ties.tiedFunction_Call1.$html(App.data.tieableFunction(App.data.tieableValue3, App.data.tieableValue2));
+			App.ties.tiedFunction_Call2.$html(App.data.tieableValue3);
+			App.data.tieableValue1(1);
+
+		}, 5000);
+
+		setTimeout(function(){App.data.tieableValue3(5)}, 6000);
+	});
+
+
 });

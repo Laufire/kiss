@@ -3,16 +3,61 @@ Goal
 
 	To build a simple and powerful framework that enables "truly" rapid development.
 	
-	It shold work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).
+	It should work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).
 	
-	The learning curve should be very small; as unwanted complexity might hurt the agility.
+	The learning curve should be very small; as unwanted complexity might hurt agility.
+	
+	To make it simpler, there wont be any rules but a few conventions.
+	
+	Developers shouldn't be forced to practice a coding pattern.
+	
+	The focus is on the developers ease in creating and maintaining projects.
+	
+	The code should make sense on the first glance. So no gimmicks and circuses.
 	
 	Meassures
 	{
 		Should support bootstrap.
+		
+		Should work with backbone.
+		
+		Could adapt jQuery UI as is.
 	}
 }
+
+Way
+{
+	Use HTML elements as just placeholders for dynamic javascript objects.
 	
+	The javascript object is bound to it's html placeholder with the id attribute (or some-other attribute).
+	
+	The object trees have a corresponding DOM tree in the html.
+	
+	JS objects without corresponding HTML ids are left intact; and vice versa.
+	
+	Plugins refered by JS can handle the corresponding html element.
+	
+	The scope is defined in JS.
+}
+
+Components
+{
+	Observable function.
+	
+	Sorted List: With just Add, Remove and Replace methods.
+	
+	Filtered Arrays.
+}
+
+ToDos
+{
+	Adding events.
+	
+	Two way ties to input controls.
+	
+	Better collections.
+}
+
 Questions
 {
 
@@ -24,12 +69,14 @@ Questions
 	
 	Could the global object of the library be $_$ or O_O to represent a kiss?
 	
-	How does a spreadsheet acieve data bindings.?
+	How does a spreadsheet achieve data bindings?
 }
 
 Noted
 {
 	HTML's Custom tag names appear to be case insensitive.
+	
+	Unlike JS, Having duplicate IDs in a document is fine with CSS.
 }
 
 Known Issues
