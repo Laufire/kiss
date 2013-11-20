@@ -33,7 +33,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	App = new O_O.nested(new function()
 	{
 		var App = this;
-
+		
 		this.data = new function(){ //this object has no corresponding html elemrnt; it can serve as the data
 
 			this.tieableValue = new O_O.value('This is from a tied value');
@@ -128,12 +128,29 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				$html : App.data.presetTiedFunction
 			},
 		}
+		
+		this.events = new function()
+		{
+			var showHtml = function(event)
+			{
+				alert(event.currentTarget.innerHTML);
+			}
+			
+			this.click = {
+
+				$html : 'Click Me!',
+				
+				$events: {
+				
+					click: showHtml
+					
+				}
+			}
+		}
 	});
-
-	$(document).ready(function()
+	
+	var testTies = function()
 	{
-		App.load($('#App'));
-
 		App.data.tieableValue('I\'m from a tieable value');
 
 		setTimeout(function(){
@@ -157,6 +174,13 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 		}, 5000);
 
 		setTimeout(function(){App.data.tieableValue3(5)}, 6000);
+	}
+
+	$(document).ready(function()
+	{
+		App.load($('#App'));
+
+		testTies();
 	});
 
 

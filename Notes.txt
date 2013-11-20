@@ -40,9 +40,14 @@ Way
 	The scope is defined in JS.
 }
 
+Consider
+{
+	Replacing $html, $attrs with ${html, attr}
+}
+
 Components
 {
-	Observable function.
+	Observable dictionary.
 	
 	Sorted List: With just Add, Remove and Replace methods.
 	
@@ -51,7 +56,7 @@ Components
 
 ToDos
 {
-	Adding events.
+	Adding events -> in progress.
 	
 	Two way ties to input controls.
 	

@@ -5,20 +5,26 @@ div
 	border: 1px solid #eee;
 }
 
-#simple, #table, #ties
+.section
 {
 	background: #fee;
 }
 
+.hidden
+{
+	display: none;
+}
+
+.item
+{
+	background: #ddf;
+}
+
+/*try custom tags*/
 scrollbar
 {
 	display: block;
 	width: 1em;
 	min-height: 2em;
 	background: #888;
-}
-
-.item
-{
-	background: #ddf;
 }

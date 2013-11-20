@@ -104,12 +104,14 @@
 
 					$html: data.$html,
 					$attrs: data.$attrs,
-					$props: data.$props
+					$props: data.$props,
+					$events: data.$events
 				};
 
 				delete data.$html;
 				delete data.$attrs;
 				delete data.$props;
+				delete data.$events;
 
 				$.extend(this, data);
 			}
@@ -196,6 +198,15 @@
 			{
 				attrsAndProps('prop', keys);
 			}
+			
+			this.$events = function(events)
+			{
+				$.each(events, function(event, handler)
+				{
+					//? if the event already has a handler 'off' it.
+					self.$node.on(event, handler);
+				});
+			}
 
 			var buildNode = function() //populate the node with $ values
 			{
@@ -207,6 +218,9 @@
 
 				if(initValues.$props)
 					self.$props(initValues.$props);
+					
+				if(initValues.$events)
+					self.$events(initValues.$events);
 			}
 
 			var changeHTML = function(html)

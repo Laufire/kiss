@@ -11,13 +11,13 @@
 
 <body>
 
-	<div id="simple">Example for values without ties (changes only once, when the object is loaded to the HTML)
+	<div id="simple" class="section hidden">Example for values without ties (changes only once, when the object is loaded to the HTML)
 		<div><a id="simpleString">simpleString</a></div>
 		<div id="simpleFunction">simpleFunction</div>
 		<div id="independent">This element is not KISSed; so it's left intact.</div>
 	</div>
 	
-	<div id="table">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
+	<div id="table" class="section hidden">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
 		
 		<div id="title"></div>
 		
@@ -30,7 +30,7 @@
 	
 	</div>
 	
-	<div id="ties">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
+	<div id="ties" class="section hidden">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
 		<div id="tiedValue">bindableValue</div>
 		
 		<div>
@@ -40,6 +40,10 @@
 			<div id="presetTiedFunction">A preset tied function</div>
 		</div>
 		
+	</div>
+	
+	<div id="events" class="section">
+		<div id="click">An event</div>
 	</div>
 	
 </body>
