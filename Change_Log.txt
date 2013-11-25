@@ -1,2 +1,6 @@
 131119_0000	Added event handlers.
 
+131125_1610	Class 'nested' renamed to by 'element'.
+131125_1610	$html, $attrs etc has been changed to $.html, $.attrs etc.
+131125_1635	Now tieables could directlty be assigned to the 'default' attribute of elements.
+131125_1900	Two-way binding achieved through 'default' behaviors.

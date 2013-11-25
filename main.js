@@ -30,7 +30,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 {
 	_K = O_O; //? develop
 
-	App = new O_O.nested(new function()
+	App = new O_O.element(new function()
 	{
 		var App = this;
 		
@@ -64,20 +64,26 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 
 			simpleString: {
 
-				$html: 'This is a simple string as the html of an element',
+				$: {
+				
+					html: 'This is a simple string as the html of an element',
+					
+					attrs: {
 
-				$attrs: {
+						href : 'a simple string applied to an attr'
 
-					href : 'a simple string applied to an attr'
-
+					}
 				}
 			},
 
 			simpleFunction : {
 
-				$html : function()
-				{
-					return 'This is a calculated value, as the html of an element';
+				$: {
+					
+					html : function()
+					{
+						return 'This is a calculated value, as the html of an element';
+					}
 				}
 			}
 		}
@@ -86,7 +92,10 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 
 			title:
 			{
-				$html: 'The title for this section'
+				$: {
+				
+					html: 'The title for this section'
+				}
 			},
 
 			collection: new O_O.collection({
@@ -97,53 +106,83 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 
 		this.ties = {
 
-			tiedValue: {
-
-				$html : App.data.tieableValue
-			},
+			tiedValue: App.data.tieableValue, //the tieable is assigned directly to the elements default attribute
 
 			tiedFunction: {
 
-				$props : {
+				$: {
+				
+					props : {
 
-					checked: this.data.truthy(App.data.tieableValue1)
+						checked: this.data.truthy(App.data.tieableValue1)
+					}
 
 				}
 			},
 
-			tiedFunction_Call1: {
-
-				$html : App.data.tieableFunction(1, App.data.tieableValue2)
-			},
+			tiedFunction_Call1: App.data.tieableFunction(1, App.data.tieableValue2),
 
 			tiedFunction_Call2: {
 
 				//calling the same function twice creates two separate bindings
-				$html : App.data.tieableFunction(2, App.data.tieableValue2)
+				$: {
+				
+					html : App.data.tieableFunction(2, App.data.tieableValue2)
+				}
 			},
 
 			presetTiedFunction: {
 
 				//using preset tied functions a tiedFunction could be used multiple times.
-				$html : App.data.presetTiedFunction
-			},
+				$: {
+				
+					html : App.data.presetTiedFunction
+				}
+			}
 		}
 		
 		this.events = new function()
 		{
+			var v1 = new O_O.value('Text');
+			var v2 = new O_O.value(1);
+			var v3 = new O_O.value(true);
+			
 			var showHtml = function(event)
 			{
 				alert(event.currentTarget.innerHTML);
 			}
 			
+			this.text = v1;
+			this.output1 = v1;
+			
+			this.select = v2;
+			this.output2 = v2;
+			
+			this.checkbox = {
+			
+				$: {
+				
+					default: v3, //this ties the value to the change event and the 'checked' property
+					
+					events: {
+					
+						change: function(){v1(new Date())}
+					}
+				}
+			};
+			this.output3 = v3
+			
 			this.click = {
 
-				$html : 'Click Me!',
+				$: {
 				
-				$events: {
-				
-					click: showHtml
+					html : 'Click Me!',
 					
+					events: {
+					
+						click: showHtml
+						
+					}
 				}
 			}
 		}
@@ -167,8 +206,8 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 		setTimeout(function(){
 
 			App.data.tieableValue3(10);
-			App.ties.tiedFunction_Call1.$html(App.data.tieableFunction(App.data.tieableValue3, App.data.tieableValue2));
-			App.ties.tiedFunction_Call2.$html(App.data.tieableValue3);
+			App.ties.tiedFunction_Call1.$.html(App.data.tieableFunction(App.data.tieableValue3, App.data.tieableValue2));
+			App.ties.tiedFunction_Call2.$.html(App.data.tieableValue3);
 			App.data.tieableValue1(1);
 
 		}, 5000);
