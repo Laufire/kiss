@@ -1,4 +1,6 @@
-﻿define(function()
+﻿//? could the $ be skipped by using hasOwn property
+
+define(function()
 {
 	"use strict";
 
@@ -109,7 +111,7 @@
 				$.extend(this, data);
 			}
 			
-			var self = this;
+			var self = this; //? could self.$ be replaced with $self
 			
 			var attrsAndProps = function(type, keys)
 			{
@@ -127,11 +129,12 @@
 
 					if(value.tie) //the value is a tieable
 					{
-						self.$.node[type](key, value());
+						self.$.node[type](key, value()); //get the current value
 
 						store[key] = function(value) //create a function to change the specific value
 						{
-							self.$.node[type](key, value);
+							if(value !== self.$.node[type](key))
+								self.$.node[type](key, value);
 						}
 
 						value.tie(store[key], store[key]);
@@ -155,6 +158,51 @@
 			
 			this.$ = new function()
 			{
+				this.default = function(value)
+				{
+					if(this.default.untie)
+						this.default.untie();
+						
+					var tagName = self.$.node.context.tagName;
+					var type = self.$.node.context.type;
+					
+					//? could switch be used instead
+					if(type === 'text' || type === 'select-one' || type === 'select-multiple')
+					{
+						self.$.node.val(value()); //get the current value
+						
+						if(value.tie) //the reference is to a tiable
+						{	
+							value.tie(this.default, function(value){self.$.node.val(value)}); //subscribe to future changes
+							
+							self.$.events({
+								change: function() //tie the change event with the tiable
+								{
+									value(self.$.node.val());
+								}
+							});
+						}
+					}
+					else if(type === 'checkbox')
+					{
+						self.$.node.prop('checked', value()); //get the current value
+						
+						if(value.tie) //the reference is to a tiable
+						{
+							value.tie(this.default, function(value){self.$.node.prop('checked', value)}); //subscribe to future changes
+							
+							self.$.events({
+								change: function() //tie the change event with the tiable
+								{
+									value(self.$.node.prop('checked'));
+								}
+							});
+						}
+					}
+					else //the tag is not a control
+						this.html(value);
+				}
+				
 				this.html = function(value)
 				{
 					if(this.html.untie)
@@ -200,7 +248,8 @@
 				this.$.node = $node;
 					
 				if(initValues.default)
-					setDefaultValue();
+					this.$.default(initValues.default);
+					//setDefaultValue();
 				
 				//populate the node with initial $ values
 				if(initValues.html)
@@ -269,17 +318,23 @@
 					var type = self.$.node.context.type;
 					
 					//check for other input types like radio, multi-select etc
-					if(type === 'text' || type === 'select-one')
+					//select-multiple's value attribute onlt sets the last value; need to find the one that sets the array
+					if(type === 'text' || type === 'select-one' || type === 'select-multiple')
 					{
-						self.$.props({value: defaultValue});
+						//self.$.props({value: defaultValue});
 						
 						if(defaultValue.tie) //the reference is to a tiable
+						{	
+							self.$.node.val(defaultValue());
+							defaultValue.tie({}, function(value){self.$.node.val(value)});
+							
 							self.$.events({
-								change: function(e) //tie the change event with the tiable
+								change: function() //tie the change event with the tiable
 								{
 									defaultValue(self.$.node.val());
 								}
 							})
+						}
 					}
 					else if(type === 'checkbox')
 					{
@@ -287,7 +342,7 @@
 						
 						if(defaultValue.tie) //the reference is to a tiable
 							self.$.events({
-								change: function(e) //tie the change event with the tiable
+								change: function() //tie the change event with the tiable
 								{
 									defaultValue(self.$.node.prop('checked'));
 								}

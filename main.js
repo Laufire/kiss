@@ -146,6 +146,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 			var v1 = new O_O.value('Text');
 			var v2 = new O_O.value(1);
 			var v3 = new O_O.value(true);
+			var v4 = new O_O.value(['a']);
 			
 			var showHtml = function(event)
 			{
@@ -170,7 +171,12 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 					}
 				}
 			};
-			this.output3 = v3
+			
+			this.output3 = v3;
+			
+			//this.multiselect = {};
+			this.multiselect = v4;
+			this.output4 = v4;
 			
 			this.click = {
 
@@ -219,7 +225,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	{
 		App.load($('#App'));
 
-		testTies();
+		//testTies();
 	});
 
 

@@ -15,6 +15,8 @@ Goal
 	
 	The code should make sense on the first glance. So no gimmicks and circuses.
 	
+	Should easily communicate with the Server.
+	
 	Meassures
 	{
 		Should support bootstrap.
@@ -38,11 +40,17 @@ Way
 	Plugins refered by JS can handle the corresponding html element.
 	
 	The scope is defined in JS.
+	
+	Might not depend on jQuery. (only when performance matters, as jQuery could simplify the development process)
+	
+	Might use jQuery plugins out of the box. (if jquery were to be the base library).
 }
 
 Consider
 {
-	Replacing $html, $attrs with ${html, attr}
+	To design the library as standalone.
+	
+	Uniform interface across controls, elements and plugins.
 }
 
 Components
@@ -91,3 +99,7 @@ Known Issues
 	This is a proof of concept. So it has to be checked for performance issues, memory leaks etc.
 }
 
+Uses
+{
+	Could be used as a report generator like crystal reports.
+}

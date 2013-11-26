@@ -3,4 +3,5 @@
 131125_1610	Class 'nested' renamed to by 'element'.
 131125_1610	$html, $attrs etc has been changed to $.html, $.attrs etc.
 131125_1635	Now tieables could directlty be assigned to the 'default' attribute of elements.
-131125_1900	Two-way binding achieved through 'default' behaviors.
+131125_1900	Two-way binding achieved through 'default' behaviors for html elements and text, checkbox and select-single controls.
+131125_2150	Two-way binding achieved for select-multiple controls.
