@@ -21,7 +21,7 @@ define(function()
 		{
 			var cache = {};
 
-			//? thanks to: bloody-jquery-plugins / pubsub.js
+			//thanks to: bloody-jquery-plugins / pubsub.js
 
 			this.publish = function(/* String */topic, /* Array? */args){
 				// summary:
@@ -96,26 +96,191 @@ define(function()
 		//UI classes
 		this.element = function(data)
 		{
+			var self = this;
 			var initValues = {};
-			var attrFuncs = {}; //stores attr specific functions that are tied
-			var propFuncs = {}; //stores prop specific functions that are tied
-				
+
+			var enumFuncs = {
+
+				attrs: {store: {}, method: 'attr'}, //stores attr specific functions that are tied
+				props: {store: {}, method: 'prop'}, //stores prop specific functions that are tied
+				classes: {store: {}, method: 'toggleClass'} //stores class specific functions that are tied
+			}
+
 			if(data)
 			{
-				if(data.$)
+				if(typeof data == 'object') //? a better way to check;
 				{
-					initValues = data.$;
-					data.$ = undefined;
+					if(data.$)
+					{
+						initValues = data.$;
+						data.$ = undefined;
+					}
+
+					$.extend(this, data);
 				}
-				
-				$.extend(this, data);
+				else
+					initValues.default = data;
+			}
+
+			this.$ = new function()
+			{
+				this.default = function(value) //varies on the type of element
+				{
+					if(this.default.untie)
+						this.default.untie();
+
+					var tagName = self.$.node.context.tagName;
+					var type = self.$.node.context.type;
+
+					switch(type)
+					{					
+						case 'text':
+						case 'select-one':
+						case 'select-multiple':
+					
+							self.$.node.val(getValue.apply(null, [value])); //get the current value
+
+							if(value.tie) //the value is a tieable
+							{
+								value.tie(this.default, function(value){self.$.node.val(value)}); //subscribe to future changes
+
+								self.$.events({
+									change: function() //enable two-way binding
+									{
+										value(self.$.node.val());
+									}
+								});
+							}
+							
+						break;
+						
+						case 'checkbox':
+							
+							self.$.node.prop('checked', getValue.apply(null, [value])); //get the current value
+
+							if(value.tie) //the value is a tieable
+							{
+								value.tie(this.default, function(value){self.$.node.prop('checked', value)}); //subscribe to future changes
+
+								self.$.events({
+									change: function() //enable two-way binding
+									{
+										value(self.$.node.prop('checked'));
+									}
+								});
+							}
+						break;
+						
+						default: //the tag is not a control
+							this.html(value);
+					}
+				}
+
+				this.html = function(value)
+				{
+					if(this.html.untie)
+						this.html.untie();
+
+					if(value.tie) //the value is a tieable
+					{
+						changeHTML(value()); //get the current value
+						this.html.tie = value.tie(this.html, changeHTML);
+					}
+					else
+					{
+						changeHTML(getValue.apply(this, [value]));
+					}
+				}
+
+				this.attrs = function(keys)
+				{
+					enumProps('attrs', keys);
+				}
+
+				this.props = function(keys)
+				{
+					enumProps('props', keys);
+				}
+
+				this.classes = function(keys)
+				{
+					enumProps('classes', keys);
+				}
+
+				this.events = function(events)
+				{
+					$.each(events, function(event, handler)
+					{
+						//? if the event already has a handler 'off' it.
+						self.$.node.on(event, handler);
+					});
+				}
+
+				this.load = function($node) //loads the object on to the given $node
+				{
+					this.node = $node;
+
+					$.each(initValues, function(key, value)
+					{
+						if(typeof self.$[key] == 'function')
+							self.$[key](value)
+					});
+
+					if(!initValues.html)
+						loadChildren();
+
+					if(initValues.init) //a function to execute as the init function
+						initValues.apply(self);
+
+					initValues = undefined;
+				}
 			}
 			
-			var self = this; //? could self.$ be replaced with $self
-			
-			var attrsAndProps = function(type, keys)
+			//privates
+			var getValue = function(value)
 			{
-				var store = (type == 'attr' ? attrFuncs : propFuncs);
+				if(typeof value == 'function') //the value is a function
+					return value.apply(this);
+
+				else
+					return value; //the value is just a value
+			}
+
+			var loadChildren = function() //load the children with matching objects
+			{
+				var nodes = self.$.node.find(keySelector); //selects all nodes with the keyAttr
+
+				nodes.each(function(index, child)
+				{
+					var $child = $(child);
+					var childAttr = $child.attr(keyAttr);
+					var child = self[childAttr];
+
+					if($child.parents(keySelector)[0] != self.$.node[0]) //this node has a parent with a keyAttr
+						return;
+
+					if(child) //the tag has a matching object
+					{
+						console.log(childAttr) //? this is to check the parsed children; leave this until KISS is completed
+
+						if(child.$)
+						{
+							if(!child.$.load) //the object is a plain object
+								self[childAttr] = new O_O.element(child); //convert plain objects to O_O.element; plain objects are used to maintain simplicity
+						}
+						else
+							self[childAttr] = new O_O.element(child); //pass the object as it to the element
+
+						self[childAttr].$.load($child); //load the node to the object
+
+					} //tags without matching objects are left intact; so to play nice with other libs
+				});
+			}
+			
+			var enumProps = function(type, keys) //loads the given keys on to the attr/prop/class of the given node
+			{
+				var store = enumFuncs[type].store;
+				var method = enumFuncs[type].method;
 
 				$.each(keys, function(key, value)
 				{
@@ -129,23 +294,19 @@ define(function()
 
 					if(value.tie) //the value is a tieable
 					{
-						self.$.node[type](key, value()); //get the current value
+						self.$.node[method](key, value()); //get the current value
 
 						store[key] = function(value) //create a function to change the specific value
 						{
-							if(value !== self.$.node[type](key))
-								self.$.node[type](key, value);
+							if(value !== self.$.node[method](key))
+								self.$.node[method](key, value);
 						}
 
 						value.tie(store[key], store[key]);
 					}
 					else
 					{
-						if(typeof value == 'function') //the value is a function
-							self.$.node[type](key, value.apply(this.$node));
-
-						else
-							self.$.node[type](key, value); //the value is just a value
+						self.$.node[method](key, getValue.apply(null, [value])); //get the current value into the fitting jQuery method
 					}
 				});
 			}
@@ -155,223 +316,29 @@ define(function()
 				self.$.node.html(html);
 				loadChildren();
 			}
-			
-			this.$ = new function()
-			{
-				this.default = function(value)
-				{
-					if(this.default.untie)
-						this.default.untie();
-						
-					var tagName = self.$.node.context.tagName;
-					var type = self.$.node.context.type;
-					
-					//? could switch be used instead
-					if(type === 'text' || type === 'select-one' || type === 'select-multiple')
-					{
-						self.$.node.val(value()); //get the current value
-						
-						if(value.tie) //the reference is to a tiable
-						{	
-							value.tie(this.default, function(value){self.$.node.val(value)}); //subscribe to future changes
-							
-							self.$.events({
-								change: function() //tie the change event with the tiable
-								{
-									value(self.$.node.val());
-								}
-							});
-						}
-					}
-					else if(type === 'checkbox')
-					{
-						self.$.node.prop('checked', value()); //get the current value
-						
-						if(value.tie) //the reference is to a tiable
-						{
-							value.tie(this.default, function(value){self.$.node.prop('checked', value)}); //subscribe to future changes
-							
-							self.$.events({
-								change: function() //tie the change event with the tiable
-								{
-									value(self.$.node.prop('checked'));
-								}
-							});
-						}
-					}
-					else //the tag is not a control
-						this.html(value);
-				}
-				
-				this.html = function(value)
-				{
-					if(this.html.untie)
-						this.html.untie();
-
-					if(value.tie) //the value is a tieable
-					{
-						changeHTML(value()); //get the current value
-						this.html.tie = value.tie(this.html, changeHTML);
-					}
-					else
-					{
-						if(typeof value == 'function') //the value is a function
-							changeHTML(value.apply(this));
-
-						else
-							changeHTML(value); //the value is just a value
-					}
-				}
-				
-				this.attrs = function(keys)
-				{
-					attrsAndProps('attr', keys);
-				}
-
-				this.props = function(keys)
-				{
-					attrsAndProps('prop', keys);
-				}
-				
-				this.events = function(events)
-				{
-					$.each(events, function(event, handler)
-					{
-						//? if the event already has a handler 'off' it.
-						self.$.node.on(event, handler);
-					});
-				}
-			}
-			
-			this.load = function($node) //loads the object
-			{
-				this.$.node = $node;
-					
-				if(initValues.default)
-					this.$.default(initValues.default);
-					//setDefaultValue();
-				
-				//populate the node with initial $ values
-				if(initValues.html)
-					this.$.html(initValues.html);
-
-				if(initValues.attrs)
-					this.$.attrs(initValues.attrs);
-
-				if(initValues.props)
-					this.$.props(initValues.props);
-					
-				if(initValues.events)
-					this.$.events(initValues.events);
-				
-				if(!initValues.html)
-					loadChildren();
-				
-				if(initValues.init) //a function to execute as the init function
-					initValues.apply(self);
-				
-				initValues = undefined;
-			}
-			
-			var loadChildren = function() //load the children with matching objects
-			{
-				var nodes = self.$.node.find(keySelector); //selects all nodes with the keyAttr
-
-				if(!nodes.length)
-					return;
-
-				nodes.each(function(index, child)
-				{
-					var $child = $(child);
-					var childAttr = $child.attr(keyAttr);
-					var child = self[childAttr];
-
-					if($child.parents(keySelector)[0] != self.$.node[0]) //this node has a parent with a keyAttr
-						return;
-
-					if(child) //the tag has a matching object
-					{
-						if(!child.load) //the object doesn't load child elements so wrap it with an element
-						{
-							if(self[childAttr].tie) //the object is a tiable
-								self[childAttr] = new O_O.element({$:{default:child}}); //tie the html to the object
-							else
-								self[childAttr] = new O_O.element(child); //convert plain objects to O_O.element; plain objects are used to maintain simplicity
-						}
-
-						self[childAttr].load($child); //load the node to the object
-
-					} //tags without matching objects are left intact; so to play nice with other libs
-				});
-			}
-			
-			var setDefaultValue = function()
-			{
-				var defaultValue = initValues.default;
-				
-				var tagName = self.$.node.context.tagName;
-				
-				//?use switch instead
-				//? is there a way to find whwther the given element is a control
-				if(tagName === 'INPUT' || tagName === 'SELECT')
-				{
-					var type = self.$.node.context.type;
-					
-					//check for other input types like radio, multi-select etc
-					//select-multiple's value attribute onlt sets the last value; need to find the one that sets the array
-					if(type === 'text' || type === 'select-one' || type === 'select-multiple')
-					{
-						//self.$.props({value: defaultValue});
-						
-						if(defaultValue.tie) //the reference is to a tiable
-						{	
-							self.$.node.val(defaultValue());
-							defaultValue.tie({}, function(value){self.$.node.val(value)});
-							
-							self.$.events({
-								change: function() //tie the change event with the tiable
-								{
-									defaultValue(self.$.node.val());
-								}
-							})
-						}
-					}
-					else if(type === 'checkbox')
-					{
-						self.$.props({checked: defaultValue});
-						
-						if(defaultValue.tie) //the reference is to a tiable
-							self.$.events({
-								change: function() //tie the change event with the tiable
-								{
-									defaultValue(self.$.node.prop('checked'));
-								}
-							})
-					}
-				}
-				else
-					initValues.html = initValues.default;
-			}
 		}
 
-		this.collection = function(data)
+		this.collection = function(initial)
 		{
-			$.extend(this, data);
-
-			this.load = function($node)
+			this.$ = new function()
 			{
-				var self = this;
+				this.data = initial.data;
 
-				this.$node = $node;
-
-				this.itemTemplate = this.$node.children().first()[0].outerHTML;
-
-				this.$node.html('');
-
-				$.each(this.data, function(index, item)
+				this.load = function($node)
 				{
-					self.$node.append(parseTemplate(self.itemTemplate, item));
-				});
+					this.$node = $node;
+
+					this.itemTemplate = this.$node.children().first()[0].outerHTML;
+
+					this.$node.html('');
+
+					$.each(this.data, function(index, item)
+					{
+						self.$node.append(parseTemplate(self.itemTemplate, item));
+					});
+				}
+
+				var self = this;
 			}
 
 			var parseTemplate = function(html, object)
@@ -485,7 +452,7 @@ define(function()
 						{
 							values[index] = param(); //get the current value of the tied var
 
-							vars[index] = param.tie({}, function(value) //replace the tiable with a dummy object to hold the untie function
+							vars[index] = param.tie({}, function(value) //replace the tieable with a dummy object to hold the untie function
 							{
 								values[index] = value;
 								retFunc();

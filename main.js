@@ -33,7 +33,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	App = new O_O.element(new function()
 	{
 		var App = this;
-		
+		/*
 		this.data = new function(){ //this object has no corresponding html elemrnt; it can serve as the data
 
 			this.tieableValue = new O_O.value('This is from a tied value');
@@ -87,7 +87,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				}
 			}
 		}
-
+		
 		this.table = { //example of collection
 
 			title:
@@ -103,7 +103,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				data: [{name: 'a', age: 1}, {name: 'b', age: 2}, {name: 'c', age: 3}]
 			})
 		}
-
+		
 		this.ties = {
 
 			tiedValue: App.data.tieableValue, //the tieable is assigned directly to the elements default attribute
@@ -192,6 +192,36 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				}
 			}
 		}
+		*/
+		this.conditionals = new function() //try to switch nodes dynamically
+		{
+			var show = new O_O.value(true);
+			
+			this.pane1Button = function(){currentPane(this.pane1)}
+			
+			this.pane2Button = function(){currentPane(this.pane2)}
+			
+			this.pane1 = {$:{default:'Pane1 Contents'}};
+			
+			this.pane2 = 'Contents of Pane2';
+			
+			var currentPane = new O_O.value(this.pane1);
+			
+			this.paneHolder = function(){return 1};
+			
+			this.check = show;			
+			
+			this.result = {
+			
+				$: {
+					
+					classes: {
+					
+						hidden: show
+					}
+				}
+			}
+		}
 	});
 	
 	var testTies = function()
@@ -223,7 +253,9 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 
 	$(document).ready(function()
 	{
-		App.load($('#App'));
+		App.$.load($('#App'));
+		
+		//App.conditionals.result.$.classes({hidden: false});
 
 		//testTies();
 	});

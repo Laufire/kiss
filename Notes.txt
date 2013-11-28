@@ -1,3 +1,31 @@
+ToDos
+{
+	Check this object for jQuery.each.
+	
+	Check HTML contenteditable change events.
+	
+	Better collections.
+	
+	Check jQuery UI / widgets.
+	
+	A plugin to communicate with the server.
+	
+	Redo the example page, with tabs.
+}
+
+Consider
+{
+	To design the library as standalone.
+	
+	Combining multiple plugins to create a new plugin. Might be as simple as "O_O.plugin(jQuery.AutoComplete).decorate(O_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.
+	
+	Uniform interface across controls, elements and plugins.
+	
+	Not depending on jQuery. (only when performance matters, as jQuery could simplify the development process)
+	
+	Using jQuery plugins out of the box. (if jquery were to be the base library).
+}
+
 Goal
 {
 
@@ -41,16 +69,7 @@ Way
 	
 	The scope is defined in JS.
 	
-	Might not depend on jQuery. (only when performance matters, as jQuery could simplify the development process)
-	
-	Might use jQuery plugins out of the box. (if jquery were to be the base library).
-}
-
-Consider
-{
-	To design the library as standalone.
-	
-	Uniform interface across controls, elements and plugins.
+	A lego like modular architecture with plugs and hosts instead of pub-sub.
 }
 
 Components
@@ -60,15 +79,6 @@ Components
 	Sorted List: With just Add, Remove and Replace methods.
 	
 	Filtered Arrays.
-}
-
-ToDos
-{
-	Adding events -> in progress.
-	
-	Two way ties to input controls.
-	
-	Better collections.
 }
 
 Questions
@@ -90,6 +100,8 @@ Noted
 	HTML's Custom tag names appear to be case insensitive.
 	
 	Unlike JS, Having duplicate IDs in a document is fine with CSS.
+	
+	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
 }
 
 Known Issues
