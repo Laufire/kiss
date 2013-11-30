@@ -133,11 +133,11 @@ define(function()
 					var type = self.$.node.context.type;
 
 					switch(type)
-					{					
+					{
 						case 'text':
 						case 'select-one':
 						case 'select-multiple':
-					
+
 							self.$.node.val(getValue.apply(null, [value])); //get the current value
 
 							if(value.tie) //the value is a tieable
@@ -151,11 +151,11 @@ define(function()
 									}
 								});
 							}
-							
+
 						break;
-						
+
 						case 'checkbox':
-							
+
 							self.$.node.prop('checked', getValue.apply(null, [value])); //get the current value
 
 							if(value.tie) //the value is a tieable
@@ -170,7 +170,7 @@ define(function()
 								});
 							}
 						break;
-						
+
 						default: //the tag is not a control
 							this.html(value);
 					}
@@ -235,7 +235,7 @@ define(function()
 					initValues = undefined;
 				}
 			}
-			
+
 			//privates
 			var getValue = function(value)
 			{
@@ -250,33 +250,33 @@ define(function()
 			{
 				var nodes = self.$.node.find(keySelector); //selects all nodes with the keyAttr
 
-				nodes.each(function(index, child)
+				nodes.each(function(index, childNode)
 				{
-					var $child = $(child);
-					var childAttr = $child.attr(keyAttr);
-					var child = self[childAttr];
+					var $child = $(childNode);
+					var childKey = $child.attr(keyAttr);
+					var childObject = self[childKey];
 
 					if($child.parents(keySelector)[0] != self.$.node[0]) //this node has a parent with a keyAttr
 						return;
 
-					if(child) //the tag has a matching object
+					if(childObject) //the tag has a matching object
 					{
-						console.log(childAttr) //? this is to check the parsed children; leave this until KISS is completed
+						console.log(childKey) //? this is to check the parsed children; leave this until KISS is completed
 
-						if(child.$)
+						if(childObject.$)
 						{
-							if(!child.$.load) //the object is a plain object
-								self[childAttr] = new O_O.element(child); //convert plain objects to O_O.element; plain objects are used to maintain simplicity
+							if(!childObject.$.load) //the object is a plain object
+								self[childKey] = new O_O.element(childObject); //convert plain objects to O_O.element; plain objects are used to maintain simplicity
 						}
 						else
-							self[childAttr] = new O_O.element(child); //pass the object as it to the element
+							self[childKey] = new O_O.element(childObject); //pass the object 'as is' to the element
 
-						self[childAttr].$.load($child); //load the node to the object
+						self[childKey].$.load($child); //load the node to the object
 
 					} //tags without matching objects are left intact; so to play nice with other libs
 				});
 			}
-			
+
 			var enumProps = function(type, keys) //loads the given keys on to the attr/prop/class of the given node
 			{
 				var store = enumFuncs[type].store;
@@ -313,6 +313,7 @@ define(function()
 
 			var changeHTML = function(html)
 			{
+				console.log(html);
 				self.$.node.html(html);
 				loadChildren();
 			}

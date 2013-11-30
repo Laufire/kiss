@@ -24,11 +24,12 @@ Consider
 	Not depending on jQuery. (only when performance matters, as jQuery could simplify the development process)
 	
 	Using jQuery plugins out of the box. (if jquery were to be the base library).
+	
+	A 'transform' function for O_O.value that modifies the value for output.
 }
 
 Goal
 {
-
 	To build a simple and powerful framework that enables "truly" rapid development.
 	
 	It should work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).

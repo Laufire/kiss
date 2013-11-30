@@ -6,6 +6,6 @@
 131125_1900	Two-way binding achieved through 'default' behaviors for html elements and text, checkbox and select-single controls.
 131125_2150	Two-way binding achieved for select-multiple controls.
 
-131127_1050	Assigning values ditectly to element.$.default is now supported.
-131127_1150	*.load moved to *.$.load is now supported.
-131127_1230	$.classes added.
+131128_1050	Assigning values ditectly to element.$.default is now supported.
+131128_1150	*.load moved to *.$.load is now supported.
+131128_1230	$.classes added.

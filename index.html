@@ -1,53 +1,53 @@
 <html id="App">
 
 <head>
-	<title>KISS - a stupid JS framework</title>	
-	
+	<title>KISS - a stupid JS framework</title>
+
 	<script data-main="main" src="lib/require-2.1.8.min.js"></script>
-    
+
 	<link rel="stylesheet" href="main.css"/>
 
 </head>
 
 <body>
 
-	<div id="simple" class="section hidden">Example for values without ties (changes only once, when the object is loaded to the HTML)
+	<div id="simple" class="section">Example for values without ties (changes only once, when the object is loaded to the HTML)
 		<div><a id="simpleString">simpleString</a></div>
 		<div id="simpleFunction">simpleFunction</div>
 		<div id="independent">This element is not KISSed; so it's left intact.</div>
 	</div>
-	
-	<div id="table" class="section hidden">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
-		
+
+	<div id="table" class="section">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
+
 		<div id="title"></div>
-		
+
 		<div id="collection">
 			<!-- the item has to be wraapped within an element-->
 			<div class="item">
 				Name: <span id="name"></span> is <span id="age"></span> years old.
 			</div>
 		</div>
-	
+
 	</div>
-	
-	<div id="ties" class="section hidden">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
+
+	<div id="ties" class="section">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
 		<div id="tiedValue">bindableValue</div>
-		
+
 		<div>
 			<input id="tiedFunction" type="checkbox">A tied function sets the checked state of this checkbox</input>
 			<div id="tiedFunction_Call1">A tied function</div>
 			<div id="tiedFunction_Call2">A tied function called again</div>
 			<div id="presetTiedFunction">A preset tied function</div>
 		</div>
-		
+
 	</div>
-	
-	<div id="events" class="section hidden">
+
+	<div id="events" class="section">
 		<div>
 			Text<input id="text"></input>
 			<span id="output1"></span>
 		</div>
-		
+
 		<div>
 			Select<select id="select">
 				<option value="1">One</option>
@@ -55,12 +55,12 @@
 			</select>
 			<span id="output2"></span>
 		</div>
-		
+
 		<div>
 			Checkbox<input id="checkbox" type="checkbox"></input>
 			<span id="output3"></span>
 		</div>
-		
+
 		<div>
 			Multi select<select id="multiselect" multiple>
 				<option value="a">Apple</option>
@@ -69,23 +69,19 @@
 			</select>
 			<span id="output4"></span>
 		</div>
-		
+
 		<div id="click">An event</div>
 	</div>
-	
-	<div id="conditionals">
-		<button id="pane1Button">Pane1</button>
-		<button id="pane2Button">Pane2</button>
+	<!--
+	<div id="modules">
+		<select id="moduleSelection">
+			<option value="0">Module 1</option>
+			<option value="1">Module 2</option>
+		</select>
 		
-		<div id="paneHolder">Pane Holder</div>
-		
-		<input id="check" type="checkbox">Show</input>
-		<div id="result">Result</div>
-		
-		<div id="pane1">Pane1</div>
-		<div id="pane2">Pane2</div>
+		<div id="module">Selected Module</div>
 	</div>
-	
+	-->
 </body>
 
 </html>

@@ -33,7 +33,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	App = new O_O.element(new function()
 	{
 		var App = this;
-		/*
+		
 		this.data = new function(){ //this object has no corresponding html elemrnt; it can serve as the data
 
 			this.tieableValue = new O_O.value('This is from a tied value');
@@ -145,8 +145,8 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 		{
 			var v1 = new O_O.value('Text');
 			var v2 = new O_O.value(1);
-			var v3 = new O_O.value(true);
-			var v4 = new O_O.value(['a']);
+			var v3 = new O_O.value(['a']);
+			var show = new O_O.value(true);
 			
 			var showHtml = function(event)
 			{
@@ -158,6 +158,9 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 			
 			this.select = v2;
 			this.output2 = v2;
+			
+			this.multiselect = v3;
+			this.output4 = v3;
 			
 			this.checkbox = {
 			
@@ -172,11 +175,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				}
 			};
 			
-			this.output3 = v3;
-			
-			//this.multiselect = {};
-			this.multiselect = v4;
-			this.output4 = v4;
+			this.output3 = show;
 			
 			this.click = {
 
@@ -188,32 +187,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 					
 						click: showHtml
 						
-					}
-				}
-			}
-		}
-		*/
-		this.conditionals = new function() //try to switch nodes dynamically
-		{
-			var show = new O_O.value(true);
-			
-			this.pane1Button = function(){currentPane(this.pane1)}
-			
-			this.pane2Button = function(){currentPane(this.pane2)}
-			
-			this.pane1 = {$:{default:'Pane1 Contents'}};
-			
-			this.pane2 = 'Contents of Pane2';
-			
-			var currentPane = new O_O.value(this.pane1);
-			
-			this.paneHolder = function(){return 1};
-			
-			this.check = show;			
-			
-			this.result = {
-			
-				$: {
+					},
 					
 					classes: {
 					
@@ -222,6 +196,25 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				}
 			}
 		}
+		/*
+		this.modules = new function() //try to switch nodes dynamically
+		{
+			var availableModules = new O_O.function(function(val)
+			{
+				var modules = [
+				
+					new O_O.element({$:{html: 'I\'m module 1'}}),
+					new O_O.element({$:{html: 'I\'m module 2'}})
+				];
+				
+				return modules[val];
+			});
+
+			this.moduleSelection = new O_O.value(0);
+			
+			this.module = availableModules(this.moduleSelection);
+		}
+		*/
 	});
 	
 	var testTies = function()
@@ -256,8 +249,8 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 		App.$.load($('#App'));
 		
 		//App.conditionals.result.$.classes({hidden: false});
-
-		//testTies();
+		//App({conditionals: {pane2: 'New'}}); //? here
+		testTies();
 	});
 
 
