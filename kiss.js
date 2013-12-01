@@ -6,9 +6,30 @@ define(function()
 
 	return new function()
 	{
+		//privates
 		var O_O = this;
 		var keyAttr = 'id'; //the default keyAttr is id
 		var keySelector = '[id]'; //? the selector could be improved to find just the first descendants (not the child) with the keyAttr
+		
+		//helpers
+		var get$el = function(name, parent)
+		{
+			return $(parent || document).find(['[', keyAttr, '="', name, '"]:first'].join(''));
+		}
+		
+		var stripProp = function(obj, prop)
+		{
+			var ret;
+			
+			if(obj && obj[prop])
+			{
+				ret = obj[prop];
+				
+				delete obj[prop];
+			}
+			
+			return ret;
+		}
 
 		//public
 		this.keyAttr = function(key) //change the keyAttr to be KISSed
@@ -17,13 +38,11 @@ define(function()
 			keySelector = ['[', keyAttr, ']'].join('');
 		}
 
-		this.events = new function()
+		this.connections = new function() //thanks to: bloody-jquery-plugins / pubsub.js
 		{
-			var cache = {};
+			var cache = {};		
 
-			//thanks to: bloody-jquery-plugins / pubsub.js
-
-			this.publish = function(/* String */topic, /* Array? */args){
+			this.trigger = function(/* String */topic, /* Array? */args){
 				// summary:
 				//                Publish some data on a named topic.
 				// topic: String
@@ -36,27 +55,27 @@ define(function()
 				//                Publish stuff on '/some/topic'. Anything subscribed will be called
 				//                with a function signature like: function(a,b,c){ ... }
 				//
-				//        |                $.publish("/some/topic", ["a","b","c"]);
+				//        |                $.trigger("/some/topic", ["a","b","c"]);
 				cache[topic] && $.each(cache[topic], function(){
 						this.apply($, args || []);
 				});
 			};
 
-			this.subscribe = function(/* String */topic, /* Function */callback){
+			this.plug = function(/* String */topic, /* Function */callback){
 				// summary:
 				//                Register a callback on a named topic.
 				// topic: String
 				//                The channel to subscribe to
 				// callback: Function
-				//                The handler event. Anytime something is $.publish'ed on a
+				//                The handler event. Anytime something is $.trigger'ed on a
 				//                subscribed channel, the callback will be called with the
 				//                published array as ordered arguments.
 				//
 				// returns: Array
-				//                A handle which can be used to unsubscribe this particular subscription.
+				//                A handle which can be used to unsubscribe this particular connection.
 				//
 				// example:
-				//        |        $.subscribe("/some/topic", function(a, b, c){ /* handle data */ });
+				//        |        O_O.plug("/some/topic", function(a, b, c){ /* handle data */ });
 				//
 				if(!cache[topic]){
 						cache[topic] = [];
@@ -65,14 +84,14 @@ define(function()
 				return [topic, callback]; // Array
 			};
 
-			this.unsubscribe = function(/* Array */handle){
+			this.unplug = function(/* Array */handle){
 				// summary:
 				//                Disconnect a subscribed function for a topic.
 				// handle: Array
-				//                The return value from a $.subscribe call.
+				//                The return value from a $.plug call.
 				// example:
-				//        |        var handle = $.subscribe("/something", function(){});
-				//        |        $.unsubscribe(handle);
+				//        |        var handle = $.plug("/something", function(){});
+				//        |        O_O.unplug(handle);
 
 				var t = handle[0];
 				cache[t] && $.each(cache[t], function(idx){
@@ -93,17 +112,239 @@ define(function()
 			}
 		}
 
+		//base classes
+		this.classes = new function(){
+		
+			//classes
+			this.element = function(data){
+			
+				//privates
+				var $el;
+				
+				var store = {
+
+					attrs: {}, //stores attr specific functions that are plugged
+					props: {}, //stores prop specific functions that are plugged
+					classes: {}, //stores class specific functions that are plugged
+					events: {} //stores event specific handlers
+				}				
+				
+				//publics
+				this.el = function() //sets the $el for the element and load it with existing html, attrs etc
+				{
+					if(!arguments.length)
+						return $el;
+					
+					$el = get$el.apply(null, arguments);
+					
+					for(var i in data)
+						if(typeof this[i] == 'function')
+							this[i].apply(this, [data[i]]);
+					
+					if(data && data.init)
+						data.init.apply(this);
+					
+					data = undefined;
+				}
+				
+				this.html = function()
+				{
+					if(!arguments.length)
+						return $el.html();
+					
+					if(arguments[0].plug) //the value is a pluggable
+						arguments[0].plug(this, function(value)
+						{
+							$el.html(value);
+						});
+					
+					else
+					{
+						if(this.html.unplug)
+							this.html.unplug();
+						
+						$el.html(getValue.apply(this, [arguments[0]]));
+					}
+					
+					return this;
+				}
+				
+				this.attrs = function(keys)
+				{
+					enumProps.apply(this, ['attr', keys, store['attrs']]);
+				}
+
+				this.props = function(keys)
+				{
+					enumProps.apply(this, ['prop', keys, store['props']]);
+				}
+
+				this.classes = function(keys)
+				{
+					enumProps.apply(this, ['toggleClass', keys, store['classes']]);
+				}
+
+				this.events = function(events)
+				{
+					for(var eventName in events)
+					{
+						if(store['events'][eventName]) //the event already has a handler
+							$el.off(eventName, store['events'][eventName]); //remove the handler
+						
+						store['events'][eventName] = $.proxy(events[eventName], this);
+						$el.on(eventName, store['events'][eventName]);
+					}
+				}
+			}
+			
+			//helpers
+			var getValue = function(value)
+			{
+				if(typeof value == 'function') //the value is a function
+					return value.apply(this);
+
+				else
+					return value; //the value is just a value
+			}
+			
+			var enumProps = function(method, changes, store) //loads the given keys on to the attr/prop/class of the given node
+			{
+				var $el = this.el();
+				
+				for(var key in changes)
+				{
+					if(changes[key].plug) //the value is a pluggable
+					{
+						store[key] = function(value) //create a function to change the specific value
+						{
+							//if(value !== $el[method](key)) //? this might cause reposing of a two way binding; could this check be removed safely
+							$el[method](key, value);
+						}
+
+						changes[key].plug(this, store[key]);
+					}
+					else
+					{
+						if(store[key]) //the attr already has a value, clear it
+						{
+							if(store[key].unplug)
+								store[key].unplug();
+
+							delete store[key];
+						}
+							
+						$el[method](key, getValue.apply(null, [changes[key]])); //get the current value into the fitting jQuery method
+					}
+				}
+			}			
+		}
+		
+		this.element = function()
+		{
+			var _Element; //the underlying O_O.classes.element
+			
+			var self = function(param1, param2)
+			{
+				if(!arguments.length)
+					return self;
+					
+				else
+					if(arguments.length == 1)
+						if(typeof param1 == 'object') //set multiple values at once
+						{
+							for(var i in param1)
+								_Element[i](param1[i]);
+						}
+						else
+							return _Element[param1](); //return the value of a given 'method'
+					else
+						_Element[param1](param2); //set the 'value' of the given 'method'
+				
+				
+				return self;
+			}
+			
+			if(!arguments.length)
+				_Element = new O_O.classes.element;
+			else
+			{
+				 _Element = stripProp(arguments[0], '$');
+					
+				$.extend(self, arguments[0]);
+					
+				_Element = new O_O.classes.element(_Element);
+			}
+			
+			for(var childName in self)
+			{
+				if(!get$el(childName, self('el')).length)
+					continue;  //tags without matching objects are left intact; so to play nice with other libs
+				
+				console.log(childName) //? this is to check the parsed children; leave this until KISS is completed
+				var childObject = self[childName];
+
+				//if(childObject && childObject.$) //? could be needed for collections etc
+				if(childObject.constructor === Object) //convert plain objects to O_O.element; plain objects are used to maintain simplicity
+					childObject = O_O.element(childObject);
+				
+				childObject('el', childName, self('el'));
+			}
+			
+			return self;
+		}
+		
+		this.value = function() // a pluggable value
+		{
+			var value = arguments[0];
+			var changeEvent = O_O.connections.getSlot() + ':change';
+
+			function retFunc(newValue)
+			{
+				if(!arguments.length)
+					return value;
+
+				if(value !== newValue)
+				{
+					value = newValue;
+					O_O.connections.trigger(changeEvent, [value]);
+				}
+
+				return this;
+			}
+
+			retFunc.plug = function(context, action)
+			{
+				if(action.unplug)
+					action.unplug(); //remove any previous plugs
+
+				var connection = O_O.connections.plug(changeEvent, function(value) //subscribe to changes
+				{
+					action.apply(context, [value]); //the action is executed in the targets context
+				});
+
+				action.unplug = function() //set an unplug function so the event could be unsubscribed later
+				{
+					O_O.connections.unplug(connection); //pass the handle to the connection to the unsubscribe function
+					delete action.unplug;
+				}
+				
+				action.apply(context, [value]); //? this might cause troubles with two way bindings
+			}
+
+			return retFunc;
+		}
+		
 		//UI classes
-		this.element = function(data)
+		this.el = function(data)
 		{
 			var self = this;
 			var initValues = {};
 
-			var enumFuncs = {
+			var store = {
 
-				attrs: {store: {}, method: 'attr'}, //stores attr specific functions that are tied
-				props: {store: {}, method: 'prop'}, //stores prop specific functions that are tied
-				classes: {store: {}, method: 'toggleClass'} //stores class specific functions that are tied
+				attrs: {store: {}, method: 'attr'}, //stores attr specific functions that are plugged
+				props: {store: {}, method: 'prop'}, //stores prop specific functions that are plugged
+				classes: {store: {}, method: 'toggleClass'} //stores class specific functions that are plugged
 			}
 
 			if(data)
@@ -126,8 +367,8 @@ define(function()
 			{
 				this.default = function(value) //varies on the type of element
 				{
-					if(this.default.untie)
-						this.default.untie();
+					if(this.default.unplug)
+						this.default.unplug();
 
 					var tagName = self.$.node.context.tagName;
 					var type = self.$.node.context.type;
@@ -140,9 +381,9 @@ define(function()
 
 							self.$.node.val(getValue.apply(null, [value])); //get the current value
 
-							if(value.tie) //the value is a tieable
+							if(value.plug) //the value is a pluggable
 							{
-								value.tie(this.default, function(value){self.$.node.val(value)}); //subscribe to future changes
+								value.plug(this.default, function(value){self.$.node.val(value)}); //subscribe to future changes
 
 								self.$.events({
 									change: function() //enable two-way binding
@@ -158,9 +399,9 @@ define(function()
 
 							self.$.node.prop('checked', getValue.apply(null, [value])); //get the current value
 
-							if(value.tie) //the value is a tieable
+							if(value.plug) //the value is a pluggable
 							{
-								value.tie(this.default, function(value){self.$.node.prop('checked', value)}); //subscribe to future changes
+								value.plug(this.default, function(value){self.$.node.prop('checked', value)}); //subscribe to future changes
 
 								self.$.events({
 									change: function() //enable two-way binding
@@ -178,13 +419,13 @@ define(function()
 
 				this.html = function(value)
 				{
-					if(this.html.untie)
-						this.html.untie();
+					if(this.html.unplug)
+						this.html.unplug();
 
-					if(value.tie) //the value is a tieable
+					if(value.plug) //the value is a pluggable
 					{
 						changeHTML(value()); //get the current value
-						this.html.tie = value.tie(this.html, changeHTML);
+						value.plug(this.html, changeHTML);
 					}
 					else
 					{
@@ -279,20 +520,20 @@ define(function()
 
 			var enumProps = function(type, keys) //loads the given keys on to the attr/prop/class of the given node
 			{
-				var store = enumFuncs[type].store;
-				var method = enumFuncs[type].method;
+				var store = store[type].store;
+				var method = store[type].method;
 
 				$.each(keys, function(key, value)
 				{
 					if(store[key]) //the attr already has a value, clear it
 					{
-						if(store[key].untie)
-							store[key].untie();
+						if(store[key].unplug)
+							store[key].unplug();
 
 						delete store[key];
 					}
 
-					if(value.tie) //the value is a tieable
+					if(value.plug) //the value is a pluggable
 					{
 						self.$.node[method](key, value()); //get the current value
 
@@ -302,7 +543,7 @@ define(function()
 								self.$.node[method](key, value);
 						}
 
-						value.tie(store[key], store[key]);
+						value.plug(store[key], store[key]);
 					}
 					else
 					{
@@ -361,10 +602,10 @@ define(function()
 		}
 
 		//Data classes
-		this.value = function(initialValue) // a tieable value
+		this.val = function(initialValue) // a pluggable value
 		{
 			var value = initialValue;
-			var changeEvent = O_O.events.getSlot() + ':change';
+			var changeEvent = O_O.connections.getSlot() + ':change';
 
 			function retFunc(newValue)
 			{
@@ -374,86 +615,86 @@ define(function()
 				if(value !== newValue)
 				{
 					value = newValue;
-					O_O.events.publish(changeEvent, [value]);
+					O_O.connections.trigger(changeEvent, [value]);
 				}
 
 				return this;
 			}
 
-			retFunc.tie = function(subscriber, action)
+			retFunc.plug = function(context, action)
 			{
-				if(subscriber.untie)
-					subscriber.untie(); //remove any previous ties
+				if(action.unplug)
+					action.unplug(); //remove any previous plugs
 
-				var subscription = O_O.events.subscribe(changeEvent, function(value) //subscribe to changes
+				var connection = O_O.connections.plug(changeEvent, function(value) //subscribe to changes
 				{
-					action.apply(subscriber, [value]); //the action is executed in the targets context
+					action.apply(context, [value]); //the action is executed in the targets context
 				});
 
-				subscriber.untie = function() //set an untie function so the event could be unsubscribed later
+				action.unplug = function() //set an unplug function so the event could be unsubscribed later
 				{
-					O_O.events.unsubscribe(subscription); //pass the handle to the subscription to the unsubscribe function
+					O_O.connections.unplug(connection); //pass the handle to the connection to the unsubscribe function
 				}
 
-				return subscriber;
+				return context;
 			}
 
 			return retFunc;
 		}
 
-		this.function = function(func) //a tieable function
+		this.function = function(func) //a pluggable function
 		{
 			return function()
 			{
 				var result;
-				var changeEvent = O_O.events.getSlot() + ':change';
+				var changeEvent = O_O.connections.getSlot() + ':change';
 				var vars = Array.prototype.slice.call(arguments); //the vars that might need watching
 				var values = Array.prototype.slice.call(arguments); //the values for the function
 
-				function retFunc() //call this function with arguments to cut the old ties and make new ones
+				function retFunc() //call this function with arguments to cut the old plugs and make new ones
 				{
 					var prev = result;
 
 					if(arguments.length)
 					{
-						untieParams();
+						unplugParams();
 						vars = Array.prototype.slice.call(arguments); //track new vars
-						tieToParams();
+						plugToParams();
 					}
 
 					result = func.apply(null, values);
 
 					if(result !== prev)
-						O_O.events.publish(changeEvent, [result]);
+						O_O.connections.trigger(changeEvent, [result]);
 
 					return result;
 				}
 
-				retFunc.tie = function(subscriber, action) //the second and third parameters are used to cut the default-two way tie
+				retFunc.plug = function(context, action) //the second and third parameters are used to cut the default-two way plug
 				{
-					if(subscriber.untie)
-						subscriber.untie(); //remove any previous ties
+					if(action.unplug)
+						action.unplug(); //remove any previous plugs
 
-					var subscription = O_O.events.subscribe(changeEvent, function(value) //subscribe to changes
+					var connection = O_O.connections.plug(changeEvent, function(value) //subscribe to changes
 					{
-						action.apply(subscriber, [value]); //the action is executed in the targets context
+						action.apply(context, [value]); //the action is executed in the targets context
 					});
 
-					subscriber.untie = function() //set an untie function so the event could be unsubscribed later
+					action.unplug = function() //set an unplug function so the event could be unsubscribed later
 					{
-						O_O.events.unsubscribe(subscription); //pass the handle to the subscription to the unsubscribe function
+						O_O.connections.unplug(connection); //pass the handle to the connection to the unsubscribe function
 					}
 				}
 
-				function tieToParams()
+				function plugToParams()
 				{
 					$.each(vars, function(index, param)
 					{
-						if(param.tie)
+						if(param.plug)
 						{
-							values[index] = param(); //get the current value of the tied var
+							values[index] = param(); //get the current value of the plug
 
-							vars[index] = param.tie({}, function(value) //replace the tieable with a dummy object to hold the untie function
+							vars[index] = param.plug({}, function(value) //replace the pluggable with a dummy object to hold the unplugge function
 							{
 								values[index] = value;
 								retFunc();
@@ -462,14 +703,14 @@ define(function()
 					});
 				}
 
-				tieToParams(); //tie the params that are passed with the constructor
+				plugToParams(); //plug to the params that are passed with the constructor
 
-				function untieParams()
+				function unpluggeParams()
 				{
 					$.each(vars, function(index, param)
 					{
-						if(param.untie)
-							param.untie();
+						if(param.unplug)
+							param.unplug();
 					});
 				}
 

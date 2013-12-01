@@ -9,3 +9,8 @@
 131128_1050	Assigning values ditectly to element.$.default is now supported.
 131128_1150	*.load moved to *.$.load is now supported.
 131128_1230	$.classes added.
+
+131201_2250	A major redesign of the API.
+131201_2250	Completed rewritting O_O.element.
+131201_2250	'$' syntax is dumped, in favor of using functions.
+131201_2250	Ties are renamed to plugs.

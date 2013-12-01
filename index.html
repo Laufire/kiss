@@ -14,74 +14,9 @@
 	<div id="simple" class="section">Example for values without ties (changes only once, when the object is loaded to the HTML)
 		<div><a id="simpleString">simpleString</a></div>
 		<div id="simpleFunction">simpleFunction</div>
-		<div id="independent">This element is not KISSed; so it's left intact.</div>
+		<div id="voidOfObject">This element doesn't have a matching object; so it's left intact.</div>
 	</div>
-
-	<div id="table" class="section">Example for a collection. (This piece of text is left intact as the corresponding object didn't modify it.)
-
-		<div id="title"></div>
-
-		<div id="collection">
-			<!-- the item has to be wraapped within an element-->
-			<div class="item">
-				Name: <span id="name"></span> is <span id="age"></span> years old.
-			</div>
-		</div>
-
-	</div>
-
-	<div id="ties" class="section">Example for 'ties'. Ties are a bit different from pub-subs, as the previous tie of an object are automatically cut when the object is tied to a new object.
-		<div id="tiedValue">bindableValue</div>
-
-		<div>
-			<input id="tiedFunction" type="checkbox">A tied function sets the checked state of this checkbox</input>
-			<div id="tiedFunction_Call1">A tied function</div>
-			<div id="tiedFunction_Call2">A tied function called again</div>
-			<div id="presetTiedFunction">A preset tied function</div>
-		</div>
-
-	</div>
-
-	<div id="events" class="section">
-		<div>
-			Text<input id="text"></input>
-			<span id="output1"></span>
-		</div>
-
-		<div>
-			Select<select id="select">
-				<option value="1">One</option>
-				<option value="2">Two</option>
-			</select>
-			<span id="output2"></span>
-		</div>
-
-		<div>
-			Checkbox<input id="checkbox" type="checkbox"></input>
-			<span id="output3"></span>
-		</div>
-
-		<div>
-			Multi select<select id="multiselect" multiple>
-				<option value="a">Apple</option>
-				<option value="b">Ball</option>
-				<option value="c">Cat</option>
-			</select>
-			<span id="output4"></span>
-		</div>
-
-		<div id="click">An event</div>
-	</div>
-	<!--
-	<div id="modules">
-		<select id="moduleSelection">
-			<option value="0">Module 1</option>
-			<option value="1">Module 2</option>
-		</select>
-		
-		<div id="module">Selected Module</div>
-	</div>
-	-->
+	
 </body>
 
 </html>

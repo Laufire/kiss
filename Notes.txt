@@ -21,7 +21,7 @@ Consider
 	
 	Uniform interface across controls, elements and plugins.
 	
-	Not depending on jQuery. (only when performance matters, as jQuery could simplify the development process)
+	Using a minimalistic replacement for jquery while retaining the API. <- Not depending on jQuery. (only when performance matters, as jQuery could simplify the development process)
 	
 	Using jQuery plugins out of the box. (if jquery were to be the base library).
 	
@@ -62,15 +62,45 @@ Way
 	
 	The javascript object is bound to it's html placeholder with the id attribute (or some-other attribute).
 	
-	The object trees have a corresponding DOM tree in the html.
+	The object trees have a corresponding DOM tree in the html (without child to descendant discrimination).
 	
-	JS objects without corresponding HTML ids are left intact; and vice versa.
+	JS objects without corresponding DOM elements (with the keyAttr=object name) are left intact; and vice versa.
 	
 	Plugins refered by JS can handle the corresponding html element.
 	
 	The scope is defined in JS.
 	
 	A lego like modular architecture with plugs and hosts instead of pub-sub.
+}
+
+Rules
+{
+
+	The keyAttr can't be a $.
+	
+	The order of properties in the objects, that are passed as parameters matters; they are processed in the order they are declared. So its better to have the init at last.
+	
+	O_O.element
+	{
+		'el' cannot be set inside a constructor.
+	
+		'init' should be passed within the constructor.
+		
+		the 'element' could be called as a function to get and set the values of its properties. Ex: elm('html') gives the elm's html, elm('classes', {hidden: true}) adds the class 'hidden' to it.
+	
+		/*
+		'$' properties
+		{
+			Relates to the elements properties such as html, props, attrs etc.
+			
+			They could be accessed through the 'element.$' property like $.<property>.
+		
+			Calling a $.<property> with parameters generally sets the value.
+			
+			Calling a $.<property> without parameters generally gets the value.
+		}
+		*/
+	}
 }
 
 Components
@@ -103,6 +133,13 @@ Noted
 	Unlike JS, Having duplicate IDs in a document is fine with CSS.
 	
 	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
+}
+
+Descisions
+{
+	The events on an element has the element, not the jQuery node as its context; as that would help in accessing the methods of the element.
+	
+	An element could only have one handler per event; as this would ensure simplicity. If multiple events are needed a host could be used. Or a 'queue' could be made as a plugin.
 }
 
 Known Issues
