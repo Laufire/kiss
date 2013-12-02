@@ -14,3 +14,8 @@
 131201_2250	Completed rewritting O_O.element.
 131201_2250	'$' syntax is dumped, in favor of using functions.
 131201_2250	Ties are renamed to plugs.
+
+131202_0355	'trans' added.
+
+131203_0100	O_O.default method added.
+131203_0100	Two-way binding achieved.

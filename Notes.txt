@@ -1,12 +1,6 @@
 ToDos
 {
-	Check this object for jQuery.each.
-	
-	Check HTML contenteditable change events.
-	
 	Better collections.
-	
-	Check jQuery UI / widgets.
 	
 	A plugin to communicate with the server.
 	
@@ -101,6 +95,10 @@ Rules
 		}
 		*/
 	}
+	
+	O_O.value
+	{
+		
 }
 
 Components
