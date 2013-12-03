@@ -38,75 +38,39 @@ define(function()
 
 		this.connections = new function() //thanks to: bloody-jquery-plugins / pubsub.js
 		{
+			//privates
 			var store = {}; //stores the connections
-
-			this.trigger = function(/* String */topic, /* Array? */args){
-				// summary:
-				//                Publish some data on a named topic.
-				// topic: String
-				//                The channel to publish on
-				// args: Array?
-				//                The data to publish. Each array item is converted into an ordered
-				//                arguments on the subscribed functions.
-				//
-				// example:
-				//                Publish stuff on '/some/topic'. Anything subscribed will be called
-				//                with a function signature like: function(a,b,c){ ... }
-				//
-				//        |                $.trigger("/some/topic", ["a","b","c"]);
-				store[topic] && $.each(store[topic], function(){
-						this.apply($, args || []);
-				});
-			};
-
-			this.plug = function(/* String */topic, /* Function */callback){
-				// summary:
-				//                Register a callback on a named topic.
-				// topic: String
-				//                The channel to subscribe to
-				// callback: Function
-				//                The handler event. Anytime something is $.trigger'ed on a
-				//                subscribed channel, the callback will be called with the
-				//                published array as ordered arguments.
-				//
-				// returns: Array
-				//                A handle which can be used to unsubscribe this particular connection.
-				//
-				// example:
-				//        |        O_O.plug("/some/topic", function(a, b, c){ /* handle data */ });
-				//
-				if(!store[topic]){
-						store[topic] = [];
-				}
-				store[topic].push(callback);
-				return [topic, callback]; // Array
-			};
-
-			this.unplug = function(/* Array */handle){
-				// summary:
-				//                Disconnect a subscribed function for a topic.
-				// handle: Array
-				//                The return value from a $.plug call.
-				// example:
-				//        |        var handle = $.plug("/something", function(){});
-				//        |        O_O.unplug(handle);
-
-				var t = handle[0];
-				store[t] && $.each(store[t], function(idx){
-						if(this == handle[1]){
-							store[t].splice(idx, 1);
-							if(!store[t].length) delete store[t];
-						}
-				});
-			};
-
-			this.get = function() //gets a new connection
+			
+			var getConnection = function() //gets a new 'free' connection
 			{
 				var rnd = Math.random().toString(36).substring(2, 12);
 
 				while(store[rnd]){rnd = Math.random().toString(36).substring(2, 12);} //gets a key of 10 letters that's not in the store
 
 				return rnd;
+			}
+
+			this.trigger = function(connection, args) //return 1 if the coonection is not available, this is to hint the host
+			{
+				if(connection = store[connection])
+					connection[1].apply(connection[0], args);
+				else
+					return 1;
+			};
+
+			this.plug = function() //arguments should be as context, callback
+			{
+				
+				var connection = getConnection();
+				
+				store[connection] = Array.prototype.slice.call(arguments); //add the arguments to the connection
+				
+				return connection;
+			};
+
+			this.unplug = function(){//connection is the only argument
+				
+				delete store[arguments[0]];
 			}
 		}
 
@@ -152,9 +116,7 @@ define(function()
 
 					else
 					{
-						if(changeHTML.unplug)
-							changeHTML.unplug();
-
+						disconnect(changeHTML);
 						this.$el.html(getValue.apply(this, [arguments[0]]));
 					}
 				}
@@ -209,13 +171,8 @@ define(function()
 						}
 						else
 						{
-							if(store[key]) //the attr already has a value, clear it
-							{
-								if(store[key].unplug)
-									store[key].unplug();
-
-								delete store[key];
-							}
+							if(store[key]) //the enum has a connection
+								disconnect(store[key]);
 
 							this.$el[method](key, getValue.apply(null, [changes[key]])); //get the current value into the fitting jQuery method
 						}
@@ -295,46 +252,71 @@ define(function()
 			}
 
 			this.element.prototype = new this.elementBase;
+			
+			var disconnect = function(action)
+			{
+				if(action.connection)
+					action.connection[0].unplug(action.connection[1]);
+			}			
+			
+			var getFreeKey = function(obj) //gets a new connection
+			{
+				var key;
+				var l = 3;
+				
+				do{
+					
+					key = Math.random().toString(36).substring(2, l++);
+				
+				}while(obj[key]);
 
+				return key;
+			}
+			
 			//Data Classes
 			this.host = function() //a base class for other hosts like value, trans, function etc
 			{
 				this.plug = function(context, action)
 				{
-					if(action.unplug)
-						action.unplug(); //remove any previous plugs
+					disconnect(action); //remove the previous connection
 
-					var plug = O_O.connections.plug(this.connection, function(value) //plug to the connection
-					{
-						action.apply(context, [value]); //the action is executed
-					});
+					action.connection = [this, getFreeKey(this)];
 
-					action.unplug = function() //set an unplug function so the event could be unsubscribed later
-					{
-						O_O.connections.unplug(plug); //pass the handle to the connection to the unsubscribe function
-						delete action.unplug;
-					}
+					this.store[action.connection[1]] = [context, action]; //register the connection to the local store
 
-					action.apply(context, [this.access()]); //? this might cause troubles with two way bindings
+					action.apply(context, [this.access()]); //get the current value //? this might cause troubles with two way bindings
+				}
+				
+				this.unplug = function(key)
+				{
+					delete this.store[key][1].connection;
+					delete this.store[key];
+				}
+				
+				this.trigger = function()
+				{
+					for(var i in this.store)
+						this.store[i][1].apply(this.store[i][0], [this.access()])// && delete this.store[i]; //trigger the connection and delete the connection if it's not a valid connection
 				}
 			}
 
 			this.value = function(val) // a host that stores a simple value
 			{
-				this.value = arguments[0];
-				this.connection = O_O.connections.get();
+				val = arguments[0];
 
-				this.access = function(newValue)
+				this.store = {}; //stores the connections locally
+				
+				this.access = function(newVal)
 				{
 					if(!arguments.length)
-						return this.value;
+						return val;
 
-					if(this.value !== newValue)
+					if(val !== newVal)
 					{
-						this.value = newValue;
-						O_O.connections.trigger(this.connection, [this.value]);
+						val = newVal;
+						this.trigger();
 					}
-
+					
 					return this;
 				}
 			}
@@ -345,8 +327,8 @@ define(function()
 			{
 				var res;
 
-				this.connection = O_O.connections.get();
-
+				this.store = {}; //stores the connections locally
+				
 				this.access = function(newValue) //a 'transformable' variable with a getter and a setter
 				{
 					if(!arguments.length)
@@ -356,14 +338,14 @@ define(function()
 							return val;
 
 					if(setter)
-						res = setter.apply(this, [newValue]);
+						res = setter.apply(this, arguments);
 					else
-						res = newValue;
+						res = arguments[0];
 
 					if(val !== res)
 					{
 						val = res;
-						O_O.connections.trigger(this.connection, [this.access()]);
+						this.trigger(); //? here
 					}
 
 					return this;
@@ -445,6 +427,70 @@ define(function()
 
 			return retFunc;
 		}
+		
+		this.function = function(func) //a pluggable function
+		{
+			return function()
+			{
+				var result;
+				var vars = Array.prototype.slice.call(arguments); //the vars that might need watching
+				var values = Array.prototype.slice.call(arguments); //the values for the function
+
+				var host = new O_O.classes.host;
+				host.connection = O_O.connections.get();
+				
+				function plugToParams()
+				{
+					$.each(vars, function(index, param)
+					{
+						if(param.plug)
+						{
+							values[index] = param(); //get the current value of the plug
+
+							vars[index] = param.plug({}, function(value) //replace the pluggable with a dummy object to hold the unplugge function
+							{
+								values[index] = value;
+								retFunc();
+							});
+						}
+					});
+				}
+				
+				function unplugParams()
+				{
+					$.each(vars, function(index, param)
+					{
+						if(param.unplug)
+							param.unplug();
+					});
+				}
+				
+				function retFunc() //call this function with arguments to cut the old plugs and make new ones
+				{
+					var prev = result;
+
+					if(arguments.length)
+					{
+						unplugParams();
+						vars = Array.prototype.slice.call(arguments); //track new vars
+						plugToParams();
+					}
+
+					result = func.apply(null, values);
+
+					if(result !== prev)
+						O_O.connections.trigger(host.connection, [result]);
+
+					return result;
+				}
+
+				retFunc.plug = host.plug.bind(host);
+
+				plugToParams(); //plug to the params that are passed with the constructor
+
+				return retFunc;
+			}
+		}
 
 		//UI classes
 		this.collection = function(initial)
@@ -489,7 +535,7 @@ define(function()
 		}
 
 		//Data classes
-		this.function = function(func) //a pluggable function
+		this.func = function(func) //a pluggable function
 		{
 			return function()
 			{
@@ -552,7 +598,7 @@ define(function()
 
 				plugToParams(); //plug to the params that are passed with the constructor
 
-				function unpluggeParams()
+				function unplugParams()
 				{
 					$.each(vars, function(index, param)
 					{

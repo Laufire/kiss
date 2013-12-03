@@ -19,3 +19,5 @@
 
 131203_0100	O_O.default method added.
 131203_0100	Two-way binding achieved.
+
+131203_2000	Events got redone.

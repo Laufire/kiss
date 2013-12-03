@@ -32,40 +32,26 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	_K = O_O; //? develop
 
 	var observed = O_O.value(false);
-	var v1 = O_O.value('Dynamic Value');
-	//var v2 = new O_O.value('Dynamic Value');
-	var v2 = new O_O.value(
-	
+	var pv = O_O.value('Dynamic Value');
+	var pv1 = O_O.value('Dynamic Value1');
+	var pvg = new O_O.value(
 		'Dynamic Trans',
 		function(val){
-		
-			//return val + val;
-			return val.toLowerCase();
-			
-		}/*,
-		function(newVal)
-		{
-			return newVal.toLowerCase();		
-		}*/
-	);
-	///*
+		console.log(this); //here
+		return val.toLowerCase();
+		}
+	);	
+	var pf = O_O.function(function(v){return v + v});
+	
 	App = O_O.element({
 		
 		simple: {
 		
-			/*$:
-			{
-				classes: {
-				
-					hidden: true
-				}
-			},*/
-				
 			simpleString: {
 				
 				$: {
 				
-					html: v1,
+					html: pv,
 					
 					events: {
 					
@@ -84,17 +70,11 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 				voidOfElement: 'So wouldn\'t be used as for an element'
 				
 			},
-			/*
-			simpleString1: {
-				
-				$: {
-				
-					html: v2
-				}
-			}*/
-			simpleString1: v2,
-			check1: observed,
-			check: observed
+			
+			simpleString1: pvg
+			/*,
+			
+			simpleFunction: pf(pv)*/
 		}
 	});
 	
@@ -102,13 +82,17 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	{
 		//observed = new O_O.value(true);
 		
-		App('el', 'App');		
+		App('el', 'App');
 		
-		//App.simple.simpleString('html', 'simpleString');
+		App.simple.simpleString('html', 'Cut');
 		
-		v1('Click Me!');
-		//v1('Click Me again!');
-		v2('Transformed');
+		pv(1);
+		
+		App.simple.simpleString('html', pv1);
+		
+		pv1(2);
+		//pv('Click Me again!');
+		//pvg('Transformed');
 		observed(false);
 	});
 	
