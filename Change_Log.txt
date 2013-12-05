@@ -21,3 +21,5 @@
 131203_0100	Two-way binding achieved.
 
 131203_2000	Events got redone.
+
+131204_2000	Added 'Intro' page, in order to serve both as a 'intro' and a 'demo'.

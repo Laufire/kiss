@@ -34,13 +34,19 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 	var observed = O_O.value(false);
 	var pv = O_O.value('Dynamic Value');
 	var pv1 = O_O.value('Dynamic Value1');
+	
 	var pvg = new O_O.value(
+		
 		'Dynamic Trans',
-		function(val){
-		console.log(this); //here
-		return val.toLowerCase();
+		
+		function(val, prev)
+		{
+			console.log(val);
+			console.log(prev);
+			return val.toLowerCase();
 		}
-	);	
+	);
+	
 	var pf = O_O.function(function(v){return v + v});
 	
 	App = O_O.element({
@@ -72,31 +78,13 @@ define(['jquery', 'kiss', 'develop'], function($, O_O)
 			},
 			
 			simpleString1: pvg
-			/*,
-			
-			simpleFunction: pf(pv)*/
 		}
 	});
 	
 	$(document).ready(function()
 	{
-		//observed = new O_O.value(true);
-		
 		App('el', 'App');
 		
-		App.simple.simpleString('html', 'Cut');
 		
-		pv(1);
-		
-		App.simple.simpleString('html', pv1);
-		
-		pv1(2);
-		//pv('Click Me again!');
-		//pvg('Transformed');
-		observed(false);
 	});
-	
-	//console.log(App('el'));
-	//App('html', '1').$.html(2);
-	//App({html: 3});
 });

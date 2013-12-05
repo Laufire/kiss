@@ -2,6 +2,8 @@ ToDos
 {
 	Cleaning up hanging connections.
 	
+	Cleaning up with jQuery's 'onRemoved' event.
+	
 	Better collections.
 	
 	A plugin to communicate with the server.
@@ -11,6 +13,10 @@ ToDos
 
 Consider
 {
+	Instead of having a single file, multiple modules could be brought together to maintain compatability.
+	
+	A separate 'development' version, that could log all the calls etc.
+	
 	To design the library as standalone.
 	
 	Combining multiple plugins to create a new plugin. Might be as simple as "O_O.plugin(jQuery.AutoComplete).decorate(O_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.

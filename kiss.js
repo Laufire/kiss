@@ -36,44 +36,6 @@ define(function()
 			keyAttr = key;
 		}
 
-		this.connections = new function() //thanks to: bloody-jquery-plugins / pubsub.js
-		{
-			//privates
-			var store = {}; //stores the connections
-			
-			var getConnection = function() //gets a new 'free' connection
-			{
-				var rnd = Math.random().toString(36).substring(2, 12);
-
-				while(store[rnd]){rnd = Math.random().toString(36).substring(2, 12);} //gets a key of 10 letters that's not in the store
-
-				return rnd;
-			}
-
-			this.trigger = function(connection, args) //return 1 if the coonection is not available, this is to hint the host
-			{
-				if(connection = store[connection])
-					connection[1].apply(connection[0], args);
-				else
-					return 1;
-			};
-
-			this.plug = function() //arguments should be as context, callback
-			{
-				
-				var connection = getConnection();
-				
-				store[connection] = Array.prototype.slice.call(arguments); //add the arguments to the connection
-				
-				return connection;
-			};
-
-			this.unplug = function(){//connection is the only argument
-				
-				delete store[arguments[0]];
-			}
-		}
-
 		//base classes
 		this.classes = new function(){
 
@@ -112,11 +74,16 @@ define(function()
 						return this.$el.html();
 
 					if(arguments[0] && arguments[0].plug) //the value is a pluggable
-						arguments[0].plug(this, changeHTML);
+					{
+						this.store.html = function(val){this.$el.html(val)}
+						arguments[0].plug(this, this.store.html);
+					}
 
 					else
 					{
-						disconnect(changeHTML);
+						if(this.store.html)
+							disconnect(this.store.html);
+						
 						this.$el.html(getValue.apply(this, [arguments[0]]));
 					}
 				}
@@ -146,6 +113,11 @@ define(function()
 						this.store['events'][eventName] = $.proxy(events[eventName], this);
 						this.$el.on(eventName, this.store['events'][eventName]);
 					}
+				}
+				
+				this.val = function()
+				{
+					return this.$el.val();
 				}
 
 				var changeHTML = function(value)
@@ -206,6 +178,31 @@ define(function()
 				else
 					return value; //the value is just a value
 			}
+			
+			var loadChildren = function(obj, $el)
+			{
+				for(var childName in obj) //load child objects with matching elements
+				{
+					if(!get$el(childName, $el).length)
+						continue;  //tags without matching objects are left intact; so to play nice with other libs
+
+					//console.log(childName);
+					
+					if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
+					{
+						obj[childName] = O_O.element(obj[childName]);
+						obj[childName]('el', childName, $el);
+					}
+					else if(obj[childName].plug) //a pluggable value
+					{
+						obj[childName] = O_O.element({$:{default: obj[childName]}}); //create an element with the assigned object as its default property
+						obj[childName]('el', childName, $el);
+					}					
+					else
+						obj[childName]('el', childName, $el); //some other object
+					
+				}
+			}
 
 			this.element = function(data){
 
@@ -223,11 +220,15 @@ define(function()
 						return this.$el;
 
 					this.$el = get$el.apply(null, arguments);
+					
+					var obj = stripProp(data, '_obj');
 
 					for(var i in data)
 						if(typeof this[i] == 'function')
 							this[i].apply(this, [data[i]]);
 
+					loadChildren(obj, this.$el);
+					
 					if(data && data.init)
 						data.init.apply(this);
 
@@ -276,27 +277,27 @@ define(function()
 			//Data Classes
 			this.host = function() //a base class for other hosts like value, trans, function etc
 			{
-				this.plug = function(context, action)
+				this.plug = function(context, action, args)
 				{
 					disconnect(action); //remove the previous connection
 
-					action.connection = [this, getFreeKey(this)];
+					action.connection = [this, getFreeKey(this)]; //load the function with a connection
 
-					this.store[action.connection[1]] = [context, action]; //register the connection to the local store
+					this.store[action.connection[1]] = [context, action, (args || [])]; //register the contex, action, args to the local store
 
-					action.apply(context, [this.access()]); //get the current value //? this might cause troubles with two way bindings
+					action.apply(context, this.store[action.connection[1]][2].concat([this.access()])); //get the current value //? this might cause troubles with two way bindings
 				}
 				
 				this.unplug = function(key)
 				{
-					delete this.store[key][1].connection;
-					delete this.store[key];
+					delete this.store[key][1].connection; //delete the action's connection
+					delete this.store[key]; //delete the local entry
 				}
 				
 				this.trigger = function()
 				{
 					for(var i in this.store)
-						this.store[i][1].apply(this.store[i][0], [this.access()])// && delete this.store[i]; //trigger the connection and delete the connection if it's not a valid connection
+						this.store[i][1].apply(this.store[i][0], this.store[i][2].concat(arguments[0]))// && delete this.store[i]; //trigger the connection and delete the connection if it's not a valid connection
 				}
 			}
 
@@ -314,7 +315,7 @@ define(function()
 					if(val !== newVal)
 					{
 						val = newVal;
-						this.trigger();
+						this.trigger([val]);
 					}
 					
 					return this;
@@ -329,7 +330,7 @@ define(function()
 
 				this.store = {}; //stores the connections locally
 				
-				this.access = function(newValue) //a 'transformable' variable with a getter and a setter
+				this.access = function() //a 'transformable' variable with a getter and a setter
 				{
 					if(!arguments.length)
 						if(getter)
@@ -345,7 +346,7 @@ define(function()
 					if(val !== res)
 					{
 						val = res;
-						this.trigger(); //? here
+						this.trigger([val]); //? here
 					}
 
 					return this;
@@ -361,10 +362,7 @@ define(function()
 		{
 			var _Element; //the underlying O_O.classes.element		
 
-			if(!arguments.length)
-				_Element = new O_O.classes.element;
-			else
-				_Element = new O_O.classes.element(stripProp(arguments[0], '$'));
+			var data = stripProp(arguments[0], '$') || {};
 			
 			var self = function()
 			{
@@ -387,21 +385,13 @@ define(function()
 			}
 			
 			$.extend(self, arguments[0]); //store the rest as the object's children
-
-			for(var childName in self) //load child objects with matching elements
-			{
-				if(!get$el(childName, self('el')).length)
-					continue;  //tags without matching objects are left intact; so to play nice with other libs
-
-				if(self[childName].constructor === Object) //convert object literals to O_O.element; object literals are used to maintain simplicity //? try to expand this for bjects created with ananymous functions
-					self[childName] = O_O.element(self[childName]);
-					
-				else
-					self[childName] = O_O.element({$:{default: self[childName]}}); //create an element with the assigned object as its default property
-
-				self[childName]('el', childName, self('el'));
-			}
-
+			
+			data._obj = self;
+			
+			_Element = new O_O.classes.element(data);
+			
+			data = undefined;
+			
 			return self;
 		}
 
@@ -436,39 +426,36 @@ define(function()
 				var vars = Array.prototype.slice.call(arguments); //the vars that might need watching
 				var values = Array.prototype.slice.call(arguments); //the values for the function
 
-				var host = new O_O.classes.host;
-				host.connection = O_O.connections.get();
-				
 				function plugToParams()
 				{
 					$.each(vars, function(index, param)
 					{
 						if(param.plug)
 						{
-							values[index] = param(); //get the current value of the plug
-
-							vars[index] = param.plug({}, function(value) //replace the pluggable with a dummy object to hold the unplugge function
+							vars[index] = function(value) //replace the pluggable with a dummy object to hold the unplugge function
 							{
 								values[index] = value;
 								retFunc();
-							});
+							}
+							
+							param.plug({}, vars[index]);
 						}
 					});
 				}
 				
 				function unplugParams()
 				{
-					$.each(vars, function(index, param)
+					$.each(vars, function(index, _var)
 					{
-						if(param.unplug)
-							param.unplug();
+						if(_var.connection)
+							disconnect(_var)
 					});
 				}
 				
 				function retFunc() //call this function with arguments to cut the old plugs and make new ones
 				{
 					var prev = result;
-
+					
 					if(arguments.length)
 					{
 						unplugParams();
@@ -476,15 +463,17 @@ define(function()
 						plugToParams();
 					}
 
-					result = func.apply(null, values);
+					result = func.apply(retFunc, values);
 
 					if(result !== prev)
-						O_O.connections.trigger(host.connection, [result]);
+						host.apply(result);
 
 					return result;
 				}
-
-				retFunc.plug = host.plug.bind(host);
+				
+				var host = O_O.value();
+				
+				retFunc.plug = host.plug.bind(retFunc);
 
 				plugToParams(); //plug to the params that are passed with the constructor
 
@@ -531,83 +520,6 @@ define(function()
 				});
 
 				return fragment;
-			}
-		}
-
-		//Data classes
-		this.func = function(func) //a pluggable function
-		{
-			return function()
-			{
-				var result;
-				var changeEvent = O_O.connections.get() + ':change';
-				var vars = Array.prototype.slice.call(arguments); //the vars that might need watching
-				var values = Array.prototype.slice.call(arguments); //the values for the function
-
-				function retFunc() //call this function with arguments to cut the old plugs and make new ones
-				{
-					var prev = result;
-
-					if(arguments.length)
-					{
-						unplugParams();
-						vars = Array.prototype.slice.call(arguments); //track new vars
-						plugToParams();
-					}
-
-					result = func.apply(null, values);
-
-					if(result !== prev)
-						O_O.connections.trigger(changeEvent, [result]);
-
-					return result;
-				}
-
-				retFunc.plug = function(context, action) //the second and third parameters are used to cut the default-two way plug
-				{
-					if(action.unplug)
-						action.unplug(); //remove any previous plugs
-
-					var connection = O_O.connections.plug(changeEvent, function(value) //subscribe to changes
-					{
-						action.apply(context, [value]); //the action is executed in the targets context
-					});
-
-					action.unplug = function() //set an unplug function so the event could be unsubscribed later
-					{
-						O_O.connections.unplug(connection); //pass the handle to the connection to the unsubscribe function
-					}
-				}
-
-				function plugToParams()
-				{
-					$.each(vars, function(index, param)
-					{
-						if(param.plug)
-						{
-							values[index] = param(); //get the current value of the plug
-
-							vars[index] = param.plug({}, function(value) //replace the pluggable with a dummy object to hold the unplugge function
-							{
-								values[index] = value;
-								retFunc();
-							});
-						}
-					});
-				}
-
-				plugToParams(); //plug to the params that are passed with the constructor
-
-				function unplugParams()
-				{
-					$.each(vars, function(index, param)
-					{
-						if(param.unplug)
-							param.unplug();
-					});
-				}
-
-				return retFunc;
 			}
 		}
 	}
