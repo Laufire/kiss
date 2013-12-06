@@ -1,22 +1,26 @@
-﻿//? could the $ be skipped by using hasOwn property
-
-define(function()
+﻿define(function()
 {
 	"use strict";
 
 	return new function()
 	{
+		//develop
+		var isDevelop = 1;
+		
+		var log = function()
+		{
+			if(isDevelop)
+				console.log(arguments[0]);
+		}
+		
 		//privates
 		var O_O = this;
 		var keyAttr = 'id'; //the default keyAttr is id
 
 		//helpers
-		var get$el = function(key, parent)
-		{
-			return $(parent || document).find(['[', keyAttr, '="', key, '"]:first'].join(''));
-		}
-
-		var stripProp = function(obj, prop)
+		var slice = Array.prototype.slice;
+		
+		var extract = function(obj, prop)
 		{
 			var ret;
 
@@ -29,20 +33,130 @@ define(function()
 
 			return ret;
 		}
+		
+		var get$el = function(key, parent)
+		{
+			return $(parent || document).find(['[', keyAttr, '="', key, '"]:first'].join(''));
+		}
+		
+		var getValue = function(value)
+		{
+			if(typeof value == 'function') //the value is a function
+				return value.apply(this);
 
+			else
+				return value; //the value is just a value
+		}
+		
+		var getFreeKey = function(obj) //gets a new connection
+		{
+			var key = '';
+			
+			do{
+				
+				key += (10 + (Math.round(Math.random() * 25))).toString(36);
+			
+			}while(obj[key]);
+
+			return key;
+		}
+		
 		//public
 		this.keyAttr = function(key) //change the keyAttr to be KISSed
 		{
 			keyAttr = key;
 		}
 
-		//base classes
-		this.classes = new function(){
+		this.classes = new function()/*base classes that could be extended by plugins*/
+		{	
+			this.pluggable = function() //a base class for other hosts like value, trans, function etc
+			{
+				/*the pluggable must implement
+					a .plugs object to store the hooks
+				*/
+				
+				this.plug = function()
+				{
+					var key = getFreeKey(this.plugs);
+					this.plugs[key] = [arguments[0], arguments[1]];
+					arguments[0]('hold', this.wrapper, arguments[1], key);
+					return this.val();
+				}
+				
+				this.unplug = function()
+				{
+					delete this.plugs[arguments[0]];
+				}
+				
+				this.fire = function()
+				{
+					for(var key in this.plugs)
+						this.plugs[key][0]('set', this.plugs[key][1], arguments[0]);
+				}
+			}
+			
+			this.guest = function()
+			{
+				/*the guest must implement
+					a .set method to recieve the shouts
+					a .holds object to store the hooks
+				*/
+				this.hold = function()
+				{
+					this.holds[arguments[1].join('/')] = [arguments[0], arguments[2]];
+				}
+				
+				this.unhold = function()
+				{
+					//
+				}
+			}
 
 			//UI classes
-			this.elementBase = function(){ //the base class for element, collection etc
+			this.element = function(data/*saved untill the element is set*/)
+			{			
+				var self = this;
+				var $el;
+				var events = {};
+				
+				this.holds = {}; /*stores the hosts like {propToChange: [wrapper function of the pluggable, id key provided by yhe pluggable]*/
+				
+				this.set = function() /*handles the trigger calls. !Not to be handled directly!*/
+				{
+					var args = arguments[0].concat(arguments[1]);
+					$el[args.shift()].apply($el, args);
+				}
+				
+				this.el = function() /*sets the $el for the element and load it with existing html, attrs etc*/
+				{
+					if(!arguments.length)
+						return $el;
 
-				this.default = function(value) //varies on the type of element
+					$el = get$el.apply(null, arguments);
+					
+					this.self(data);
+					data = undefined;
+					
+					loadChildren(this.wrapper, $el);
+					
+					return this.wrapper;
+				}
+				
+				this.self = function() /*sets multiple attributes like html, attr at once*/
+				{
+					for(var i in arguments[0])
+					{
+						if(typeof arguments[0][i] == 'object') //the prop ia an enumerable
+							for(var k in arguments[0][i])
+								this[i](k, arguments[0][i][k])
+						else
+							this[i](arguments[0][i])
+					}
+					
+					return this.wrapper;
+				}
+				/*
+				this.default = function() //varies on the type of element
 				{
 					if(this.default.unplug)
 						this.default.unplug();
@@ -53,474 +167,213 @@ define(function()
 						case 'select-one':
 						case 'select-multiple':
 
-							defaultFunction.apply(this, [value, this.$el.val.bind(this.$el)]); 
+							defaultFactory.apply(this, [arguments[0], ['val']]); 
 
 						break;
 
 						case 'checkbox':
 
-							defaultFunction.apply(this, [value, this.$el.prop.bind(this.$el, 'checked')]);
+							defaultFunction.apply(this, [arguments[0], ['prop', 'checked']);
 							
 						break;
 
 						default: //the tag is not a control
-							this.html(value);
+							this.html(arguments[0]);
 					}
 				}
-				
+				*/
 				this.html = function()
 				{
-					if(!arguments.length)
-						return this.$el.html();
-
-					if(arguments[0] && arguments[0].plug) //the value is a pluggable
-					{
-						this.store.html = function(val){this.$el.html(val)}
-						arguments[0].plug(this, this.store.html);
-					}
-
-					else
-					{
-						if(this.store.html)
-							disconnect(this.store.html);
-						
-						this.$el.html(getValue.apply(this, [arguments[0]]));
-					}
-				}
-
-				this.attrs = function(changes)
-				{
-					enumProps.apply(this, ['attr', changes, this.store['attrs']]);
-				}
-
-				this.props = function(changes)
-				{
-					enumProps.apply(this, ['prop', changes, this.store['props']]);
-				}
-
-				this.classes = function(changes) //turns on/off the given class names based on their values
-				{
-					enumProps.apply(this, ['toggleClass', changes, this.store['classes']]);
-				}
-
-				this.events = function(events)
-				{
-					for(var eventName in events)
-					{
-						if(this.store['events'][eventName]) //the event already has a handler
-							this.$el.off(eventName, this.store['events'][eventName]); //remove the handler; having a single handler per event by desugn, is to maintain simplicity and structure. 'A button could turn on only a single light'.
-
-						this.store['events'][eventName] = $.proxy(events[eventName], this);
-						this.$el.on(eventName, this.store['events'][eventName]);
-					}
+					return $factory.apply(this, [['html'], slice.call(arguments)]);					
 				}
 				
 				this.val = function()
 				{
-					return this.$el.val();
+					return $factory.apply(this, [['val'], slice.call(arguments)]);					
 				}
-
-				var changeHTML = function(value)
+				
+				this.prop = function()
 				{
-					this.$el.html(value);
+					return $factory.apply(this, [['prop', arguments[0]], slice.call(arguments, 1)]);
 				}
-
-				var enumProps = function(method, changes, store) //loads the given keys on to the attr/prop/class of the given node
+				
+				this.attr = function()
 				{
-					for(var key in changes)
+					return $factory.apply(this, [['attr', arguments[0]], slice.call(arguments, 1)]);
+				}
+				
+				this.class = function()
+				{
+					if(arguments.length == 1)
+						return this.$el.hasClass(arguments[0]);
+					else
+						return $factory.apply(this, [['toggleClass', arguments[0]], slice.call(arguments, 1)]);
+				}
+				
+				this.event = function()
+				{
+					var key = 'event/' + arguments[0];
+					
+					if(events[key]) //the event already has a handler
+						$el.off(arguments[0], events[key]); //remove the handler; having a single handler per event by desugn, is to maintain simplicity and structure. 'A button could turn on only a single light'.
+
+					events[key] = $.proxy(arguments[1], this);
+					$el.on(arguments[0], events[key]);
+					
+					return this.wrapper
+				}
+				
+				this.wrapper = function()
+				{
+					if(arguments.length > 1)
 					{
-						if(changes[key].plug) //the value is a pluggable
-						{
-							/*store[key] = function(value) //create a function to change the specific value
-							{
-								//if(value !== this.$el[method](key)) //? this might cause reposing of a two way binding; could this check be removed safely
-								this.$el[method](key, value);
-							}*/
+						var args = slice.call(arguments);
+						return self[args.shift()].apply(self, args);
+					}
+					
+					if(arguments.length == 1)
+					{
+						if(typeof arguments[0] == 'string')
+							return self[arguments[0]]();
 							
-							store[key] = this.$el[method].bind(this, key, value);
-
-							changes[key].plug(this, store[key]);
-						}
 						else
+							return self.wrapper(arguments[0]); //load an object to set multiple properties
+					}
+					
+					return self.wrapper;
+				}
+				
+				//helpers
+				var $factory = function() //sets various props through jQuery
+				{
+					if(!arguments[1].length)
+						return $el[arguments[0].shift()].apply($el, arguments[0]);
+					
+					var key = arguments[0].join('/');
+					
+					if(this.holds[key]) //unplugs the existing plug
+					{
+						this.holds[key][0]('unplug', this.holds[key][1]);
+						delete this.holds[key];
+					}
+					
+					if(typeof arguments[1][0] == 'function') //calls the function; will be plugged to it if it were a plug
+					$el[arguments[0][0]].apply($el, [
+						arguments[0].slice(1).concat(
+							[arguments[1][0](this.wrapper, arguments[0])]
+						)]
+					);
+					
+					else
+						$el[arguments[0].shift()].apply($el, arguments[0].concat(arguments[1]));
+						
+					return this.wrapper;
+				}
+				
+				var defaultFactory = function(value, method) //afactory function that handles the default assignings
+				{
+					value(this.default, function(value){method(value)}); //subscribe to future changes
+
+					this.events({
+						change: function() //enable two-way binding
 						{
-							if(store[key]) //the enum has a connection
-								disconnect(store[key]);
-
-							this.$el[method](key, getValue.apply(null, [changes[key]])); //get the current value into the fitting jQuery method
+							value(method());
 						}
+					});
+				}
+				
+				var loadChildren = function(obj, $el)
+				{
+					for(var childName in obj) //load child objects with matching elements
+					{
+						if(!get$el(childName, $el).length)
+							continue;  //tags without matching objects are left intact; so to play nice with other libs
+
+						//console.log(childName);
+						
+						if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
+						{
+							obj[childName] = O_O.element(obj[childName]);
+							obj[childName]('el', childName, $el);
+						}
+						else if(obj[childName] == 'function') //a pluggable value
+						{
+							obj[childName] = O_O.element({$:{default: obj[childName]}}); //create an element with the assigned object as its default property
+							obj[childName]('el', childName, $el);
+						}					
+						else
+							obj[childName]('el', childName, $el); //some other object
+						
 					}
 				}
-				
-				var defaultFunction = function(value, method) //afactory function that handles the default assignings
-				{
-					if(value && value.plug) //the value is a pluggable
-					{
-						value.plug(this.default, function(value){method(value)}); //subscribe to future changes
-
-						this.events({
-							change: function() //enable two-way binding
-							{
-								value(method());
-							}
-						});
-					}
-					else
-						method(getValue.apply(null, [value])); //get the current value
-				}
-			}
-
-			//helpers //?try to move these into their classes
-			var getValue = function(value)
-			{
-				if(typeof value == 'function') //the value is a function
-					return value.apply(this);
-
-				else
-					return value; //the value is just a value
 			}
 			
-			var loadChildren = function(obj, $el)
-			{
-				for(var childName in obj) //load child objects with matching elements
-				{
-					if(!get$el(childName, $el).length)
-						continue;  //tags without matching objects are left intact; so to play nice with other libs
-
-					//console.log(childName);
-					
-					if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
-					{
-						obj[childName] = O_O.element(obj[childName]);
-						obj[childName]('el', childName, $el);
-					}
-					else if(obj[childName].plug) //a pluggable value
-					{
-						obj[childName] = O_O.element({$:{default: obj[childName]}}); //create an element with the assigned object as its default property
-						obj[childName]('el', childName, $el);
-					}					
-					else
-						obj[childName]('el', childName, $el); //some other object
-					
-				}
-			}
-
-			this.element = function(data){
-
-				this.store = {
-
-					attrs: {}, //stores attr specific functions that are plugged
-					props: {}, //stores prop specific functions that are plugged
-					classes: {}, //stores class specific functions that are plugged
-					events: {} //stores event specific handlers
-				}
-
-				this.el = function() //sets the $el for the element and load it with existing html, attrs etc
-				{
-					if(!arguments.length)
-						return this.$el;
-
-					this.$el = get$el.apply(null, arguments);
-					
-					var obj = stripProp(data, '_obj');
-
-					for(var i in data)
-						if(typeof this[i] == 'function')
-							this[i].apply(this, [data[i]]);
-
-					loadChildren(obj, this.$el);
-					
-					if(data && data.init)
-						data.init.apply(this);
-
-					data = undefined;
-				}
-				
-				this.get = function(method) //gets the value of a given 'method'
-				{
-					return this[method]();
-				}
-				
-				this.set = function(method, change)  //sets the value of a given 'method'
-				{
-					this[method](change);
-				}
-				
-				this.setMultiple = function(changes) //set multiple values at once
-				{
-					for(var i in changes)
-						this[i](changes[i]);
-				}
-			}
-
-			this.element.prototype = new this.elementBase;
-			
-			var disconnect = function(action)
-			{
-				if(action.connection)
-					action.connection[0].unplug(action.connection[1]);
-			}			
-			
-			var getFreeKey = function(obj) //gets a new connection
-			{
-				var key;
-				var l = 3;
-				
-				do{
-					
-					key = Math.random().toString(36).substring(2, l++);
-				
-				}while(obj[key]);
-
-				return key;
-			}
+			this.element.prototype = new this.guest;
 			
 			//Data Classes
-			this.host = function() //a base class for other hosts like value, trans, function etc
+			this.value = function(val) // a pluggable that lists a simple value
 			{
-				this.plug = function(context, action, args)
-				{
-					disconnect(action); //remove the previous connection
-
-					action.connection = [this, getFreeKey(this)]; //load the function with a connection
-
-					this.store[action.connection[1]] = [context, action, (args || [])]; //register the contex, action, args to the local store
-
-					action.apply(context, this.store[action.connection[1]][2].concat([this.access()])); //get the current value //? this might cause troubles with two way bindings
-				}
+				var self = this;
 				
-				this.unplug = function(key)
-				{
-					delete this.store[key][1].connection; //delete the action's connection
-					delete this.store[key]; //delete the local entry
-				}
+				this.plugs = {};
 				
-				this.trigger = function()
-				{
-					for(var i in this.store)
-						this.store[i][1].apply(this.store[i][0], this.store[i][2].concat(arguments[0]))// && delete this.store[i]; //trigger the connection and delete the connection if it's not a valid connection
-				}
-			}
-
-			this.value = function(val) // a host that stores a simple value
-			{
-				val = arguments[0];
-
-				this.store = {}; //stores the connections locally
-				
-				this.access = function(newVal)
-				{
+				this.val = function()
+				{					
 					if(!arguments.length)
 						return val;
-
-					if(val !== newVal)
-					{
-						val = newVal;
-						this.trigger([val]);
-					}
 					
-					return this;
-				}
-			}
-
-			this.value.prototype = new this.host;
-
-			this.trans = function(val, getter, setter) //a host that could transform its stored value using getters and setters
-			{
-				var res;
-
-				this.store = {}; //stores the connections locally
-				
-				this.access = function() //a 'transformable' variable with a getter and a setter
-				{
-					if(!arguments.length)
-						if(getter)
-							return getter.apply(this, [val]);
-						else
-							return val;
-
-					if(setter)
-						res = setter.apply(this, arguments);
 					else
-						res = arguments[0];
-
-					if(val !== res)
 					{
-						val = res;
-						this.trigger([val]); //? here
+						if(arguments[0] === val)
+							return;
+						
+						this.fire([arguments[0], val]); //send both the new and the old values
+						val = arguments[0];
 					}
-
-					return this;
+				}
+				
+				this.wrapper = function()
+				{
+					if(arguments.length > 1)
+						return self.plug.apply(self, arguments);
+					
+					else if(arguments.length == 1)
+						return self.val(arguments[0]);
+						
+					return self.val();
 				}
 			}
 
-			this.trans.prototype = new this.host;
+			this.value.prototype = new this.pluggable;
+			
+			this.trans = function(val, getter, setter) //a pluggable that could transform its listd value using getters and setters
+			{
+				
+			}
+
+			this.trans.prototype = new this.pluggable;
+			
+			this.watch = function()
+			{
+				//
+			}
 		}
 
-		//Decorated Classes
-		//UI classes
+		//Decorators
+		//UI element wrappers
 		this.element = function() //an element that could have nested elements
 		{
-			var _Element; //the underlying O_O.classes.element		
-
-			var data = stripProp(arguments[0], '$') || {};
+			var _element = new O_O.classes.element(extract(arguments[0], '$') || {});
 			
-			var self = function()
-			{
-				if(!arguments.length)
-					return self;
-				
-				if(arguments.length > 1)
-				{
-					_Element.set(arguments[0], arguments[1]);
-					return self;
-				}
-					
-				if(typeof arguments[0] == 'object')
-				{
-					_Element.setMultiple(arguments[0]);
-					return self;
-				}
-				
-				return _Element.get.apply(_Element, arguments);
-			}
+			$.extend(_element.wrapper, arguments[0]);
 			
-			$.extend(self, arguments[0]); //store the rest as the object's children
-			
-			data._obj = self;
-			
-			_Element = new O_O.classes.element(data);
-			
-			data = undefined;
-			
-			return self;
+			return _element.wrapper;
 		}
 
-		//Data classes
+		//Data wrappers
 		this.value = function() // a pluggable value
 		{
-			var host;
-
-			if(arguments.length > 1)
-				host = new O_O.classes.trans(arguments[0], arguments[1], arguments[2]);
-
-			else
-				host = new O_O.classes.value(arguments[0]);
-
-			var retFunc = function()
-			{
-				return host.access.apply(host, arguments);
-			}
-
-			retFunc.plug = host.plug.bind(host);
-
-			retFunc(arguments[0]);
-
-			return retFunc;
-		}
-		
-		this.function = function(func) //a pluggable function
-		{
-			return function()
-			{
-				var result;
-				var vars = Array.prototype.slice.call(arguments); //the vars that might need watching
-				var values = Array.prototype.slice.call(arguments); //the values for the function
-
-				function plugToParams()
-				{
-					$.each(vars, function(index, param)
-					{
-						if(param.plug)
-						{
-							vars[index] = function(value) //replace the pluggable with a dummy object to hold the unplugge function
-							{
-								values[index] = value;
-								retFunc();
-							}
-							
-							param.plug({}, vars[index]);
-						}
-					});
-				}
-				
-				function unplugParams()
-				{
-					$.each(vars, function(index, _var)
-					{
-						if(_var.connection)
-							disconnect(_var)
-					});
-				}
-				
-				function retFunc() //call this function with arguments to cut the old plugs and make new ones
-				{
-					var prev = result;
-					
-					if(arguments.length)
-					{
-						unplugParams();
-						vars = Array.prototype.slice.call(arguments); //track new vars
-						plugToParams();
-					}
-
-					result = func.apply(retFunc, values);
-
-					if(result !== prev)
-						host.apply(result);
-
-					return result;
-				}
-				
-				var host = O_O.value();
-				
-				retFunc.plug = host.plug.bind(retFunc);
-
-				plugToParams(); //plug to the params that are passed with the constructor
-
-				return retFunc;
-			}
-		}
-
-		//UI classes
-		this.collection = function(initial)
-		{
-			this.$ = new function()
-			{
-				this.data = initial.data;
-
-				this.load = function($node)
-				{
-					this.$node = $node;
-
-					this.itemTemplate = this.$node.children().first()[0].outerHTML;
-
-					this.$node.html('');
-
-					$.each(this.data, function(index, item)
-					{
-						self.$node.append(parseTemplate(self.itemTemplate, item));
-					});
-				}
-
-				var self = this;
-			}
-
-			var parseTemplate = function(html, object)
-			{
-				var fragment = $(html);
-
-				var nodes = fragment.find(keySelector);
-
-				nodes.each(function(index, item) //populate the template with data
-				{
-					var node = $(item);
-					var key = node.attr(keyAttr);
-
-					node.html(object[key]);
-				});
-
-				return fragment;
-			}
+			return new O_O.classes.value(arguments[0]).wrapper;
 		}
 	}
 });
