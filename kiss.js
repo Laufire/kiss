@@ -1,21 +1,32 @@
-﻿define(function()
+﻿(function(window)
 {
 	"use strict";
-
-	return new function()
+	
+	var O_O = new function()
 	{
-		//develop
-		var isDevelop = 1;
+		//privates
+		var keyAttr = 'id'; //the default keyAttr is id
 		
-		var log = function()
+		//init		
+		var hider;
+		this.hide = function()
 		{
-			if(isDevelop)
-				console.log(arguments[0]);
+			var frag = document.createDocumentFragment();
+			
+			hider = document.createElement('style');
+			hider.setAttribute('type', 'text/css');
+			hider.innerHTML = 'body{display:none}';
+			
+			document.head.insertBefore(hider, document.querySelector('script'));
 		}
 		
-		//privates
-		var O_O = this;
-		var keyAttr = 'id'; //the default keyAttr is id
+		//*Loading with requirejs slows the hiding
+		this.hide();
+		
+		this.show = function()
+		{
+			hider.parentNode.removeChild(hider);
+		}
 
 		//helpers
 		var slice = Array.prototype.slice;
@@ -258,11 +269,18 @@
 					}
 					
 					if(typeof arguments[1][0] == 'function') //calls the function; will be plugged to it if it were a plug
-					$el[arguments[0][0]].apply($el, [
-						arguments[0].slice(1).concat(
-							[arguments[1][0](this.wrapper, arguments[0])]
-						)]
-					);
+					{
+						$el[arguments[0][0]].apply($el, [
+							arguments[0].slice(1).concat(
+								[arguments[1][0](this.wrapper, arguments[0])]
+							)]
+						);
+						/*attr and class are not working with functions
+						console.log(arguments[0][0]);
+						console.log(arguments[0].slice(1).concat(
+								[arguments[1][0](this.wrapper, arguments[0])]
+							));*/
+					}
 					
 					else
 						$el[arguments[0].shift()].apply($el, arguments[0].concat(arguments[1]));
@@ -376,4 +394,7 @@
 			return new O_O.classes.value(arguments[0]).wrapper;
 		}
 	}
-});
+	
+	window.O_O = O_O;
+	
+})(window);

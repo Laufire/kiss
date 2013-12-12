@@ -1,14 +1,36 @@
 ToDos
 {
-	Cleaning up hanging connections.
+	Restructure.
+	
+	Shouldn't depend on jQuery, as the goal is not DOM manipulation.
+	
+	The code for the App should be brief.
 	
 	Cleaning up with jQuery's 'onRemoved' event.
 	
 	Better collections.
 	
-	A plugin to communicate with the server.
-	
 	Redo the example page, with tabs.
+	
+	Dealing with history.
+}
+
+Plugins
+{
+	To communicate with the server.
+	
+	To parse custom tags.
+	
+	To parse KO like data-binding atribute (without the evaluations of the expressions).
+}
+
+Components
+{
+	Observable dictionary.
+	
+	Sorted List: With just Add, Remove and Replace methods.
+	
+	Filtered Arrays.
 }
 
 Consider
@@ -17,10 +39,6 @@ Consider
 	
 	A separate 'development' version, that could log all the calls etc.
 	
-	To design the library as standalone.
-	
-	Combining multiple plugins to create a new plugin. Might be as simple as "O_O.plugin(jQuery.AutoComplete).decorate(O_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.
-	
 	Uniform interface across controls, elements and plugins.
 	
 	Using a minimalistic replacement for jquery while retaining the API. <- Not depending on jQuery. (only when performance matters, as jQuery could simplify the development process)
@@ -28,6 +46,8 @@ Consider
 	Using jQuery plugins out of the box. (if jquery were to be the base library).
 	
 	A 'transform' function for O_O.value that modifies the value for output.
+	
+	Combining multiple plugins to create a new plugin. Might be as simple as "O_O.plugin(jQuery.AutoComplete).decorate(O_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.
 }
 
 Goals
@@ -44,9 +64,21 @@ Goals
 	
 	The focus is on the developers ease in creating and maintaining projects.
 	
-	The code should make sense on the first glance. So no gimmicks and circuses.
+	The code should make sense on the first glance. So no gimmicks nor circuses.
 	
 	Should easily communicate with the Server.
+	
+	Design
+	{
+		As a platform that load various apps on to a single page.
+		
+		As a library that acts as the base to handle modules. Ie: if bootstrap has to be used jQuery and Bootstrap will be loaded after KISS.
+		
+		Should incrporate emerging technlogies as soon as they are standardized. As the goal is agile development.
+		
+		The code for the App should be brief.
+		
+	}
 	
 	Meassures
 	{
@@ -73,6 +105,8 @@ Way
 	The scope is defined in JS.
 	
 	A lego like modular architecture with plugs and hosts instead of pub-sub.
+	
+	A simple implementation of jquery under the $ symbol, which on demand could be replaced by jquery's $.
 }
 
 Rules
@@ -107,6 +141,11 @@ Rules
 	{
 		//
 	}
+	
+	O_O.watch
+	{
+		//
+	}
 }
 
 Structure
@@ -114,14 +153,6 @@ Structure
 	The components communicate through an API.
 }
 
-Components
-{
-	Observable dictionary.
-	
-	Sorted List: With just Add, Remove and Replace methods.
-	
-	Filtered Arrays.
-}
 
 Questions
 {
@@ -132,16 +163,14 @@ Questions
 
 	Could the tag name be used to identify objects instead of their ids?
 	
-	Could the global object of the library be $_$ or O_O to represent a kiss?
-	
 	How does a spreadsheet achieve data bindings?
 }
 
 Noted
 {
-	HTML's Custom tag names appear to be case insensitive.
+	HTML's Custom tag-names appear to be case insensitive.
 	
-	Unlike JS, Having duplicate IDs in a document is fine with CSS.
+	Unlike the DOM, having duplicate IDs in a document is fine with CSS.
 	
 	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
 }
@@ -160,12 +189,17 @@ Performance
 
 Known Issues
 {
-	Have to find a way to hide the content still rendering finishes.
-	
 	This is a proof of concept. So it has to be checked for performance issues, memory leaks etc.
 }
 
 Uses
 {
 	Could be used as a report generator like crystal reports.
+	
+	Could be used to support drop-in plugins like 'share via facebook' etc.
+}
+
+Future
+{
+	A plugin for undoable values.
 }

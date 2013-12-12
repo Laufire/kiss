@@ -23,3 +23,8 @@
 131203_2000	Events got redone.
 
 131204_2000	Added 'Intro' page, in order to serve both as a 'intro' and a 'demo'.
+
+131209_0000	Hiding the page before rendering achieved.
+
+131211_0000	RequireJs wrapper discarded (moved for a mor common global variable approach).
+131211_0000	KISS now exports a global O_O.
