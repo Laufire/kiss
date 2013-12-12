@@ -6,8 +6,9 @@ require.config({
 
 	paths: {
 
-		jquery: 'lib/jquery-2.0.2.min',
+		microDOM: 'lib/microDOM',
 		kiss: 'kiss',
+		jquery: 'lib/jquery-2.0.2.min', //needed by develop
 		develop: 'lib/develop' //? develop
 	},
 
@@ -18,16 +19,21 @@ require.config({
 			exports: '$'
 		},
 
+		microDOM: {
+		
+			exports: 'DOM'
+		},
+		
 		kiss: {
-
-			deps: ['jquery'],
-			exports: 'O_O'
+		
+			exports: 'O_O',
+			depends: ['microDOM']
 
 		}
 	}
 });
 
-define(['jquery', 'kiss', 'develop'], function($, O_O, develop)
+define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 {
 	_K = O_O; //? develop
 
@@ -42,7 +48,10 @@ define(['jquery', 'kiss', 'develop'], function($, O_O, develop)
 				
 				$: {
 				
-					val: observed
+					prop: {
+					
+						value: observed
+					}
 				}
 				
 			},
@@ -84,7 +93,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O, develop)
 				
 					prop: {
 					
-						checked: true
+						checked: false
 					},
 					
 					event: {change: function(){observed(!observed())}}
@@ -95,7 +104,7 @@ define(['jquery', 'kiss', 'develop'], function($, O_O, develop)
 	
 	//var test = new develop.test();
 	
-	$(document).ready(function()
+	DOM.ready(function()
 	{
 		App('el', 'App');
 		pv(1);

@@ -4,6 +4,9 @@
 	
 	var O_O = new function()
 	{
+		//helpers
+		//var $ = DOM.$
+		
 		//privates
 		var keyAttr = 'id'; //the default keyAttr is id
 		
@@ -45,9 +48,12 @@
 			return ret;
 		}
 		
-		var get$el = function(key, parent)
+		var get$el = function(key/*, parent*/)
 		{
-			return $(parent || document).find(['[', keyAttr, '="', key, '"]:first'].join(''));
+			if(arguments.length > 1)
+				return DOM.$('[' + keyAttr + '="' + key + '"]', arguments[1]);
+				
+			return DOM.$('[' + keyAttr + '="' + key + '"]');
 		}
 		
 		var getValue = function(value)
@@ -138,7 +144,7 @@
 					$el[args.shift()].apply($el, args);
 				}
 				
-				this.el = function() /*sets the $el for the element and load it with existing html, attrs etc*/
+				this.el = function() /*sets the el for the element and load it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
 						return $el;
@@ -148,7 +154,7 @@
 					this.self(data);
 					data = undefined;
 					
-					loadChildren(this.wrapper, $el);
+					loadChildren(this.wrapper, $el.el);
 					
 					return this.wrapper;
 				}
@@ -166,41 +172,10 @@
 					
 					return this.wrapper;
 				}
-				/*
-				this.default = function() //varies on the type of element
-				{
-					if(this.default.unplug)
-						this.default.unplug();
-
-					switch(this.$el[0].type)
-					{
-						case 'text':
-						case 'select-one':
-						case 'select-multiple':
-
-							defaultFactory.apply(this, [arguments[0], ['val']]); 
-
-						break;
-
-						case 'checkbox':
-
-							defaultFunction.apply(this, [arguments[0], ['prop', 'checked']);
-							
-						break;
-
-						default: //the tag is not a control
-							this.html(arguments[0]);
-					}
-				}
-				*/
+				
 				this.html = function()
 				{
 					return $factory.apply(this, [['html'], slice.call(arguments)]);					
-				}
-				
-				this.val = function()
-				{
-					return $factory.apply(this, [['val'], slice.call(arguments)]);					
 				}
 				
 				this.prop = function()
@@ -215,10 +190,7 @@
 				
 				this.class = function()
 				{
-					if(arguments.length == 1)
-						return this.$el.hasClass(arguments[0]);
-					else
-						return $factory.apply(this, [['toggleClass', arguments[0]], slice.call(arguments, 1)]);
+					return $factory.apply(this, [['class', arguments[0]], slice.call(arguments, 1)]);
 				}
 				
 				this.event = function()
@@ -300,11 +272,11 @@
 					});
 				}
 				
-				var loadChildren = function(obj, $el)
+				var loadChildren = function(obj, el)
 				{
 					for(var childName in obj) //load child objects with matching elements
 					{
-						if(!get$el(childName, $el).length)
+						if(!get$el(childName, el).el)
 							continue;  //tags without matching objects are left intact; so to play nice with other libs
 
 						//console.log(childName);
@@ -312,15 +284,15 @@
 						if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
 						{
 							obj[childName] = O_O.element(obj[childName]);
-							obj[childName]('el', childName, $el);
+							obj[childName]('el', childName, el);
 						}
 						else if(obj[childName] == 'function') //a pluggable value
 						{
 							obj[childName] = O_O.element({$:{default: obj[childName]}}); //create an element with the assigned object as its default property
-							obj[childName]('el', childName, $el);
+							obj[childName]('el', childName, el);
 						}					
 						else
-							obj[childName]('el', childName, $el); //some other object
+							obj[childName]('el', childName, el); //some other object
 						
 					}
 				}
