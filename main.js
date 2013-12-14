@@ -48,10 +48,7 @@ define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 				
 				$: {
 				
-					prop: {
-					
-						value: observed
-					}
+					val: observed
 				}
 				
 			},

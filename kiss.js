@@ -65,7 +65,7 @@
 				return value; //the value is just a value
 		}
 		
-		var getFreeKey = function(obj) //gets a new connection
+		var getEmptyKey = function(obj) //returns a 'empty' key name for the given object; keys might be overwritten if they have a falsy value
 		{
 			var key = '';
 			
@@ -94,7 +94,7 @@
 				
 				this.plug = function()
 				{
-					var key = getFreeKey(this.plugs);
+					var key = getEmptyKey(this.plugs);
 					this.plugs[key] = [arguments[0], arguments[1]];
 					arguments[0]('hold', this.wrapper, arguments[1], key);
 					return this.val();
@@ -176,6 +176,11 @@
 				this.html = function()
 				{
 					return $factory.apply(this, [['html'], slice.call(arguments)]);					
+				}
+				
+				this.val = function()
+				{
+					return $factory.apply(this, [['prop', 'value'], slice.call(arguments)]);					
 				}
 				
 				this.prop = function()
