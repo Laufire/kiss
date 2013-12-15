@@ -26,5 +26,17 @@
 
 131209_0000	Hiding the page before rendering achieved.
 
-131211_0000	RequireJs wrapper discarded (moved for a mor common global variable approach).
+131211_0000	RequireJs wrapper discarded (moved for a more common global variable approach).
 131211_0000	KISS now exports a global O_O.
+
+131213_0000	jQuery got replaced by microDOM.
+
+131215_1000	'examples' folder added to encourage evolving 'design' through examples.
+131215_1000	Example 'Login' added.
+
+131216_0000	O_O.object introduced.
+131216_0100	input controls could get default values.
+131216_0200	button controls could get default events.
+131216_0300	O_O.element now has as a 'data' container in it; which could be accesed through the wrapper. Calling the wrapper without arguments gives contained data of its forms and data objects.
+131216_0355	O_O.element now can 'digest' data.
+
