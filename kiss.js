@@ -20,7 +20,7 @@ NO2 Liscence
 
 		//init
 		var hider;
-		this.hide = function()
+		this.hide = function() //? ?could js be used to hide? ?Does JS have a class list like style list?
 		{
 			var frag = document.createDocumentFragment();
 
@@ -31,7 +31,6 @@ NO2 Liscence
 			document.head.insertBefore(hider, document.querySelector('script'));
 		}
 
-		//*Loading with requirejs slows the hiding
 		this.hide();
 
 		this.show = function()
@@ -103,9 +102,9 @@ NO2 Liscence
 			keyAttr = key;
 		}
 
-		this.classes = new function()/*base classes that could be extended by plugins*/
+		this.classes = new function() /*base classes that could be extended by plugins*/
 		{
-			this.host = function() //a base class for other hosts like value, trans, function etc
+			this.host = function(wrapper) //a base class for other hosts like value, trans, function etc
 			{
 				var self = this;
 				var plugs = [];
@@ -113,6 +112,11 @@ NO2 Liscence
 				self.plug = function(func)
 				{
 					plugs.push(func);
+					
+					return function() //a function used to unplug
+					{
+						self.unplug(func);
+					}
 				}
 
 				self.unplug = function(func)
@@ -136,25 +140,49 @@ NO2 Liscence
 				var self = this;
 				var $el;
 				var events = {};
+				var $data = extract(data, '$');
+				
+				var plugs = {prop: {}, attr: {}, class: {}};  /*stores the hosts like {propToChange: [wrapper function of the host, a generated function]*/
 
-				var plugs = {}; /*stores the hosts like {propToChange: [wrapper function of the host, a generated function]*/
+				self.wrapper = function(p1, p2, p3)
+				{
+					if(arguments.length == 3)
+						return self[p1](p2, p3); //elm('prop', 'value', 'hello')
 
-				self.el = function(selector, parent) /*sets the el for the element and load it with existing html, attrs etc*/
+					if(arguments.length == 2) //elm('html', 'hello'), elm('prop', 'value')
+						return self[p1](p2);
+
+					if(arguments.length == 1)
+					{
+						if(typeof p1 == 'string') //elm('html')
+							return self[p1]();
+
+						else
+							return digest(p1); //the first param is a digestable object
+					}
+
+					return self.value();
+				}
+				
+				extend(self.wrapper, data);
+				data = undefined;
+				
+				self.el = function(selector, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
 						return $el;
 
 					$el = get$el(selector, parent);
 
-					self.$(data);
-					data = undefined;
+					self.$($data);
+					$data = undefined;
 
 					loadChildren(self.wrapper, $el.el);
 
 					return self.wrapper;
 				}
 
-				self.value = function(newVal)
+				self.value = function(newVal) //sets the default values (when hosts or events are directly assigned)
 				{
 					if($el.el instanceof HTMLInputElement) //?textarea
 					{
@@ -247,34 +275,12 @@ NO2 Liscence
 
 				self.event = function(name, handler) //?make it friendly
 				{
-					var key = 'event/' + name;
+					if(events[name]) //the event already has a handler
+						$el.off(name, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
-					if(events[key]) //the event already has a handler
-						$el.off(name, events[key]); //remove the handler; having a single handler per event by design, is to maintain simplicity and structure. 'A button could turn on only a single light'.
-
-					$el.on(name, events[key] = handler.bind(self));
+					$el.on(name, events[name] = handler.bind(self));
 
 					return self.wrapper
-				}
-
-				self.wrapper = function(p1, p2, p3)
-				{
-					if(arguments.length == 3)
-						return self[p1](p2, p3);
-
-					else if(arguments.length == 2)
-						return self[p1](p2);
-
-					if(arguments.length == 1)
-					{
-						if(typeof p1 == 'string')
-							return self[p1]();
-
-						else
-							return digest(p1); //the first param is a digestable object
-					}
-
-					return self.value();
 				}
 
 				//helpers
@@ -294,24 +300,20 @@ NO2 Liscence
 
 				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
-					if(typeof newVal == 'undefined')
+					if(typeof newVal == 'undefined') //!arguments.length won't work here
 						return $el[method](prop);
 
-					var key = method + '/' + prop;
-
-					if(plugs[key]) //unplugs the existing plug
+					if(plugs[method][prop]) //unplugs the existing plug
 					{
-						plugs[key][0].unplug(plugs[key][1]);
-						delete plugs[key];
+						plugs[method][prop]();
+						delete plugs[method][prop];
 					}
 
 					if(newVal.plug)
 					{
 						var func = factory(method, prop); //generate a function to change the value
 
-						plugs[key] = [newVal, func]; //holds the host and the generated function
-
-						newVal.plug(func); //plug into the value
+						plugs[method][prop] = newVal.plug(func); //plug into the value and get unplug data
 
 						func(newVal());
 					}
@@ -355,37 +357,25 @@ NO2 Liscence
 			this.value = function(val) // a host that lists a simple value
 			{
 				var self = this;
-				var host = new O_O.classes.host();
-
+				
 				self.val = function(newVal)
 				{
-					if(typeof newVal == 'undefined')
+					if(!arguments.length)
 						return val;
 
 					else
 					{
-						if(newVal === val) //? use a trans to control self
+						if(newVal === val) //? ?use a trans to control equlaity checking?
 							return;
 
 						host.fire(newVal, val); //send both the new and the previous val
 						val = newVal;
 					}
 				}
+				
+				var host = new O_O.classes.host(self.val);
 
-				self.wrapper = function(newVal)
-				{
-					if(typeof newVal != 'undefined')
-						return self.val(newVal);
-
-					return self.val();
-				}
-
-				extend(self.wrapper, host);
-			}
-
-			this.trans = function(val, getter, setter) //a host that could transform its listd value using getters and setters
-			{
-
+				extend(self.val, host);
 			}
 
 			this.object = function(data)
@@ -421,22 +411,37 @@ NO2 Liscence
 		//UI element wrappers
 		this.element = function(data) //an element that could have nested elements
 		{
-			var _element = new O_O.classes.element(extract(data, '$'));
-
-			extend(_element.wrapper, data);
-
-			return _element.wrapper;
+			return new O_O.classes.element(data).wrapper;			
 		}
 
 		//Data wrappers
-		this.value = function(val) // a host value
+		this.value = function(val)
 		{
-			return new O_O.classes.value(val).wrapper;
+			return new O_O.classes.value(val).val;
 		}
-
+		
 		this.object = function(data)
 		{
 			return new O_O.classes.object(data).wrapper;
+		}
+		
+		//Factories
+		this.trans = function(process) //a function that transforms values
+		{	
+			return function(host)
+			{
+				var inject = function(){return process(host())}
+				
+				inject.plug = function(outFunc)
+				{
+					return host.plug(function(val, prev)
+					{
+						outFunc(process(val, prev));
+					});
+				}
+				
+				return inject;
+			}
 		}
 	}
 

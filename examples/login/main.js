@@ -35,6 +35,11 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 
 	Server.add(routes);
 	
+	var count = O_O.trans(function(val)
+	{
+		return val.length;
+	});
+	
 	App = O_O.element(new function()
 	{		
 		var self = this;
@@ -68,8 +73,13 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 							alert('failure');
 					}
 				})
-			}
+			},
+			
+			letterCount1: count(self.data.username),
+			letterCount2: count(self.data.password)
 		}
+		
+		//console.log(count(self.data.username));
 	});
 	
 	DOM.ready(function()
@@ -77,6 +87,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 		App('el', 'App');
 		
 		App.loginForm({username: App.data.username});
+		App.loginForm('$', {class: ['hidden']});
 		O_O.show();
 	});		
 });

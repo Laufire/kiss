@@ -40,3 +40,7 @@
 131216_0300	O_O.element now has as a 'data' container in it; which could be accesed through the wrapper. Calling the wrapper without arguments gives contained data of its forms and data objects.
 131216_0355	O_O.element now can 'digest' data.
 131216_0800	arrays replace objects as the store for plugs.
+131216_1000	'trans' completed.
+
+131216_1950	cleaned the code up; some performance improvements done.
+
