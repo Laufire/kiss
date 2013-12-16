@@ -1,4 +1,7 @@
-﻿/*!
+﻿//? runtime bindings
+//? removal of elements
+
+/*!
 KISS rw0.0.1
 
 NO2 Liscence
@@ -37,11 +40,11 @@ NO2 Liscence
 		}
 
 		//helpers
-		var slice = Array.prototype.slice;
+		//var slice = Array.prototype.slice;
 
 		function extend(target)
 		{
-			slice.call(arguments, 1).forEach(function(source)
+			Array.prototype.slice.call(arguments, 1).forEach(function(source)
 			{
 				for(var key in source)
 					if(source[key] !== undefined)
@@ -65,41 +68,33 @@ NO2 Liscence
 			return ret;
 		}
 
-		function get$el(key/*, parent*/)
+		function get$el(key, parent)
 		{
-			if(arguments.length > 1)
-				return DOM.$('[' + keyAttr + '="' + key + '"]', arguments[1]);
+			return DOM.$('[' + keyAttr + '="' + key + '"]', parent);
+		}
 
-			return DOM.$('[' + keyAttr + '="' + key + '"]');
+		function getVal(value)
+		{
+			if(typeof value == 'function') //the value is a function
+				return value();
+
+			return value;
 		}
 
 		function get(obj, key)
 		{
 			if(typeof obj[key] == 'function') //the key is a function
 				return key();
-			
+
 			return obj[key];
 		}
-		
+
 		function set(obj, key, value)
 		{
 			if(typeof obj[key] == 'function') //the key is a function
 				return obj[key](value);
-			
+
 			return obj[key] = value;
-		}
-
-		function getEmptyKey(obj) //returns a 'empty' key name for the given object; keys might be overwritten if they have a falsy value
-		{
-			var key = '';
-
-			do{
-
-				key += (10 + (Math.round(Math.random() * 25))).toString(36);
-
-			}while(obj[key]);
-
-			return key;
 		}
 
 		//public
@@ -110,46 +105,28 @@ NO2 Liscence
 
 		this.classes = new function()/*base classes that could be extended by plugins*/
 		{
-			this.pluggable = function() //a base class for other hosts like value, trans, function etc
+			this.host = function() //a base class for other hosts like value, trans, function etc
 			{
-				/*the pluggable must implement
-					a .plugs object to store the hooks
-				*/
+				var self = this;
+				var plugs = [];
 
-				this.plug = function()
+				self.plug = function(func)
 				{
-					var key = getEmptyKey(this.plugs);
-					this.plugs[key] = [arguments[0], arguments[1]];
-					arguments[0]('hold', this.wrapper, arguments[1], key);
-					return this.val();
+					plugs.push(func);
 				}
 
-				this.unplug = function()
+				self.unplug = function(func)
 				{
-					delete this.plugs[arguments[0]];
+					var i = plugs.indexOf(func);
+
+					if(i > -1)
+						plugs.splice(i, 1);
 				}
 
-				this.fire = function()
+				self.fire = function(newVal, prevVal)
 				{
-					for(var key in this.plugs)
-						this.plugs[key][0]('set', this.plugs[key][1], arguments[0]);
-				}
-			}
-
-			this.guest = function()
-			{
-				/*the guest must implement
-					a .set method to recieve the shouts
-					a .holds object to store the hooks
-				*/
-				this.hold = function()
-				{
-					this.holds[arguments[1].join('/')] = [arguments[0], arguments[2]];
-				}
-
-				this.unhold = function()
-				{
-					//
+					for(var i = 0, l = plugs.length; i < l; ++i)
+						plugs[i](newVal, prevVal);
 				}
 			}
 
@@ -160,20 +137,14 @@ NO2 Liscence
 				var $el;
 				var events = {};
 
-				self.holds = {}; /*stores the hosts like {propToChange: [wrapper function of the pluggable, id key provided by yhe pluggable]*/
+				var plugs = {}; /*stores the hosts like {propToChange: [wrapper function of the host, a generated function]*/
 
-				self.set = function() /*handles the trigger calls. !Not to be handled directly!*/
-				{
-					var args = arguments[0].concat(arguments[1]);
-					$el[args.shift()].apply($el, args);
-				}
-
-				self.el = function() /*sets the el for the element and load it with existing html, attrs etc*/
+				self.el = function(selector, parent) /*sets the el for the element and load it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
 						return $el;
 
-					$el = get$el.apply(null, arguments);
+					$el = get$el(selector, parent);
 
 					self.$(data);
 					data = undefined;
@@ -242,78 +213,75 @@ NO2 Liscence
 
 				self.$ = function(data) /*sets multiple attributes like html, attr at once*/
 				{
-					for(var i in arguments[0])
+					for(var key in data)
 					{
-						if(typeof arguments[0][i] == 'object') //the prop is an enumerable
-							for(var k in arguments[0][i])
-								self[i](k, arguments[0][i][k])
+						if(typeof data[key] == 'object') //the prop is an enumerable
+							for(var k in data[key])
+								self[key](k, data[key][k])
 						else
-							self[i](arguments[0][i])
+							self[key](data[key])
 					}
 
 					return self.wrapper;
 				}
 
-				self.html = function()
+				self.html = function(newVal)
 				{
-					return $factory(['html'], slice.call(arguments));
+					return $elRouter('prop', 'innerHTML', newVal);
 				}
 
-				self.val = function()
+				self.prop = function(prop, newVal)
 				{
-					return $factory(['prop', 'value'], slice.call(arguments));
+					return $elRouter('prop', prop, newVal);
 				}
 
-				self.prop = function()
+				self.attr = function(attr, newVal)
 				{
-					return $factory(['prop', arguments[0]], slice.call(arguments, 1));
+					return $elRouter('attr', attr, newVal);
 				}
 
-				self.attr = function()
+				self.class = function(_class, newVal)
 				{
-					return $factory(['attr', arguments[0]], slice.call(arguments, 1));
+					return $elRouter('class', _class, newVal);
 				}
 
-				self.class = function()
+				self.event = function(name, handler) //?make it friendly
 				{
-					return $factory(['class', arguments[0]], slice.call(arguments, 1));
-				}
-
-				self.event = function()
-				{
-					var key = 'event/' + arguments[0];
+					var key = 'event/' + name;
 
 					if(events[key]) //the event already has a handler
-						$el.off(arguments[0], events[key]); //remove the handler; having a single handler per event by desugn, is to maintain simplicity and structure. 'A button could turn on only a single light'.
+						$el.off(name, events[key]); //remove the handler; having a single handler per event by design, is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
-					$el.on(arguments[0], events[key] = arguments[1].bind(self));
+					$el.on(name, events[key] = handler.bind(self));
 
 					return self.wrapper
 				}
 
-				self.wrapper = function()
+				self.wrapper = function(p1, p2, p3)
 				{
-					if(arguments.length > 1)
-					{
-						var args = slice.call(arguments);
-						return self[args.shift()].apply(self, args);
-					}
+					if(arguments.length == 3)
+						return self[p1](p2, p3);
+
+					else if(arguments.length == 2)
+						return self[p1](p2);
 
 					if(arguments.length == 1)
 					{
-						if(typeof arguments[0] == 'string')
-							return self[arguments[0]]();
+						if(typeof p1 == 'string')
+							return self[p1]();
 
 						else
-							return digest(arguments[0]);
+							return digest(p1); //the first param is a digestable object
 					}
 
 					return self.value();
 				}
 
 				//helpers
-				function digest(data) /*settin properties for sel and children !This might alter the passed data object!*/
+				function digest(data) /*setting properties for sel and children !This might alter the passed data object!*/
 				{
+					//?consider run time bindings; as of now only objects passed with the constructor could be modified
+
 					if(data.$)
 						self.$(extract(data, '$'));
 
@@ -324,32 +292,42 @@ NO2 Liscence
 							self.wrapper[key]('value', data[key]);
 				}
 
-				function $factory() //sets attr/prop/etc via $
+				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
-					if(!arguments[1].length)
-						return $el[arguments[0].shift()].apply($el, arguments[0]);
+					if(typeof newVal == 'undefined')
+						return $el[method](prop);
 
-					var key = arguments[0].join('/');
+					var key = method + '/' + prop;
 
-					if(self.holds[key]) //unplugs the existing plug
+					if(plugs[key]) //unplugs the existing plug
 					{
-						self.holds[key][0]('unplug', self.holds[key][1]);
-						delete self.holds[key];
+						plugs[key][0].unplug(plugs[key][1]);
+						delete plugs[key];
 					}
 
-					if(typeof arguments[1][0] == 'function') //calls the function; will be plugged to it if it were a plug
+					if(newVal.plug)
 					{
-						$el[arguments[0][0]].apply($el,
-							arguments[0].slice(1).concat(
-								[arguments[1][0](self.wrapper, arguments[0])]
-							)
-						);
+						var func = factory(method, prop); //generate a function to change the value
+
+						plugs[key] = [newVal, func]; //holds the host and the generated function
+
+						newVal.plug(func); //plug into the value
+
+						func(newVal());
 					}
 
 					else
-						$el[arguments[0].shift()].apply($el, arguments[0].concat(arguments[1]));
+						return $el[method](prop, getVal(newVal));
 
 					return self.wrapper;
+				}
+
+				function factory(method, prop)
+				{
+					return function(val)
+					{
+						$el[method](prop, val);
+					}
 				}
 
 				var loadChildren = function(obj, el)
@@ -362,65 +340,53 @@ NO2 Liscence
 						//console.log(childName);
 
 						if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
-						{
 							obj[childName] = O_O.element(obj[childName]);
-						}
-						//else if(typeof obj[childName] == 'function') //a pluggable value
+
 						else
-						{
 							obj[childName] = O_O.element({$:{value: obj[childName]}}); //create an element with the assigned object as its default value
-						}
-						
+
 						obj[childName]('el', childName, el);
 
 					}
 				}
 			}
 
-			this.element.prototype = new this.guest;
-
 			//Data Classes
-			this.value = function(val) // a pluggable that lists a simple value
+			this.value = function(val) // a host that lists a simple value
 			{
 				var self = this;
+				var host = new O_O.classes.host();
 
-				this.plugs = {};
-
-				this.val = function()
+				self.val = function(newVal)
 				{
-					if(!arguments.length)
+					if(typeof newVal == 'undefined')
 						return val;
 
 					else
 					{
-						if(arguments[0] === val)
+						if(newVal === val) //? use a trans to control self
 							return;
 
-						this.fire([arguments[0], val]); //send both the new and the old values
-						val = arguments[0];
+						host.fire(newVal, val); //send both the new and the previous val
+						val = newVal;
 					}
 				}
 
-				this.wrapper = function()
+				self.wrapper = function(newVal)
 				{
-					if(arguments.length > 1)
-						return self.plug.apply(self, arguments);
-
-					else if(arguments.length == 1)
-						return self.val(arguments[0]);
+					if(typeof newVal != 'undefined')
+						return self.val(newVal);
 
 					return self.val();
 				}
+
+				extend(self.wrapper, host);
 			}
 
-			this.value.prototype = new this.pluggable;
-
-			this.trans = function(val, getter, setter) //a pluggable that could transform its listd value using getters and setters
+			this.trans = function(val, getter, setter) //a host that could transform its listd value using getters and setters
 			{
 
 			}
-
-			this.trans.prototype = new this.pluggable;
 
 			this.object = function(data)
 			{
@@ -435,7 +401,7 @@ NO2 Liscence
 					{
 						var ret = {};
 
-						for(var i in data)
+						for(var key in data)
 							get(data, key);
 
 						return ret;
@@ -456,7 +422,6 @@ NO2 Liscence
 		this.element = function(data) //an element that could have nested elements
 		{
 			var _element = new O_O.classes.element(extract(data, '$'));
-			//var _element = new O_O.classes.element(data && data.$ ? extract(data, '$') : {});
 
 			extend(_element.wrapper, data);
 
@@ -464,9 +429,9 @@ NO2 Liscence
 		}
 
 		//Data wrappers
-		this.value = function() // a pluggable value
+		this.value = function(val) // a host value
 		{
-			return new O_O.classes.value(arguments[0]).wrapper;
+			return new O_O.classes.value(val).wrapper;
 		}
 
 		this.object = function(data)

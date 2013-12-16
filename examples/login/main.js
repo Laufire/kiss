@@ -41,7 +41,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 		
 		self.data = O_O.object({
 		
-			username: O_O.value('u'),
+			username: O_O.value('user'),
 			
 			password: O_O.value('pass')			
 		});
@@ -50,7 +50,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 		
 		self.loginForm = {
 		
-			username: 'u',
+			username: {},
 			
 			password: self.data.password,
 			
@@ -62,7 +62,10 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 					data: App.loginForm(),
 					success: function(response)
 					{
-						console.log(response);
+						if(response)
+							alert('success');
+						else
+							alert('failure');
 					}
 				})
 			}
@@ -73,6 +76,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 	{
 		App('el', 'App');
 		
+		App.loginForm({username: App.data.username});
 		O_O.show();
 	});		
 });
