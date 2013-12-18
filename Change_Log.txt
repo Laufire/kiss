@@ -44,3 +44,10 @@
 
 131216_1950	cleaned the code up; some performance improvements done.
 
+131217_1605	Version string added.
+
+131218_0050	microDOM updated to v0.0.3.
+
+131219_0100	DOM.ready replaced by O_O.ready
+131219_0115	O_O.hide and O_O.show replaced by root.style.display = 'none'
+131219_0115	watch introduced.

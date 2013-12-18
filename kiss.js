@@ -1,46 +1,64 @@
-﻿//? runtime bindings
-//? removal of elements
+﻿//? An automatic UI generation check;
+//? using js style display none
+//? ?using CSS selectors + js arras on the head element instead of ids?
+//? element.hidden - ie10 might have it
+//? JSONP instead of requirejs (check browserify)
+//? runtime bindings
+//? removal of elements (through recursion + the API)
+//? ajax text templates - plugin
+//? ?Does JS have a class list like style list?
 
 /*!
 KISS rw0.0.1
 
 NO2 Liscence
 */
-(function(window)
+(function(window, document)
 {
 	"use strict";
 
-	var O_O = new function()
+	//jQuery.fn = jQuery.prototype = {
+	var O_O = window.O_O = new function()
 	{
-		//helpers
-		//var $ = DOM.$
+		document.documentElement.style.display = 'none';
+		//var hider = $(document.head).$('script').before('style').html('body{display:none}'), //hide the body untill kiss is ready
 
-		//privates
-		var keyAttr = 'id'; //the default keyAttr is id
+		var self = this;
+		self.VERSION = '0.0.1';
 
-		//init
-		var hider;
-		this.hide = function() //? ?could js be used to hide? ?Does JS have a class list like style list?
+		var
+			//helpers
+			$ = DOM.$,
+
+			//init
+			ready, //store the ready function
+
+			//privates
+			keyAttr = 'id'; //the default keyAttr is id
+
+
+		self.ready = function(func)
 		{
-			var frag = document.createDocumentFragment();
-
-			hider = document.createElement('style');
-			hider.setAttribute('type', 'text/css');
-			hider.innerHTML = 'body{display:none}';
-
-			document.head.insertBefore(hider, document.querySelector('script'));
+			ready = func;
 		}
 
-		this.hide();
-
-		this.show = function()
+		DOM.ready(function()
 		{
-			hider.parentNode.removeChild(hider);
-		}
+			document.documentElement.style.display = '';
+			//hider.remove();
+
+			if(ready)
+				ready();
+
+			else //a ready function is not available
+				self.ready = function(func) //so execute it as soon as it's available
+				{
+					func();
+				}
+		});
 
 		//helpers
 		//var slice = Array.prototype.slice;
-
 		function extend(target)
 		{
 			Array.prototype.slice.call(arguments, 1).forEach(function(source)
@@ -69,7 +87,7 @@ NO2 Liscence
 
 		function get$el(key, parent)
 		{
-			return DOM.$('[' + keyAttr + '="' + key + '"]', parent);
+			return $('[' + keyAttr + '="' + key + '"]', parent);
 		}
 
 		function getVal(value)
@@ -97,14 +115,14 @@ NO2 Liscence
 		}
 
 		//public
-		this.keyAttr = function(key) //change the keyAttr to be KISSed
+		self.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
-			keyAttr = key;
+			keyAttr = attr;
 		}
 
-		this.classes = new function() /*base classes that could be extended by plugins*/
-		{
-			this.host = function(wrapper) //a base class for other hosts like value, trans, function etc
+		self.classes = { /*base classes that could be extended by plugins*/
+
+			host: function(wrapper)
 			{
 				var self = this;
 				var plugs = [];
@@ -112,7 +130,7 @@ NO2 Liscence
 				self.plug = function(func)
 				{
 					plugs.push(func);
-					
+
 					return function() //a function used to unplug
 					{
 						self.unplug(func);
@@ -135,13 +153,12 @@ NO2 Liscence
 			}
 
 			//UI classes
-			this.element = function(data/*saved untill the element is set*/)
+			,element: function(data/*saved untill the element is set*/)
 			{
 				var self = this;
 				var $el;
 				var events = {};
-				var $data = extract(data, '$');
-				
+				var $data = extract(data, '$'); //?could input  skip the $
 				var plugs = {prop: {}, attr: {}, class: {}};  /*stores the hosts like {propToChange: [wrapper function of the host, a generated function]*/
 
 				self.wrapper = function(p1, p2, p3)
@@ -163,10 +180,10 @@ NO2 Liscence
 
 					return self.value();
 				}
-				
+
 				extend(self.wrapper, data);
 				data = undefined;
-				
+
 				self.el = function(selector, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
@@ -174,10 +191,14 @@ NO2 Liscence
 
 					$el = get$el(selector, parent);
 
+					$el.el.style.display = 'none'; //hide the element till all the children are set
+
 					self.$($data);
 					$data = undefined;
 
 					loadChildren(self.wrapper, $el.el);
+
+					$el.el.style.display = ''; //show the element
 
 					return self.wrapper;
 				}
@@ -354,10 +375,10 @@ NO2 Liscence
 			}
 
 			//Data Classes
-			this.value = function(val) // a host that lists a simple value
+			,value: function(val) // a host that lists a simple value
 			{
 				var self = this;
-				
+
 				self.val = function(newVal)
 				{
 					if(!arguments.length)
@@ -365,20 +386,20 @@ NO2 Liscence
 
 					else
 					{
-						if(newVal === val) //? ?use a trans to control equlaity checking?
+						if(newVal === val) //? Could equality check be passed to the plugged function?
 							return;
 
 						host.fire(newVal, val); //send both the new and the previous val
 						val = newVal;
 					}
 				}
-				
+
 				var host = new O_O.classes.host(self.val);
 
 				extend(self.val, host);
 			}
 
-			this.object = function(data)
+			,object: function(data)
 			{
 				this.wrapper = function(newData)
 				{
@@ -401,7 +422,7 @@ NO2 Liscence
 				extend(this.wrapper, data);
 			}
 
-			this.watch = function()
+			,watch: function()
 			{
 				//
 			}
@@ -409,29 +430,37 @@ NO2 Liscence
 
 		//Decorators
 		//UI element wrappers
-		this.element = function(data) //an element that could have nested elements
+		self.element = function(data) //an element that could have nested elements
 		{
-			return new O_O.classes.element(data).wrapper;			
+			return new O_O.classes.element(data).wrapper;
 		}
 
 		//Data wrappers
-		this.value = function(val)
+		self.value = function(val)
 		{
 			return new O_O.classes.value(val).val;
 		}
-		
-		this.object = function(data)
+
+		self.object = function(data)
 		{
 			return new O_O.classes.object(data).wrapper;
 		}
 		
+		self.watch = function(val, func)
+		{
+			return {
+			
+				clear: val.plug(func)
+			}
+		}
+
 		//Factories
-		this.trans = function(process) //a function that transforms values
-		{	
+		self.trans = function(process) //a function that transforms values
+		{
 			return function(host)
 			{
 				var inject = function(){return process(host())}
-				
+
 				inject.plug = function(outFunc)
 				{
 					return host.plug(function(val, prev)
@@ -439,12 +468,26 @@ NO2 Liscence
 						outFunc(process(val, prev));
 					});
 				}
-				
+
 				return inject;
 			}
 		}
+
+		//extensions
+		self.trans.count = self.trans(function(val)
+		{
+			return val.length;
+		});
+
+		self.trans.truthy = self.trans(function(val)
+		{
+			return Boolean(val);
+		});
+
+		self.trans.falsy = self.trans(function(val)
+		{
+			return !Boolean(val);
+		});
 	}
 
-	window.O_O = O_O;
-
-})(window);
+})(window, document);

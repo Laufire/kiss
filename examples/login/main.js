@@ -1,4 +1,6 @@
-﻿"use strict";
+﻿//?watches
+
+"use strict";
 
 var App, _K; //? it's in the global scope to make debugging easy
 
@@ -9,7 +11,7 @@ require.config({
 		microDOM: '../../lib/microDOM',
 		kiss: '../../kiss',
 		mockServer: '../../lib/mockServer',
-		jquery: '../../lib/jquery-2.0.2.min',
+		//trans: '../../lib/trans',
 		develop: '../../lib/develop'
 	},
 
@@ -25,20 +27,27 @@ require.config({
 			exports: 'O_O',
 			depends: ['microDOM']
 
+		},
+		
+		trans: {
+		
+			depends: ['kiss']
 		}
 	}
 });
 
+//define(['microDOM', 'kiss', 'trans', 'mockServer', 'routes', 'develop'], function(DOM, O_O, trans, Server, routes)
 define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_O, Server, routes)
 {
+	//console.log(trans);
+	
 	_K = O_O; //? develop
 
 	Server.add(routes);
 	
-	var count = O_O.trans(function(val)
-	{
-		return val.length;
-	});
+	var count = O_O.trans.count;
+	var falsy = O_O.trans.falsy;
+	var watch;
 	
 	App = O_O.element(new function()
 	{		
@@ -57,7 +66,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 		
 			username: {},
 			
-			password: self.data.password,
+			password: self.data.password, //?convert this to a plugin
 			
 			login: function()
 			{
@@ -67,6 +76,8 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 					data: App.loginForm(),
 					success: function(response)
 					{
+						watch.clear();
+						
 						if(response)
 							alert('success');
 						else
@@ -75,19 +86,33 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 				})
 			},
 			
-			letterCount1: count(self.data.username),
-			letterCount2: count(self.data.password)
+			display: {
+			
+				$: {
+				
+					html: count(self.data.username),
+					
+					class: { hidden: falsy(self.data.username) }
+				}
+			}
 		}
-		
-		//console.log(count(self.data.username));
 	});
 	
-	DOM.ready(function()
+	function log(val)
+	{
+		console.log(val);
+	}
+
+	O_O.ready(function()
 	{
 		App('el', 'App');
 		
 		App.loginForm({username: App.data.username});
 		App.loginForm('$', {class: ['hidden']});
-		O_O.show();
+		
+		watch = O_O.watch(App.data.username, function(val)
+		{
+			console.log(val);
+		});
 	});		
 });

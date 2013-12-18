@@ -8,16 +8,10 @@ require.config({
 
 		microDOM: 'lib/microDOM',
 		kiss: 'kiss',
-		jquery: 'lib/jquery-2.0.2.min', //needed by develop
 		develop: 'lib/develop' //? develop
 	},
 
 	shim: {
-
-		jquery: {
-
-			exports: '$'
-		},
 
 		microDOM: {
 		
@@ -44,14 +38,7 @@ define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 		
 		simple: {
 		
-			input: {
-				
-				$: {
-				
-					val: observed
-				}
-				
-			},
+			input: observed,
 			
 			simpleString: {
 				
@@ -61,8 +48,8 @@ define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 					
 					attr: {
 					
-						style: 'background: red'
-						//style: function(){return 'background: red'}
+						//style: 'background: red'
+						style: function(){return 'background: red'}
 					},
 					
 					class: {
@@ -99,13 +86,9 @@ define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 		}
 	});
 	
-	//var test = new develop.test();
-	
-	DOM.ready(function()
+	O_O.ready(function()
 	{
 		App('el', 'App');
 		pv(1);
-		
-		O_O.show();		
 	});		
 });

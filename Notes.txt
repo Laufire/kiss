@@ -22,6 +22,8 @@ Plugins
 	To parse custom tags.
 	
 	To parse KO like data-binding atribute (without the evaluations of the expressions).
+	
+	A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
 }
 
 Components
@@ -173,6 +175,8 @@ Noted
 	Unlike the DOM, having duplicate IDs in a document is fine with CSS.
 	
 	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
+	
+	RquireJs messed up a lot.
 }
 
 Descisions
@@ -202,4 +206,6 @@ Uses
 Future
 {
 	A plugin for undoable values.
+	
+	IE11 supports getters and setters; a rewrite might be needed to utilize it.
 }
