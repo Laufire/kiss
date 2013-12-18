@@ -47,7 +47,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 	
 	var count = O_O.trans.count;
 	var falsy = O_O.trans.falsy;
-	var watch;
+	var usernameListener, textWatch;
 	
 	App = O_O.element(new function()
 	{		
@@ -76,7 +76,7 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 					data: App.loginForm(),
 					success: function(response)
 					{
-						watch.clear();
+						usernameListener.stop();
 						
 						if(response)
 							alert('success');
@@ -110,9 +110,18 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'develop'], function(DOM, O_
 		App.loginForm({username: App.data.username});
 		App.loginForm('$', {class: ['hidden']});
 		
-		watch = O_O.watch(App.data.username, function(val)
+		usernameListener = O_O.listen(App.data.username, function(val)
 		{
 			console.log(val);
 		});
+		
+		textWatch = O_O.watch(App.data.username, App.data.password)
+			.action(function(val, source)
+			{
+				if(val == 'no')
+					this.unwatch(source);
+					
+				console.log(val);
+			});
 	});		
 });

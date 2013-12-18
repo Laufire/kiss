@@ -51,3 +51,5 @@
 131219_0100	DOM.ready replaced by O_O.ready
 131219_0115	O_O.hide and O_O.show replaced by root.style.display = 'none'
 131219_0115	watch introduced.
+
+131219_0445	watch renamed to listen; as a new watch (with more features) is introduced.

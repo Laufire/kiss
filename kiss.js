@@ -1,5 +1,6 @@
 ﻿//? An automatic UI generation check;
 //? using js style display none
+//? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? ?using CSS selectors + js arras on the head element instead of ids?
 //? element.hidden - ie10 might have it
 //? JSONP instead of requirejs (check browserify)
@@ -21,7 +22,6 @@ NO2 Liscence
 	var O_O = window.O_O = new function()
 	{
 		document.documentElement.style.display = 'none';
-		//var hider = $(document.head).$('script').before('style').html('body{display:none}'), //hide the body untill kiss is ready
 
 		var self = this;
 		self.VERSION = '0.0.1';
@@ -45,7 +45,6 @@ NO2 Liscence
 		DOM.ready(function()
 		{
 			document.documentElement.style.display = '';
-			//hider.remove();
 
 			if(ready)
 				ready();
@@ -58,7 +57,8 @@ NO2 Liscence
 		});
 
 		//helpers
-		//var slice = Array.prototype.slice;
+		var slice = Array.prototype.slice;
+		
 		function extend(target)
 		{
 			Array.prototype.slice.call(arguments, 1).forEach(function(source)
@@ -145,10 +145,10 @@ NO2 Liscence
 						plugs.splice(i, 1);
 				}
 
-				self.fire = function(newVal, prevVal)
+				self.fire = function(val, source)
 				{
 					for(var i = 0, l = plugs.length; i < l; ++i)
-						plugs[i](newVal, prevVal);
+						plugs[i](val, source);
 				}
 			}
 
@@ -389,7 +389,7 @@ NO2 Liscence
 						if(newVal === val) //? Could equality check be passed to the plugged function?
 							return;
 
-						host.fire(newVal, val); //send both the new and the previous val
+						host.fire(newVal, self.val); //fires the change; self.val() could be called to get the prevVal
 						val = newVal;
 					}
 				}
@@ -421,15 +421,72 @@ NO2 Liscence
 
 				extend(this.wrapper, data);
 			}
-
-			,watch: function()
+			
+			,watch: function() //? here: watches could be closely related to lists, spread sheet totaling
 			{
-				//
+				var self = this,
+				
+					action = function(){},
+					
+					plug = function() //the function executes the triggered val and the watch itself
+					{
+						action.apply(self, arguments);
+					},
+				
+					plugs = [];
+				
+				self.watch = function()
+				{
+					for(var i = 0; i < arguments.length; ++i)
+						if(plugs.indexOf(arguments[i]) == -1) //don't watch the val if it's being watched already
+						{
+							plugs.push(arguments[i]);
+							arguments[i].plug(plug);
+						}
+					
+					return self;
+				}
+				
+				self.unwatch = function()
+				{
+					for(var i = 0, idx; i < arguments.length; ++i)
+					{
+						idx = plugs.indexOf(arguments[i])
+						
+						if(idx > -1) //if the element is already being watched
+							plugs.splice(idx, 1)[0].unplug(plug);
+					}
+					
+					return self;
+				}
+				
+				self.clear = function()
+				{
+					for(var i = 0; i < self.wathces.length; ++i)
+						plugs[i].unplug(plug);
+						
+					plugs = [];
+					
+					return self;
+				}
+				
+				self.action = function(newAct)
+				{
+					action = newAct;
+					
+					return self
+				}
+				
+				/*
+				for(var i = 0; i < arguments.length; ++i)
+					self.watch(arguments[i]);
+					
+				return self;*/
 			}
 		}
 
 		//Decorators
-		//UI element wrappers
+		//UI wrappers
 		self.element = function(data) //an element that could have nested elements
 		{
 			return new O_O.classes.element(data).wrapper;
@@ -446,12 +503,20 @@ NO2 Liscence
 			return new O_O.classes.object(data).wrapper;
 		}
 		
-		self.watch = function(val, func)
+		//control wrappers
+		self.listen = function(val, func)
 		{
 			return {
 			
-				clear: val.plug(func)
+				stop: val.plug(func)
 			}
+		}
+		
+		self.watch = function()
+		{
+			var _watch = new O_O.classes.watch;
+			
+			return _watch.watch.apply(null, arguments);
 		}
 
 		//Factories
