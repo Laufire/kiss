@@ -60,3 +60,5 @@
 131219_2355	Plugin 'keyupText' written.
 
 131220_0040	rewrite completed, ready to be merged into master.
+131220_0050	rewrite branch merged to master.
+131220_0235 v0.0.3 released.

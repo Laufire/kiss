@@ -1,7 +1,8 @@
-﻿//? DOM node tpe to specify whether a node could have children
+﻿//? DOM node type to specify whether a node could have children
 //? An automatic UI generation check;
 //? JSONP instead of requirejs (check browserify)
 //? friendly events
+//?add other input elements like text-area etc
 //? localStorage as a data source for O_O.values
 //? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? ?using CSS selectors + js arrays on the head element instead of ids?
@@ -9,7 +10,7 @@
 //? ajax text templates - plugin
 
 /*!
-KISS rw0.0.1
+KISS v0.0.3
 
 NO2 Liscence
 */
@@ -19,7 +20,7 @@ NO2 Liscence
 
 	var O_O = window.O_O = new function()
 	{
-		document.documentElement.style.display = 'none'; //hide the document untill DOM.ready fires
+		document.documentElement.style.display = 'none'; //hide the document until DOM.ready fires
 
 		var self = this;
 		self.VERSION = '0.0.1';
@@ -29,7 +30,7 @@ NO2 Liscence
 			$ = DOM.$,
 
 			//init
-			hider, //a DOM.$ element that helps to hide the elements to be KISSed untill kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
+			hider, //a DOM.$ element that helps to hide the elements to be KISSed until kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
 			ready, //store the ready function
 			keyAttr; //the keyAttr that marks the element to be KISSed
 
@@ -88,16 +89,14 @@ NO2 Liscence
 
 		function extract(obj, prop)
 		{
-			var ret;
-
 			if(obj && obj[prop])
 			{
-				ret = obj[prop];
+				var ret = obj[prop];
 
 				delete obj[prop];
+				
+				return ret;
 			}
-
-			return ret;
 		}
 
 		function get$el(key, parent)
@@ -130,7 +129,7 @@ NO2 Liscence
 		}
 
 		//public
-		self.class = { /*base classes that could be extended by plugins*/
+		self.class = { //base classes that could be extended by plugins
 
 			host: function()
 			{
@@ -163,13 +162,13 @@ NO2 Liscence
 			}
 
 			//UI classes
-			,element: function(data/*saved untill the element is set*/)
+			,element: function(data/*consits of $data and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
 				var self = this;
 				var $el;
 				var events = {};
-				var $data = extract(data, '$'); //?could input  skip the $
-				var plugs = {prop: {}, attr: {}, class: {}};  /*stores the hosts like {propToChange: [wrapper function of the host, a generated function]*/
+				var $data = extract(data, '$'); //extracts $data (attr, html, event etc)
+				var plugs = {prop: {}, attr: {}, class: {}};  /*stores the 'unplug' functions from the hosts*/
 
 				self.wrapper = function(p1, p2, p3)
 				{
@@ -185,13 +184,13 @@ NO2 Liscence
 							return self[p1]();
 
 						else
-							return digest(p1); //the first param is a digestable object
+							return digest(p1); //the first param is a digestible object
 					}
 
 					return self.value();
 				}
 
-				extend(self.wrapper, data);
+				extend(self.wrapper, data); //load the children on to the wrapper to allow writing code like App.title('Hello');
 				data = undefined;
 
 				self.el = function(query, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
@@ -201,7 +200,7 @@ NO2 Liscence
 
 					$el = get$el(query/*keyAttr or a DOM.$.el*/, parent);
 
-					self.$($data);
+					self.$($data); //load $data on to the element
 					$data = undefined;
 
 					loadChildren(self.wrapper, $el.el);
@@ -209,7 +208,7 @@ NO2 Liscence
 					return self.wrapper;
 				}
 
-				self.value = function(newVal) //sets the default values (when hosts or events are directly assigned)
+				self.value = function(newVal) //returns the default value on data collection, sets the default values when hosts are directly assigned
 				{
 					if($el.el instanceof HTMLInputElement) //?textarea
 					{
@@ -492,21 +491,22 @@ NO2 Liscence
 
 		//Decorators
 		//UI wrappers
-		self.element = function() //an element that could have nested elements
+		self.element = function(p1, p2, p3) //an element that could have nested elements
 		{
-			if(arguments.length == 1)
-				return new O_O.class.element(arguments[0]).wrapper;
+			if(arguments.length == 1) //the argument is an object, this is checked first as usual this will be the case
+				return new O_O.class.element(p1).wrapper;
 			
-			var data = {};
-			data.$ = {};
+			//the following is to implement the wrapper interface, for developer convenience; it allows to reduce some redundant code
+			//there are several arguments
+			var data = {$:{}};
 			
 			if(arguments.length == 2)
-				data.$[arguments[0]] = arguments[1];
+				data.$[p1] = p2;
 				
 			else if(arguments.length == 3)
 			{
-				data.$[arguments[0]] = {};
-				data.$[arguments[0]][arguments[1]] = arguments[2];
+				data.$[p1] = {};
+				data.$[p1][p2] = p3;
 			}
 			
 			return new O_O.class.element(data).wrapper;

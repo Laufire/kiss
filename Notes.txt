@@ -210,4 +210,6 @@ Future
 	IE11 supports getters and setters; a rewrite might be needed to utilize it.
 	
 	A module + plugin manager (with bundling etc).
+	
+	Consider not depending on microDOM, as the dependency is very little.
 }

@@ -58,7 +58,10 @@ define(['microDOM', 'kiss', 'mockServer', 'routes', 'trans', 'keyUpText', 'devel
 				
 			val.length > 7 && strength++;
 			
-			/[a-z][A-Z]|[A-Z][a-z]/.test(val) && strength++;
+			/[a-z]/.test(val) && strength++;
+			/[A-Z]/.test(val) && strength++;
+			/[0-9]/.test(val) && strength++;
+			/.[!,@,#,$,%,^,&,*,?,_,~,-,£,(,)]/.test(val) && strength++;
 			
 			return strength;
 		});
