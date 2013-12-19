@@ -1,13 +1,12 @@
-﻿//? An automatic UI generation check;
-//? using js style display none
-//? data-type list (non-duplicated) with methods add, remove, replace etc.
-//? ?using CSS selectors + js arras on the head element instead of ids?
-//? element.hidden - ie10 might have it
+﻿//? DOM node tpe to specify whether a node could have children
+//? An automatic UI generation check;
 //? JSONP instead of requirejs (check browserify)
+//? friendly events
+//? localStorage as a data source for O_O.values
+//? data-type list (non-duplicated) with methods add, remove, replace etc.
+//? ?using CSS selectors + js arrays on the head element instead of ids?
 //? runtime bindings
-//? removal of elements (through recursion + the API)
 //? ajax text templates - plugin
-//? ?Does JS have a class list like style list?
 
 /*!
 KISS rw0.0.1
@@ -18,10 +17,9 @@ NO2 Liscence
 {
 	"use strict";
 
-	//jQuery.fn = jQuery.prototype = {
 	var O_O = window.O_O = new function()
 	{
-		document.documentElement.style.display = 'none';
+		document.documentElement.style.display = 'none'; //hide the document untill DOM.ready fires
 
 		var self = this;
 		self.VERSION = '0.0.1';
@@ -31,12 +29,19 @@ NO2 Liscence
 			$ = DOM.$,
 
 			//init
+			hider, //a DOM.$ element that helps to hide the elements to be KISSed untill kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
 			ready, //store the ready function
+			keyAttr; //the keyAttr that marks the element to be KISSed
 
-			//privates
-			keyAttr = 'id'; //the default keyAttr is id
-
-
+		self.keyAttr = function(attr) //change the keyAttr to be KISSed
+		{
+			keyAttr = attr;
+			
+			hider = $(document.head).$('script').before('style').html('[' + keyAttr + ']{display:none}')
+		}
+		
+		self.keyAttr('id');//the default keyAttr is id
+		
 		self.ready = function(func)
 		{
 			ready = func;
@@ -45,19 +50,29 @@ NO2 Liscence
 		DOM.ready(function()
 		{
 			document.documentElement.style.display = '';
-
+			
 			if(ready)
+			{
 				ready();
+				hider.remove();
+			}
 
 			else //a ready function is not available
 				self.ready = function(func) //so execute it as soon as it's available
 				{
 					func();
+					hider.remove();
 				}
 		});
 
 		//helpers
-		var slice = Array.prototype.slice;
+		//var slice = Array.prototype.slice;
+		
+		function iterate(array, func)
+		{
+			for(var i = 0; i < array.length; ++i)
+				func(array[i]);
+		}
 		
 		function extend(target)
 		{
@@ -92,37 +107,32 @@ NO2 Liscence
 
 		function getVal(value)
 		{
-			if(typeof value == 'function') //the value is a function
+			if(typeof value == 'function')
 				return value();
 
 			return value;
 		}
 
-		function get(obj, key)
+		function getProp(obj, prop)
 		{
-			if(typeof obj[key] == 'function') //the key is a function
-				return key();
+			if(typeof obj[prop] == 'function')
+				return prop();
 
-			return obj[key];
+			return obj[prop];
 		}
 
-		function set(obj, key, value)
+		function setProp(obj, prop, value)
 		{
-			if(typeof obj[key] == 'function') //the key is a function
-				return obj[key](value);
+			if(typeof obj[prop] == 'function')
+				return obj[prop](value);
 
-			return obj[key] = value;
+			return obj[prop] = value;
 		}
 
 		//public
-		self.keyAttr = function(attr) //change the keyAttr to be KISSed
-		{
-			keyAttr = attr;
-		}
+		self.class = { /*base classes that could be extended by plugins*/
 
-		self.classes = { /*base classes that could be extended by plugins*/
-
-			host: function(wrapper)
+			host: function()
 			{
 				var self = this;
 				var plugs = [];
@@ -147,7 +157,7 @@ NO2 Liscence
 
 				self.fire = function(val, source)
 				{
-					for(var i = 0, l = plugs.length; i < l; ++i)
+					for(var i = 0; i < plugs.length; ++i)
 						plugs[i](val, source);
 				}
 			}
@@ -184,21 +194,17 @@ NO2 Liscence
 				extend(self.wrapper, data);
 				data = undefined;
 
-				self.el = function(selector, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
+				self.el = function(query, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
 						return $el;
 
-					$el = get$el(selector, parent);
-
-					$el.el.style.display = 'none'; //hide the element till all the children are set
+					$el = get$el(query/*keyAttr or a DOM.$.el*/, parent);
 
 					self.$($data);
 					$data = undefined;
 
 					loadChildren(self.wrapper, $el.el);
-
-					$el.el.style.display = ''; //show the element
 
 					return self.wrapper;
 				}
@@ -365,6 +371,13 @@ NO2 Liscence
 						if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
 							obj[childName] = O_O.element(obj[childName]);
 
+						else if (typeof obj[childName] == 'function')
+						{
+							if(obj[childName].plug)
+								obj[childName] = O_O.element({$:{value: obj[childName]}}); //assign the pluggable to the object's default value
+								
+							//create an element with the assigned object as its default value
+						}
 						else
 							obj[childName] = O_O.element({$:{value: obj[childName]}}); //create an element with the assigned object as its default value
 
@@ -394,7 +407,7 @@ NO2 Liscence
 					}
 				}
 
-				var host = new O_O.classes.host(self.val);
+				var host = new O_O.class.host(self.val);
 
 				extend(self.val, host);
 			}
@@ -406,14 +419,14 @@ NO2 Liscence
 					if(newData)
 					{
 						for(var key in newData)
-							set(data, key, newData[key]);
+							setProp(data, key, newData[key]);
 					}
 					else
 					{
 						var ret = {};
 
-						for(var key in data)
-							get(data, key);
+						for(var prop in data)
+							getProp(data, prop);
 
 						return ret;
 					}
@@ -428,9 +441,9 @@ NO2 Liscence
 				
 					action = function(){},
 					
-					plug = function() //the function executes the triggered val and the watch itself
+					plug = function(val, source) //the function executes the triggered val and the watch itself
 					{
-						action.apply(self, arguments);
+						action(val, source);
 					},
 				
 					plugs = [];
@@ -449,10 +462,8 @@ NO2 Liscence
 				
 				self.unwatch = function()
 				{
-					for(var i = 0, idx; i < arguments.length; ++i)
+					for(var i = 0, idx = plugs.indexOf(arguments[i]); i < arguments.length; ++i)
 					{
-						idx = plugs.indexOf(arguments[i])
-						
 						if(idx > -1) //if the element is already being watched
 							plugs.splice(idx, 1)[0].unplug(plug);
 					}
@@ -462,7 +473,7 @@ NO2 Liscence
 				
 				self.clear = function()
 				{
-					for(var i = 0; i < self.wathces.length; ++i)
+					for(var i = 0; i < plugs.length; ++i)
 						plugs[i].unplug(plug);
 						
 					plugs = [];
@@ -476,31 +487,40 @@ NO2 Liscence
 					
 					return self
 				}
-				
-				/*
-				for(var i = 0; i < arguments.length; ++i)
-					self.watch(arguments[i]);
-					
-				return self;*/
 			}
 		}
 
 		//Decorators
 		//UI wrappers
-		self.element = function(data) //an element that could have nested elements
+		self.element = function() //an element that could have nested elements
 		{
-			return new O_O.classes.element(data).wrapper;
+			if(arguments.length == 1)
+				return new O_O.class.element(arguments[0]).wrapper;
+			
+			var data = {};
+			data.$ = {};
+			
+			if(arguments.length == 2)
+				data.$[arguments[0]] = arguments[1];
+				
+			else if(arguments.length == 3)
+			{
+				data.$[arguments[0]] = {};
+				data.$[arguments[0]][arguments[1]] = arguments[2];
+			}
+			
+			return new O_O.class.element(data).wrapper;
 		}
 
 		//Data wrappers
 		self.value = function(val)
 		{
-			return new O_O.classes.value(val).val;
+			return new O_O.class.value(val).val;
 		}
 
 		self.object = function(data)
 		{
-			return new O_O.classes.object(data).wrapper;
+			return new O_O.class.object(data).wrapper;
 		}
 		
 		//control wrappers
@@ -514,10 +534,21 @@ NO2 Liscence
 		
 		self.watch = function()
 		{
-			var _watch = new O_O.classes.watch;
+			var _watch = new O_O.class.watch;
 			
-			return _watch.watch.apply(null, arguments);
+			iterate(arguments, _watch.watch);
+			
+			return _watch;
 		}
+		
+		//plugin wrapper
+		self.plugin = function(name, plugin)
+		{
+			if(!plugin)
+				return self.plugin[name];
+				
+			self.plugin[name] = plugin;
+		}			
 
 		//Factories
 		self.trans = function(process) //a function that transforms values
@@ -537,22 +568,6 @@ NO2 Liscence
 				return inject;
 			}
 		}
-
-		//extensions
-		self.trans.count = self.trans(function(val)
-		{
-			return val.length;
-		});
-
-		self.trans.truthy = self.trans(function(val)
-		{
-			return Boolean(val);
-		});
-
-		self.trans.falsy = self.trans(function(val)
-		{
-			return !Boolean(val);
-		});
 	}
 
 })(window, document);

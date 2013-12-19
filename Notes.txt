@@ -208,4 +208,6 @@ Future
 	A plugin for undoable values.
 	
 	IE11 supports getters and setters; a rewrite might be needed to utilize it.
+	
+	A module + plugin manager (with bundling etc).
 }
