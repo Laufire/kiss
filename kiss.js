@@ -1,4 +1,5 @@
-﻿//? data-type list (non-duplicated) with methods add, remove, replace etc.
+﻿//?function.name is a read only property
+//? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
 //? localStorage as a data source for O_O.values
@@ -96,6 +97,14 @@ NO2 Liscence
 				return ret;
 			}
 		}
+		
+		function load(target, source, props)
+		{
+			for(var i = 0; i < props.length; ++i)
+				target[props[i]] = source[props[i]];
+				
+			return target;
+		}
 
 		function get$el(key, parent)
 		{
@@ -170,7 +179,7 @@ NO2 Liscence
 
 				self.wrapper = function(p1, p2, p3)
 				{
-					if(arguments.length == 3)
+					if(arguments.length == 3) //!this could be reduced to a single checkm if the undefined vars doesn't cost a lot
 						return self[p1](p2, p3); //elm('prop', 'value', 'hello')
 
 					if(arguments.length == 2) //elm('html', 'hello'), elm('prop', 'value')
@@ -191,12 +200,12 @@ NO2 Liscence
 				extend(self.wrapper, data); //load the children on to the wrapper to allow writing code like App.title('Hello');
 				data = undefined;
 
-				self.el = function(query, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
+				self.el = function(query/*keyAttr or a DOM.$.el*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
 					if(!arguments.length)
 						return $el;
 
-					$el = get$el(query/*keyAttr or a DOM.$.el*/, parent);
+					$el = get$el(query, parent);
 
 					self.$($data); //load $data on to the element
 					$data = undefined;
@@ -370,9 +379,94 @@ NO2 Liscence
 							obj[childName] = O_O.element({$:{value: obj[childName]}}); //create an element with the assigned object as its default value
 
 						obj[childName]('el', childName, el);
-
 					}
 				}
+			}
+			
+			,repeat: function(options)
+			{
+				var list,
+					self = this,
+					el = O_O.element(options.$), $el,
+					item = options.item || {}, //!the empty object could be removed
+					itemHtml;
+					
+				//element methods
+				self.el = function(_el, parent)
+				{
+					el('el', _el, parent);
+					
+					$el = el('el');
+					
+					itemHtml = el('html');
+					el('html', '');
+					
+					self.list(options.list);
+					
+					for(var i in list())
+						self.add(list(i));
+				}
+				
+				self.wrapper = function(p1, p2, p3)
+				{
+					if(!self[p1])
+						el(p1, p2, p3); //!check for performence issues with undefined vars
+						
+					if(arguments.length == 1)
+					{
+						if(typeof p1 == 'string') //repeat('list')
+							return self[p1]();
+
+						else
+							return digest(p1); //the first param is a digestible object
+					}					
+					else
+						return self[p1](p2, p3);
+
+					return self.value();
+				}
+				
+				//repeat methods
+				self.list = function(_list)
+				{
+					list = _list;
+					
+					list.event(monitor);
+					
+					return self;
+				}
+				
+				self.add = function(itemData)
+				{
+					var _el = $el.append($(DOM.new('div')).html(itemHtml).prop('firstElementChild')).attr(keyAttr, itemData[list.id]);
+					var id = itemData[list.id];
+					
+					self.wrapper[id] = O_O.element(extend({$: item}, itemData))('el', id, $el.el);
+				}
+				
+				self.change = function(itemData)
+				{
+					self.wrapper[itemData[list.id]](extend(itemData, {$: item}));
+				}
+				
+				function digest(data) /*setting properties for sel and children !This might alter the passed data object!*/
+				{
+					//?consider run time bindings; as of now only objects passed with the constructor could be modified
+
+					if(data.$)
+						$el(extract(data, '$'));
+
+					for(var key in data)
+						if(self.wrapper[key].plug)
+							self.wrapper[key](data[key]);
+						else
+							self.wrapper[key]('value', data[key]);
+				}
+				
+				function monitor(event, source)
+				{
+					self[event.type](event.data);
+				}				
 			}
 
 			//Data Classes
@@ -400,29 +494,71 @@ NO2 Liscence
 				extend(self.val, host);
 			}
 
-			,object: function(data)
+			,object: function(store)
 			{
 				this.wrapper = function(newData)
 				{
 					if(newData)
 					{
 						for(var key in newData)
-							setProp(data, key, newData[key]);
+							setProp(store, key, newData[key]);
 					}
 					else
 					{
 						var ret = {};
 
-						for(var prop in data)
-							ret[prop] = getProp(data, prop);
+						for(var prop in store)
+							ret[prop] = getProp(store, prop);
 
 						return ret;
 					}
 				}
 
-				extend(this.wrapper, data);
+				extend(this.wrapper, store);
 			}
 			
+			,list: function(options)
+			{
+				var self = this,
+					store = {};
+					
+				self.event = O_O.value();
+				
+				self.wrapper = function(param)
+				{
+					if(typeof param == 'undefined')
+						return store;
+					
+					if(Array.isArray(param))
+					{
+						for(var i = 0; i < param.length; ++i)
+						{
+							var id = param[i][options.id];
+							
+							self.event({
+								
+								type: id in store ? 'change' : 'add',
+								data: extend(store[id] || {}, param[i])
+								
+							}, self);
+							
+							store[id] = param[i];
+						}
+					}
+					else
+					{
+						return store[param]; //return the value with the given 'id'
+					}
+				}
+				
+				self.wrapper(options.data);
+
+				//extend(self.wrapper, store);
+				self.wrapper.event = self.event;
+				self.wrapper.id = options.id;
+			}
+			
+			//control classes
 			,watch: function() //? here: watches could be closely related to lists, spread sheet totaling
 			{
 				var self = this,
@@ -500,6 +636,27 @@ NO2 Liscence
 			
 			return new O_O.class.element(data).wrapper;
 		}
+		
+		self.repeat = function(p1, p2, p3) //an element that acts as a collection
+		{
+			if(arguments.length == 1) //the argument is an object, this is checked first as usual this will be the case
+				return new O_O.class.repeat(p1).wrapper;
+			
+			//the following is to implement the wrapper interface, for developer convenience; it allows to reduce some redundant code
+			//there are several arguments
+			var data = {$:{}};
+			
+			if(arguments.length == 2)
+				data.$[p1] = p2;
+				
+			else if(arguments.length == 3)
+			{
+				data.$[p1] = {};
+				data.$[p1][p2] = p3;
+			}
+			
+			return new O_O.class.repeat(data).wrapper;
+		}
 
 		//Data wrappers
 		self.value = function(val)
@@ -510,6 +667,11 @@ NO2 Liscence
 		self.object = function(data)
 		{
 			return new O_O.class.object(data).wrapper;
+		}
+		
+		self.list = function(options)
+		{
+			return new O_O.class.list(options).wrapper;
 		}
 		
 		//control wrappers

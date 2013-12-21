@@ -65,3 +65,5 @@
 
 131221_0400	got rid of require.js.
 131221_0410	events aren't bound to the O_O.element anymore; 'this' refers to the DOMElement.
+
+131222_0520	.repeat added.

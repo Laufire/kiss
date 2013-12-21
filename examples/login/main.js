@@ -65,7 +65,10 @@ App = O_O.element(new function()
 
 			$: {
 
-				class: { hidden: falsy(self.data.password) }
+				class: {
+				
+					hidden: falsy(self.data.password)
+				}
 			},
 			
 			strength: passwordStrength(self.data.password)
