@@ -62,3 +62,6 @@
 131220_0040	rewrite completed, ready to be merged into master.
 131220_0050	rewrite branch merged to master.
 131220_0235 v0.0.3 released.
+
+131221_0400	got rid of require.js.
+131221_0410	events aren't bound to the O_O.element anymore; 'this' refers to the DOMElement.

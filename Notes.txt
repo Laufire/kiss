@@ -1,14 +1,14 @@
 ToDos
 {
-	Restructure.
-	
-	Shouldn't depend on jQuery, as the goal is not DOM manipulation.
+	Map: a many to one to many router (Ex: to map several O_O.value-s to several vars in the localStorage, to map history urls to document states).
 	
 	The code for the App should be brief.
 	
 	Cleaning up with jQuery's 'onRemoved' event.
 	
 	Better collections.
+	
+	Iterator a plugin to linearly move through a collection.
 	
 	Redo the example page, with tabs.
 	
@@ -24,6 +24,8 @@ Plugins
 	To parse KO like data-binding atribute (without the evaluations of the expressions).
 	
 	A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
+	
+	For history.
 }
 
 Components

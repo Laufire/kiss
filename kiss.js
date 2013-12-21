@@ -1,12 +1,10 @@
-﻿//? DOM node type to specify whether a node could have children
-//? An automatic UI generation check;
-//? JSONP instead of requirejs (check browserify)
-//? friendly events
-//?add other input elements like text-area etc
-//? localStorage as a data source for O_O.values
-//? data-type list (non-duplicated) with methods add, remove, replace etc.
-//? ?using CSS selectors + js arrays on the head element instead of ids?
+﻿//? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? runtime bindings
+//? data stores, as interfaces to existing data objects like localStorage
+//? localStorage as a data source for O_O.values
+//? DOM node type to specify whether a node could have children
+//? An automatic UI generation check;
+//? ?using CSS selectors + js arrays on the head element instead of ids?
 //? ajax text templates - plugin
 
 /*!
@@ -38,12 +36,12 @@ NO2 Liscence
 		{
 			keyAttr = attr;
 			
-			hider = $(document.head).$('script').before('style').html('[' + keyAttr + ']{display:none}')
+			hider = $('script').before('style').html('[' + keyAttr + ']{display:none}')
 		}
 		
 		self.keyAttr('id');//the default keyAttr is id
 		
-		self.ready = function(func)
+		self.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
 		}
@@ -210,7 +208,7 @@ NO2 Liscence
 
 				self.value = function(newVal) //returns the default value on data collection, sets the default values when hosts are directly assigned
 				{
-					if($el.el instanceof HTMLInputElement) //?textarea
+					if('readOnly' in $el.el) //the element couldn't have html
 					{
 						var prop;
 
@@ -232,15 +230,6 @@ NO2 Liscence
 						else
 							return self.prop(prop);
 					}
-
-					else if($el.el instanceof HTMLButtonElement)
-					{
-						if(!newVal)
-							return;
-
-						self.event('click', newVal);
-					}
-
 					else
 					{
 						if(newVal)
@@ -304,7 +293,7 @@ NO2 Liscence
 					if(events[name]) //the event already has a handler
 						$el.off(name, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
-					$el.on(name, events[name] = handler.bind(self));
+					$el.on(name, events[name] = handler);
 
 					return self.wrapper
 				}
@@ -425,7 +414,7 @@ NO2 Liscence
 						var ret = {};
 
 						for(var prop in data)
-							getProp(data, prop);
+							ret[prop] = getProp(data, prop);
 
 						return ret;
 					}
@@ -541,15 +530,6 @@ NO2 Liscence
 			return _watch;
 		}
 		
-		//plugin wrapper
-		self.plugin = function(name, plugin)
-		{
-			if(!plugin)
-				return self.plugin[name];
-				
-			self.plugin[name] = plugin;
-		}			
-
 		//Factories
 		self.trans = function(process) //a function that transforms values
 		{
@@ -559,14 +539,23 @@ NO2 Liscence
 
 				inject.plug = function(outFunc)
 				{
-					return host.plug(function(val, prev)
+					return host.plug(function(val, source)
 					{
-						outFunc(process(val, prev));
+						outFunc(process(val, source));
 					});
 				}
 
 				return inject;
 			}
+		}
+		
+		//plugin wrapper
+		self.plugin = function(name, plugin)
+		{
+			if(!plugin)
+				return self.plugin[name];
+				
+			self.plugin[name] = plugin;
 		}
 	}
 

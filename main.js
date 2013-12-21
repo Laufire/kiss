@@ -1,38 +1,5 @@
-﻿"use strict";
-
-var App, _K; //? it's in the global scope to make debugging easy
-
-require.config({
-
-	paths: {
-
-		microDOM: 'lib/microDOM',
-		kiss: 'kiss',
-		develop: 'lib/develop' //? develop
-	},
-
-	shim: {
-
-		microDOM: {
-		
-			exports: 'DOM'
-		},
-		
-		kiss: {
-		
-			exports: 'O_O',
-			depends: ['microDOM']
-
-		}
-	}
-});
-
-define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
-{
-	_K = O_O; //? develop
-
-	var observed = O_O.value(false);
-	var pv = O_O.value('Dynamic Value');
+﻿var observed = O_O.value(false),
+	pv = O_O.value('Dynamic Value'),
 	
 	App = O_O.element({
 		
@@ -86,9 +53,8 @@ define(['microDOM', 'kiss', 'develop'], function(DOM, O_O, develop)
 		}
 	});
 	
-	O_O.ready(function()
-	{
-		App('el', 'App');
-		pv(1);
-	});		
-});
+O_O.ready(function()
+{
+	App('el', 'App');
+	pv(1);
+});		

@@ -1,0 +1,20 @@
+﻿{
+	"live" : true,
+	
+	"imports": {
+	
+		"./lib/" : {
+		
+			"window": ["microDOM"]
+			
+		},
+		
+		"./" : {
+		
+			"DOM": ["kiss"],
+			
+			"O_O" : ["main"]
+			
+		}
+	}
+}

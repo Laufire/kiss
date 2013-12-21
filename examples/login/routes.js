@@ -1,9 +1,9 @@
-﻿define(function()
+﻿(function()
 {
 
 	"use strict";
 	
-	return new function()
+	window.routes = new function()
 	{
 	
 		var self = this;
@@ -18,4 +18,4 @@
 		}
 	}
 
-});
+})();
