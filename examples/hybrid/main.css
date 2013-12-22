@@ -1,0 +1,48 @@
+body {
+  padding: 0;
+  margin: 0;
+  background: #000000;
+  color: #ffffff;
+  width: 100%;
+  font-size: 15pt;
+}
+div {
+  box-sizing: border-box;
+}
+#output,
+#input,
+#inputText {
+  width: 100%;
+}
+#output {
+  height: 80%;
+  padding: 1em;
+  overflow: auto;
+}
+#input {
+  height: 20%;
+  padding: 0 2em;
+}
+#inputText {
+  padding: .5em;
+  font-size: 20px;
+  background: #ffffff;
+  color: #000000;
+}
+.result {
+  padding: .5em;
+}
+.error {
+  color: red;
+}
+.warning {
+  color: yellow;
+}
+.result thead {
+  background: slategray;
+  padding: 0 .5em;
+}
+.result td {
+  text-align: left;
+  padding: 0 .5em;
+}

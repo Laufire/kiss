@@ -8,9 +8,9 @@ var App = O_O.element(new function()
 {
 	var self = this;
 
-	self.list = O_O.list({
+	self.people = O_O.list({
 
-		id: 'name1',
+		idProp: 'name1',
 		
 		data: [
 			{
@@ -32,7 +32,7 @@ var App = O_O.element(new function()
 
 	self.collection = O_O.repeat({
 
-		list:  self.list,
+		source:  self.people,
 		
 		item: {
 		
@@ -40,7 +40,8 @@ var App = O_O.element(new function()
 			
 				click: function()
 				{
-					alert(this.innerHTML);
+					console.log(App.people.items[this.id]);
+					console.log(App.collection[this.id]());
 				}
 			}
 		}

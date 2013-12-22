@@ -1,4 +1,6 @@
 ﻿//?function.name is a read only property
+//status of ie11
+//may have to hide the explicitly defined rool elements untill the children are fully loaded.
 //? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
@@ -98,14 +100,6 @@ NO2 Liscence
 			}
 		}
 		
-		function load(target, source, props)
-		{
-			for(var i = 0; i < props.length; ++i)
-				target[props[i]] = source[props[i]];
-				
-			return target;
-		}
-
 		function get$el(key, parent)
 		{
 			return $('[' + keyAttr + '="' + key + '"]', parent);
@@ -133,6 +127,14 @@ NO2 Liscence
 				return obj[prop](value);
 
 			return obj[prop] = value;
+		}
+		
+		function remove(arr, val)
+		{
+			var i = arr.indexOf(val);
+			
+			if(i > -1)
+				return arr.splice(i, 1);
 		}
 
 		//public
@@ -169,7 +171,7 @@ NO2 Liscence
 			}
 
 			//UI classes
-			,element: function(data/*consits of $data and child element data, saved until the element is set*/) //!the passed object will be modified
+			,element: function(data/*consists of $data and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
 				var self = this;
 				var $el;
@@ -179,12 +181,6 @@ NO2 Liscence
 
 				self.wrapper = function(p1, p2, p3)
 				{
-					if(arguments.length == 3) //!this could be reduced to a single checkm if the undefined vars doesn't cost a lot
-						return self[p1](p2, p3); //elm('prop', 'value', 'hello')
-
-					if(arguments.length == 2) //elm('html', 'hello'), elm('prop', 'value')
-						return self[p1](p2);
-
 					if(arguments.length == 1)
 					{
 						if(typeof p1 == 'string') //elm('html')
@@ -192,7 +188,10 @@ NO2 Liscence
 
 						else
 							return digest(p1); //the first param is a digestible object
+					
 					}
+					else if(arguments.length)
+						return self[p1](p2, p3);
 
 					return self.value();
 				}
@@ -210,7 +209,9 @@ NO2 Liscence
 					self.$($data); //load $data on to the element
 					$data = undefined;
 
+					$el.el.style.display = 'none';
 					loadChildren(self.wrapper, $el.el);
+					$el.el.style.display = '';
 
 					return self.wrapper;
 				}
@@ -246,6 +247,9 @@ NO2 Liscence
 
 						else
 						{
+							if(!Object.keys(self.wrapper).length) //the element has no children
+								return self.html(); //so return its html
+							
 							var ret = {};
 
 							for(var key in self.wrapper)
@@ -385,11 +389,11 @@ NO2 Liscence
 			
 			,repeat: function(options)
 			{
-				var list,
+				var source,
 					self = this,
 					el = O_O.element(options.$), $el,
 					item = options.item || {}, //!the empty object could be removed
-					itemHtml;
+					itemNode;
 					
 				//element methods
 				self.el = function(_el, parent)
@@ -398,13 +402,12 @@ NO2 Liscence
 					
 					$el = el('el');
 					
-					itemHtml = el('html');
+					itemNode = el('prop', 'firstElementChild').cloneNode();
+					
 					el('html', '');
 					
-					self.list(options.list);
-					
-					for(var i in list())
-						self.add(list(i));
+					self.source(options.source);
+					options = undefined;
 				}
 				
 				self.wrapper = function(p1, p2, p3)
@@ -414,7 +417,7 @@ NO2 Liscence
 						
 					if(arguments.length == 1)
 					{
-						if(typeof p1 == 'string') //repeat('list')
+						if(typeof p1 == 'string') //repeat('source')
 							return self[p1]();
 
 						else
@@ -427,26 +430,29 @@ NO2 Liscence
 				}
 				
 				//repeat methods
-				self.list = function(_list)
+				self.source = function(_source)
 				{
-					list = _list;
+					source = _source;
 					
-					list.event(monitor);
+					source.event(monitor);				
+					
+					for(var i in source.items)
+						self.add(source.items[i]);
 					
 					return self;
 				}
 				
 				self.add = function(itemData)
 				{
-					var _el = $el.append($(DOM.new('div')).html(itemHtml).prop('firstElementChild')).attr(keyAttr, itemData[list.id]);
-					var id = itemData[list.id];
+					var _el = $el.append(itemNode.cloneNode()).attr(keyAttr, itemData[source.idProp]),
+						id = itemData[source.idProp];
 					
 					self.wrapper[id] = O_O.element(extend({$: item}, itemData))('el', id, $el.el);
 				}
 				
 				self.change = function(itemData)
 				{
-					self.wrapper[itemData[list.id]](extend(itemData, {$: item}));
+					self.wrapper[itemData[source.idProp]](extend(itemData, {$: item}));
 				}
 				
 				function digest(data) /*setting properties for sel and children !This might alter the passed data object!*/
@@ -470,7 +476,7 @@ NO2 Liscence
 			}
 
 			//Data Classes
-			,value: function(val) // a host that lists a simple value
+			,value: function(val) // a host that stores a simple value
 			{
 				var self = this;
 
@@ -520,42 +526,41 @@ NO2 Liscence
 			,list: function(options)
 			{
 				var self = this,
-					store = {};
+					items = {},
+					idProp = options.idProp;
 					
 				self.event = O_O.value();
 				
 				self.wrapper = function(param)
 				{
-					if(typeof param == 'undefined')
-						return store;
-					
 					if(Array.isArray(param))
 					{
 						for(var i = 0; i < param.length; ++i)
 						{
-							var id = param[i][options.id];
+							var id = param[i][idProp];
 							
 							self.event({
 								
-								type: id in store ? 'change' : 'add',
-								data: extend(store[id] || {}, param[i])
+								type: id in items ? 'change' : 'add',
+								data: extend(items[id] || {}, param[i])
 								
 							}, self);
 							
-							store[id] = param[i];
+							items[id] = param[i];
 						}
 					}
 					else
 					{
-						return store[param]; //return the value with the given 'id'
+						return items[param]; //return the value with the given 'id'
 					}
 				}
 				
 				self.wrapper(options.data);
+				//options = undefined;
 
-				//extend(self.wrapper, store);
+				self.wrapper.items = items;
 				self.wrapper.event = self.event;
-				self.wrapper.id = options.id;
+				self.wrapper.idProp = idProp;
 			}
 			
 			//control classes
@@ -586,8 +591,10 @@ NO2 Liscence
 				
 				self.unwatch = function()
 				{
-					for(var i = 0, idx = plugs.indexOf(arguments[i]); i < arguments.length; ++i)
+					for(var i = 0, idx; i < arguments.length; ++i)
 					{
+						idx = plugs.indexOf(arguments[i]);
+						
 						if(idx > -1) //if the element is already being watched
 							plugs.splice(idx, 1)[0].unplug(plug);
 					}

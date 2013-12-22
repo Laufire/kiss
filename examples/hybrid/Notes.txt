@@ -1,0 +1,19 @@
+Goal
+{
+	//Goal here
+}
+
+Idea
+{
+	//Ideas
+}
+
+ToDo
+{
+	//ToDos
+}
+
+Log
+{
+	//Log
+}
