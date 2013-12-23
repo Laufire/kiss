@@ -79,7 +79,7 @@ App = O_O.box(new function()
 
 O_O.ready(function()
 {
-	App.$.el('App');	
+	App.$.at('App');	
 
 	App.loginForm.$.digest({username: App.data.username});
 

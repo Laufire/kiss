@@ -27,9 +27,13 @@ div
 #collection
 {
 	background: #fee;
+	width: 100%;
+	float: left;
 }
 
 .display
 {
 	background: #efe;
+	/*width: 8em;
+	float:left;*/
 }

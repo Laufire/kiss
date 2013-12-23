@@ -1,4 +1,8 @@
-﻿//? data-type list (non-duplicated) with methods add, remove, replace etc.
+﻿// ?? elements and their data
+//? cleaning the pod, removing pod's liseners to sources
+//? changing sources
+//? History and states
+//? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
 //? localStorage as a data source for O_O.values
@@ -34,12 +38,12 @@ NO2 Liscence
 		self.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
 			keyAttr = attr;
-			
+
 			hider = $('script').before('style').html('[' + keyAttr + ']{display:none}')
 		}
-		
+
 		self.keyAttr('id');//the default keyAttr is id
-		
+
 		self.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
@@ -48,7 +52,7 @@ NO2 Liscence
 		DOM.ready(function()
 		{
 			document.documentElement.style.display = '';
-			
+
 			if(ready)
 			{
 				ready();
@@ -65,13 +69,13 @@ NO2 Liscence
 
 		//helpers
 		//var slice = Array.prototype.slice;
-		
+
 		function iterate(array, func)
 		{
 			for(var i = 0; i < array.length; ++i)
 				func(array[i]);
 		}
-		
+
 		function extend(target)
 		{
 			Array.prototype.slice.call(arguments, 1).forEach(function(source)
@@ -91,11 +95,11 @@ NO2 Liscence
 				var ret = obj[prop];
 
 				delete obj[prop];
-				
+
 				return ret;
 			}
 		}
-		
+
 		function get$el(key, parent)
 		{
 			return $('[' + keyAttr + '="' + key + '"]', parent);
@@ -124,45 +128,44 @@ NO2 Liscence
 
 			return obj[prop] = value;
 		}
-		
+
 		function remove(arr, val)
 		{
 			var i = arr.indexOf(val);
-			
+
 			if(i > -1)
 				return arr.splice(i, 1);
 		}
 
 		//public
 		self.class = {
-		
+
 			host: function()
 			{
-				var self = this;
-				var plugs = [];
+				var plugs = [],
 
-				self.plug = function(func)
+				wrapper = this.wrapper = function(val, source)
+				{
+					for(var i = 0; i < plugs.length; ++i)
+						plugs[i](val, source);
+				};
+
+				wrapper.plug = function(func)
 				{
 					plugs.push(func);
 
 					return function() //a function used to unplug
 					{
-						self.unplug(func);
+						wrapper.unplug(func);
 					}
 				}
 
-				self.unplug = function(func)
+				wrapper.unplug = function(func)
 				{
 					var i = plugs.indexOf(func);
 
 					if(i > -1)
 						plugs.splice(i, 1);
-				}
-
-				self.fire = function(val, source)
-				{
-					for(var i = 0; i < plugs.length; ++i)
-						plugs[i](val, source);
 				}
 			}
 
@@ -175,10 +178,37 @@ NO2 Liscence
 				plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
 
 				$data = extract(children, '$');
-				
+				extend(self, children); //add the chidren to the box
+				children = Object.keys(children); //keep only the names for future reference
+
+				_$.at = function(query/*keyAttr or a DOM.$.el*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
+				{
+					self.$.$el = $el = get$el(query, parent);
+					self.$.el = $el.el;
+
+					if($data)
+					{
+						if($data.init)
+						{
+							$data.init();
+							delete $data.init;
+						}
+
+						_$.digest({$: $data}); //load $data on to the element
+						$data = undefined;
+					}
+
+					_$.id = $el.attr(keyAttr); //give the element an id
+					$el.el.style.display = 'none';
+					loadChildren();
+					$el.el.style.display = '';
+
+					return _$;
+				}
+
 				_$.val = function(newVal) //returns the default value when data is collected, sets the default values when hosts are directly assigned
 				{
-					if('readOnly' in $el.el) //the element couldn't have html
+					if('readOnly' in $el.el) //?typeof undefined check //the element couldn't have html
 					{
 						var prop;
 
@@ -211,24 +241,24 @@ NO2 Liscence
 
 						else
 						{
-							var childArray = Object.keys(children);
-							
-							if(!childArray.length) //the element has no children
+							if(!children.length) //the element has no children
 								return; //so return empty
-							
+
 							var ret = {};
 
-							for(var i = 0; i < childArray.length; ++i)
+							for(var i = 0; i < children.length; ++i)
 							{
-								var child = self[childArray[i]], val;
-								
+								var val,
+									name = children[i],
+									child = self[name];
+
 								if(typeof child == 'object')
-									val = self[childArray[i]].$.val();
+									val = self[name].$.val();
 								else
-									val = self[childArray[i]]();
+									val = self[name]();
 
 								if(typeof val != 'undefined')
-									ret[childArray[i]] = val;
+									ret[name] = val;
 							}
 
 							return ret;
@@ -237,31 +267,15 @@ NO2 Liscence
 
 					return _$;
 				}
-				
-				_$.el = function(query/*keyAttr or a DOM.$.el*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
-				{
-					if(!arguments.length)
-						return $el;
-
-					$el = get$el(query, parent);
-
-					if($data)
-					{
-						_$.digest({$: $data}); //load $data on to the element
-						$data = undefined;
-					}
-
-					$el.el.style.display = 'none';
-					loadChildren(children, $el.el);
-					extend(self, children);
-					$el.el.style.display = '';
-
-					return _$;
-				}
 
 				_$.html = function(newVal)
 				{
-					return $elRouter('prop', 'innerHTML', newVal);
+					if(typeof newVal == 'undefined')
+						return $el.html()
+
+					$elRouter('prop', 'innerHTML', newVal);
+
+					loadChildren();
 				}
 
 				_$.prop = function(prop, newVal)
@@ -284,7 +298,11 @@ NO2 Liscence
 					if(events[name]) //the event already has a handler
 						$el.off(name, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
-					$el.on(name, events[name] = handler);
+					$el.on(name, events[name] = function(e)
+					{
+						//!'this' context is lost, that could be got through the e.target
+						handler(e, self)
+					});
 
 					return _$;
 				}
@@ -294,7 +312,7 @@ NO2 Liscence
 					if(data.$)
 					{
 						var $data = extract(data, '$');
-						
+
 						for(var key in $data)
 						{
 							if(typeof $data[key] == 'object') //the prop is an enumerable
@@ -304,9 +322,9 @@ NO2 Liscence
 								_$[key]($data[key])
 						}
 					}
-					
+
 					var keys = Object.keys(data)
-					
+
 					for(var i = 0; i < keys.length; ++i)
 						if(self[keys[i]].$) //? instanceOf
 							self[keys[i]].$.val(data[keys[i]]);
@@ -315,7 +333,7 @@ NO2 Liscence
 
 					return _$;
 				}
-				
+
 				//helpers
 				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
@@ -351,106 +369,113 @@ NO2 Liscence
 					}
 				}
 
-				var loadChildren = function(parent, el)
+				var loadChildren = function()
 				{
-					for(var childName in parent) //load child objects with matching elements
+					for(var i = 0; i < children.length; ++i) //load child objects with matching elements
 					{
-						if(!get$el(childName, el).el)
+						var childName = children[i];
+
+						if(!get$el(childName, $el.el).el)
 							continue;  //tags without matching objects are left intact; so to play nice with other libs
 
 						//console.log(childName);
-						var child = parent[childName];
+						var child = self[childName];
 
 						if(typeof child == 'object')
 						{
 							if(child.constructor.name == '' || child.constructor.name == 'Object') //a plain object containing self attrs and children
-								parent[childName] = O_O.box(child);
-							
-							else if(child.constructor.name == 'pod')
-							{
-								parent[childName].el(childName, el);
-								continue;
-							}
+								self[childName] = O_O.box(child);
 						}
 						else
-							parent[childName] = O_O.box({$:{val: child}}); //create an element with the assigned object as its default value
+							self[childName] = O_O.box({$:{val: child}}); //create an element with the assigned object as its default value
 
-						parent[childName].$.el(childName, el);
+						self[childName].$.at(childName, $el.el);
 					}
 				}
 			}
-			
+
 			,pod: function pod(options)
 			{
-				var source,
-					self = this,
-					el = O_O.box(options.$), $el, //the element that holds the items
-					idProp, //the name of the id property for the items
-					item = options.item || {}, //!the empty object could be removed
-					itemNode;
-					
-				self.$ = el.$;
-				self.items = {};
-				
-				//element methods
-				self.el = function(_el, parent)
+				if(!options.$)
+					options.$ = {};
+
+				//? ?should pod have an 'init'
+				options.$.init = function() //this is to queue the tasks after the el is set
 				{
-					el.$.el(_el, parent);
-					
-					$el = el.$.el();
-					
-					itemNode = el.$.prop('firstElementChild').cloneNode();
-					
-					el.$.html('');
-					
+					itemNode = $el.$.prop('firstElementChild').cloneNode();
+
+					$el.$.html('');
+
 					self.source(options.source);
 					options = undefined;
 				}
-				
+
+				var source,
+					self = this,
+					idProp, //the name of the id property for the items
+					item = options.item || {}, //!the empty object could be removed
+					items = self.items = {},
+					itemNode,
+					exInit,
+
+					$el = O_O.box(options); //the box that holds the items
+
+				self.$ = $el.$;
+
 				self.digest = function(options)
 				{
 					var keys = Object.keys(options)
-					
+
 					for(var i = 0; i < keys.length; ++i)
 						self[keys[i]](data[keys[i]]);
 				}
-				
+
 				self.source = function(_source) //sets the data source
 				{
 					source = _source;
-					
-					source.event(monitor);				
-					
+
+					source.event.plug(listen);
+
 					idProp = source.idProp;
-					
+
 					for(var i in source.items)
 						self.add(source.items[i]);
-					
+
 					return self;
 				}
-				
+
 				self.add = function(itemData) //adds an item
 				{
 					var id = itemData[idProp];
-					
-					$el.append(itemNode.cloneNode()).attr(keyAttr, itemData[idProp]); //cone the node and append
-					
-					self.items[id] = O_O.box(extend({$: item}, itemData)); //register a box to the items array
-					self.items[id].$.el(id, $el.el); //set its el
+
+					$el.$.$el.append(itemNode.cloneNode()).attr(keyAttr, itemData[idProp]); //cone the node and append
+
+					items[id] = O_O.box(extend({$: item}, itemData)); //register a box to the items array
+					items[id].$.at(id, $el.el); //set its el
 				}
-				
+
 				self.change = function(itemData) //changes an item
 				{
-					self.items[itemData[idProp]].$.digest(extend(itemData, {$: item}));
+					items[itemData[idProp]].$.digest(extend(itemData, {$: item}));
 				}
-				
-				function monitor(event)
+
+				self.remove = function(id) //changes an item
+				{
+					items[id].$.el.remove();
+					delete items[id];
+				}
+
+				self.event = O_O.host();
+
+				function listen(event)
 				{
 					self[event.type](event.data);
-				}				
+
+					self.event(event, items[event.data[idProp]]);
+				}
 			}
 
-			
+
 			//Data Classes
 			,value: function(val) // a host that stores a simple value
 			{
@@ -466,14 +491,15 @@ NO2 Liscence
 						if(newVal === val) //? Could equality check be passed to the plugged function?
 							return;
 
-						host.fire(newVal, self.val); //fires the change; self.val() could be called to get the prevVal
+						host(newVal, self.val); //fires the change; self.val() could be called to get the prevVal
 						val = newVal;
 					}
 				}
 
-				var host = new O_O.class.host(self.val);
+				var host = O_O.host();
 
-				extend(self.val, host); //?prototypal instead
+				self.val.plug = host.plug;
+				self.val.unplug = host.unplug;//?prototypal instead
 			}
 
 			,object: function(store)
@@ -498,61 +524,96 @@ NO2 Liscence
 
 				extend(this.wrapper, store);
 			}
-			
+
 			,list: function(options)
 			{
 				var self = this,
 					items = {},
-					idProp = options.idProp;
-					
-				self.event = O_O.value();
-				
+					deleted = [],
+					live = [],
+					added = [],
+					idProp = options.idProp,
+					event = O_O.host();
+
 				self.wrapper = function(param)
 				{
-					if(Array.isArray(param))
-					{
+					if(!param.length)
+						return;
+
+					if(typeof param[0] == 'object') //the first param is an object, so add or change items
+
 						for(var i = 0; i < param.length; ++i)
 						{
-							var id = param[i][idProp];
-							
-							self.event({
-								
-								type: id in items ? 'change' : 'add',
-								data: extend(items[id] || {}, param[i])
-								
-							}, self);
-							
-							items[id] = param[i];
+							if(items[param[i][idProp]])
+								change(param[i]);
+							else
+								add(param[i]);
 						}
-					}
-					else
-					{
-						return items[param]; //return the value with the given 'id'
-					}
+
+					else //the first param id an id, so remove items
+						for(var i = 0; i < param.length; ++i)
+							remove(param[i]);
+
+					return self.wrapper;
 				}
-				
+
+				function add(data)
+				{
+					event({
+
+						type: 'add',
+						data: items[data[idProp]] = extend({}, data)
+
+					}, self);
+				}
+
+				function change(data)
+				{
+					event({
+
+						type: 'change',
+						data: extend(items[data[idProp]], data)
+
+					}, self);
+				}
+
+				function remove(id)
+				{
+					if(typeof items[id] == 'undefined')
+						return;
+
+					delete items[id];
+
+					event({
+
+						type: 'remove',
+						data: id
+
+					}, self);
+				}
+
 				self.wrapper(options.data);
 				//options = undefined;
 
 				self.wrapper.items = items;
-				self.wrapper.event = self.event;
+				self.wrapper.event = event;
 				self.wrapper.idProp = idProp;
 			}
-			
+
 			//control classes
 			,watch: function() //? here: watches could be closely related to lists, spread sheet totaling
 			{
 				var self = this,
-				
+
 					action = function(){},
-					
+
 					plug = function(val, source) //the function executes the triggered val and the watch itself
 					{
 						action(val, source);
 					},
-				
+
 					plugs = [];
-				
+
 				self.watch = function()
 				{
 					for(var i = 0; i < arguments.length; ++i)
@@ -561,55 +622,60 @@ NO2 Liscence
 							plugs.push(arguments[i]);
 							arguments[i].plug(plug);
 						}
-					
+
 					return self;
 				}
-				
+
 				self.unwatch = function()
 				{
 					for(var i = 0, idx; i < arguments.length; ++i)
 					{
 						idx = plugs.indexOf(arguments[i]);
-						
+
 						if(idx > -1) //if the element is already being watched
 							plugs.splice(idx, 1)[0].unplug(plug);
 					}
-					
+
 					return self;
 				}
-				
+
 				self.clear = function()
 				{
 					for(var i = 0; i < plugs.length; ++i)
 						plugs[i].unplug(plug);
-						
+
 					plugs = [];
-					
+
 					return self;
 				}
-				
+
 				self.action = function(newAct)
 				{
 					action = newAct;
-					
+
 					return self
 				}
 			}
 		}
-		
+
 		//Decorators
 		//UI wrappers
 		self.box = function(data) //an element that could have children
 		{
 			return new O_O.class.box(data);
 		}
-		
+
 		self.pod = function(data) //an element that acts as a collection
 		{
-			return new O_O.class.pod(data);
+			return new O_O.class.pod(data || {});
 		}
 
 		//Data wrappers
+		self.host = function()
+		{
+			return new O_O.class.host().wrapper;
+		}
+
 		self.value = function(val)
 		{
 			return new O_O.class.value(val).val;
@@ -619,30 +685,30 @@ NO2 Liscence
 		{
 			return new O_O.class.object(data).wrapper;
 		}
-		
+
 		self.list = function(options)
 		{
 			return new O_O.class.list(options).wrapper;
 		}
-		
+
 		//control wrappers
 		self.listen = function(val, func)
 		{
 			return {
-			
+
 				stop: val.plug(func)
 			}
 		}
-		
+
 		self.watch = function()
 		{
 			var _watch = new O_O.class.watch;
-			
+
 			iterate(arguments, _watch.watch);
-			
+
 			return _watch;
 		}
-		
+
 		//Factories
 		self.trans = function(process) //a function that transforms values
 		{
@@ -661,13 +727,13 @@ NO2 Liscence
 				return inject;
 			}
 		}
-		
+
 		//plugin wrapper
 		self.plugin = function(name, plugin)
 		{
 			if(!plugin)
 				return self.plugin[name];
-				
+
 			self.plugin[name] = plugin;
 		}
 	}
