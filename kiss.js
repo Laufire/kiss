@@ -1,17 +1,13 @@
-﻿//?function.name is a read only property
-//status of ie11
-//may have to hide the explicitly defined rool elements untill the children are fully loaded.
-//? data-type list (non-duplicated) with methods add, remove, replace etc.
+﻿//? data-type list (non-duplicated) with methods add, remove, replace etc.
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
 //? localStorage as a data source for O_O.values
-//? DOM node type to specify whether a node could have children
 //? An automatic UI generation check;
 //? ?using CSS selectors + js arrays on the head element instead of ids?
 //? ajax text templates - plugin
 
 /*!
-KISS v0.0.3
+KISS v0.0.4
 
 NO2 Liscence
 */
@@ -24,7 +20,7 @@ NO2 Liscence
 		document.documentElement.style.display = 'none'; //hide the document until DOM.ready fires
 
 		var self = this;
-		self.VERSION = '0.0.1';
+		self.VERSION = '0.0.4';
 
 		var
 			//helpers
@@ -116,7 +112,7 @@ NO2 Liscence
 		function getProp(obj, prop)
 		{
 			if(typeof obj[prop] == 'function')
-				return prop();
+				return obj[prop]();
 
 			return obj[prop];
 		}
@@ -138,8 +134,8 @@ NO2 Liscence
 		}
 
 		//public
-		self.class = { //base classes that could be extended by plugins
-
+		self.class = {
+		
 			host: function()
 			{
 				var self = this;
@@ -171,52 +167,16 @@ NO2 Liscence
 			}
 
 			//UI classes
-			,element: function(data/*consists of $data and child element data, saved until the element is set*/) //!the passed object will be modified
+			,box: function box(children/*consists of $children and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
-				var self = this;
-				var $el;
-				var events = {};
-				var $data = extract(data, '$'); //extracts $data (attr, html, event etc)
-				var plugs = {prop: {}, attr: {}, class: {}};  /*stores the 'unplug' functions from the hosts*/
+				var self = this,
+				$el, events = {},
+				_$ = self.$ = {}, //the root for $ attributes
+				plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
 
-				self.wrapper = function(p1, p2, p3)
-				{
-					if(arguments.length == 1)
-					{
-						if(typeof p1 == 'string') //elm('html')
-							return self[p1]();
-
-						else
-							return digest(p1); //the first param is a digestible object
-					
-					}
-					else if(arguments.length)
-						return self[p1](p2, p3);
-
-					return self.value();
-				}
-
-				extend(self.wrapper, data); //load the children on to the wrapper to allow writing code like App.title('Hello');
-				data = undefined;
-
-				self.el = function(query/*keyAttr or a DOM.$.el*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
-				{
-					if(!arguments.length)
-						return $el;
-
-					$el = get$el(query, parent);
-
-					self.$($data); //load $data on to the element
-					$data = undefined;
-
-					$el.el.style.display = 'none';
-					loadChildren(self.wrapper, $el.el);
-					$el.el.style.display = '';
-
-					return self.wrapper;
-				}
-
-				self.value = function(newVal) //returns the default value on data collection, sets the default values when hosts are directly assigned
+				$data = extract(children, '$');
+				
+				_$.val = function(newVal) //returns the default value when data is collected, sets the default values when hosts are directly assigned
 				{
 					if('readOnly' in $el.el) //the element couldn't have html
 					{
@@ -229,103 +189,134 @@ NO2 Liscence
 
 						if(newVal)
 						{
-							self.prop(prop, newVal);
+							_$.prop(prop, newVal);
 
 							if(typeof newVal == 'function')
-								self.event('change', function(e)
+								_$.event('change', function(e)
 								{
 									newVal(e.currentTarget.value);
 								});
 						}
 						else
-							return self.prop(prop);
+							return _$.prop(prop);
+					}
+					else if(typeof newVal == 'function' && $el.el instanceof HTMLButtonElement)
+					{
+						_$.event('click', newVal)
 					}
 					else
 					{
 						if(newVal)
-							self.html(newVal);
+							_$.html(newVal);
 
 						else
 						{
-							if(!Object.keys(self.wrapper).length) //the element has no children
-								return self.html(); //so return its html
+							var childArray = Object.keys(children);
+							
+							if(!childArray.length) //the element has no children
+								return; //so return empty
 							
 							var ret = {};
 
-							for(var key in self.wrapper)
+							for(var i = 0; i < childArray.length; ++i)
 							{
-								var val = self.wrapper[key]();
+								var child = self[childArray[i]], val;
+								
+								if(typeof child == 'object')
+									val = self[childArray[i]].$.val();
+								else
+									val = self[childArray[i]]();
 
 								if(typeof val != 'undefined')
-									ret[key] = val;
+									ret[childArray[i]] = val;
 							}
 
 							return ret;
 						}
 					}
 
-					return self.wrapper;
+					return _$;
 				}
-
-				self.$ = function(data) /*sets multiple attributes like html, attr at once*/
+				
+				_$.el = function(query/*keyAttr or a DOM.$.el*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
-					for(var key in data)
+					if(!arguments.length)
+						return $el;
+
+					$el = get$el(query, parent);
+
+					if($data)
 					{
-						if(typeof data[key] == 'object') //the prop is an enumerable
-							for(var k in data[key])
-								self[key](k, data[key][k])
-						else
-							self[key](data[key])
+						_$.digest({$: $data}); //load $data on to the element
+						$data = undefined;
 					}
 
-					return self.wrapper;
+					$el.el.style.display = 'none';
+					loadChildren(children, $el.el);
+					extend(self, children);
+					$el.el.style.display = '';
+
+					return _$;
 				}
 
-				self.html = function(newVal)
+				_$.html = function(newVal)
 				{
 					return $elRouter('prop', 'innerHTML', newVal);
 				}
 
-				self.prop = function(prop, newVal)
+				_$.prop = function(prop, newVal)
 				{
 					return $elRouter('prop', prop, newVal);
 				}
 
-				self.attr = function(attr, newVal)
+				_$.attr = function(attr, newVal)
 				{
 					return $elRouter('attr', attr, newVal);
 				}
 
-				self.class = function(_class, newVal)
+				_$.class = function(_class, newVal)
 				{
 					return $elRouter('class', _class, newVal);
 				}
 
-				self.event = function(name, handler) //?make it friendly
+				_$.event = function(name, handler) //?make it friendly
 				{
 					if(events[name]) //the event already has a handler
 						$el.off(name, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
 					$el.on(name, events[name] = handler);
 
-					return self.wrapper
+					return _$;
 				}
 
-				//helpers
-				function digest(data) /*setting properties for sel and children !This might alter the passed data object!*/
+				_$.digest = function(data)  /*setting properties for $el and children !This might alter the passed data object!*/
 				{
-					//?consider run time bindings; as of now only objects passed with the constructor could be modified
-
 					if(data.$)
-						self.$(extract(data, '$'));
-
-					for(var key in data)
-						if(self.wrapper[key].plug)
-							self.wrapper[key](data[key]);
+					{
+						var $data = extract(data, '$');
+						
+						for(var key in $data)
+						{
+							if(typeof $data[key] == 'object') //the prop is an enumerable
+								for(var k in $data[key])
+									_$[key](k, $data[key][k])
+							else
+								_$[key]($data[key])
+						}
+					}
+					
+					var keys = Object.keys(data)
+					
+					for(var i = 0; i < keys.length; ++i)
+						if(self[keys[i]].$) //? instanceOf
+							self[keys[i]].$.val(data[keys[i]]);
 						else
-							self.wrapper[key]('value', data[key]);
-				}
+							self[keys[i]](data[keys[i]]);
 
+					return _$;
+				}
+				
+				//helpers
 				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
 					if(typeof newVal == 'undefined') //!arguments.length won't work here
@@ -349,7 +340,7 @@ NO2 Liscence
 					else
 						return $el[method](prop, getVal(newVal));
 
-					return self.wrapper;
+					return _$;
 				}
 
 				function factory(method, prop)
@@ -360,81 +351,77 @@ NO2 Liscence
 					}
 				}
 
-				var loadChildren = function(obj, el)
+				var loadChildren = function(parent, el)
 				{
-					for(var childName in obj) //load child objects with matching elements
+					for(var childName in parent) //load child objects with matching elements
 					{
 						if(!get$el(childName, el).el)
 							continue;  //tags without matching objects are left intact; so to play nice with other libs
 
 						//console.log(childName);
+						var child = parent[childName];
 
-						if(typeof obj[childName] == 'object') //a plain object containing self attrs and children
-							obj[childName] = O_O.element(obj[childName]);
-
-						else if (typeof obj[childName] == 'function')
+						if(typeof child == 'object')
 						{
-							if(obj[childName].plug)
-								obj[childName] = O_O.element({$:{value: obj[childName]}}); //assign the pluggable to the object's default value
-								
-							//create an element with the assigned object as its default value
+							if(child.constructor.name == '' || child.constructor.name == 'Object') //a plain object containing self attrs and children
+								parent[childName] = O_O.box(child);
+							
+							else if(child.constructor.name == 'pod')
+							{
+								parent[childName].el(childName, el);
+								continue;
+							}
 						}
 						else
-							obj[childName] = O_O.element({$:{value: obj[childName]}}); //create an element with the assigned object as its default value
+							parent[childName] = O_O.box({$:{val: child}}); //create an element with the assigned object as its default value
 
-						obj[childName]('el', childName, el);
+						parent[childName].$.el(childName, el);
 					}
 				}
 			}
 			
-			,repeat: function(options)
+			,pod: function pod(options)
 			{
 				var source,
 					self = this,
-					el = O_O.element(options.$), $el,
+					el = O_O.box(options.$), $el, //the element that holds the items
+					idProp, //the name of the id property for the items
 					item = options.item || {}, //!the empty object could be removed
 					itemNode;
 					
+				self.$ = el.$;
+				self.items = {};
+				
 				//element methods
 				self.el = function(_el, parent)
 				{
-					el('el', _el, parent);
+					el.$.el(_el, parent);
 					
-					$el = el('el');
+					$el = el.$.el();
 					
-					itemNode = el('prop', 'firstElementChild').cloneNode();
+					itemNode = el.$.prop('firstElementChild').cloneNode();
 					
-					el('html', '');
+					el.$.html('');
 					
 					self.source(options.source);
 					options = undefined;
 				}
 				
-				self.wrapper = function(p1, p2, p3)
+				self.digest = function(options)
 				{
-					if(!self[p1])
-						el(p1, p2, p3); //!check for performence issues with undefined vars
-						
-					if(arguments.length == 1)
-					{
-						if(typeof p1 == 'string') //repeat('source')
-							return self[p1]();
-
-						else
-							return digest(p1); //the first param is a digestible object
-					}					
-					else
-						return self[p1](p2, p3);
-
-					return self.value();
+					var keys = Object.keys(options)
+					
+					for(var i = 0; i < keys.length; ++i)
+						self[keys[i]](data[keys[i]]);
 				}
 				
-				//repeat methods
-				self.source = function(_source)
+				self.source = function(_source) //sets the data source
 				{
 					source = _source;
 					
 					source.event(monitor);				
+					
+					idProp = source.idProp;
 					
 					for(var i in source.items)
 						self.add(source.items[i]);
@@ -442,39 +429,28 @@ NO2 Liscence
 					return self;
 				}
 				
-				self.add = function(itemData)
+				self.add = function(itemData) //adds an item
 				{
-					var _el = $el.append(itemNode.cloneNode()).attr(keyAttr, itemData[source.idProp]),
-						id = itemData[source.idProp];
+					var id = itemData[idProp];
 					
-					self.wrapper[id] = O_O.element(extend({$: item}, itemData))('el', id, $el.el);
+					$el.append(itemNode.cloneNode()).attr(keyAttr, itemData[idProp]); //cone the node and append
+					
+					self.items[id] = O_O.box(extend({$: item}, itemData)); //register a box to the items array
+					self.items[id].$.el(id, $el.el); //set its el
 				}
 				
-				self.change = function(itemData)
+				self.change = function(itemData) //changes an item
 				{
-					self.wrapper[itemData[source.idProp]](extend(itemData, {$: item}));
+					self.items[itemData[idProp]].$.digest(extend(itemData, {$: item}));
 				}
 				
-				function digest(data) /*setting properties for sel and children !This might alter the passed data object!*/
-				{
-					//?consider run time bindings; as of now only objects passed with the constructor could be modified
-
-					if(data.$)
-						$el(extract(data, '$'));
-
-					for(var key in data)
-						if(self.wrapper[key].plug)
-							self.wrapper[key](data[key]);
-						else
-							self.wrapper[key]('value', data[key]);
-				}
-				
-				function monitor(event, source)
+				function monitor(event)
 				{
 					self[event.type](event.data);
 				}				
 			}
 
+			
 			//Data Classes
 			,value: function(val) // a host that stores a simple value
 			{
@@ -497,7 +473,7 @@ NO2 Liscence
 
 				var host = new O_O.class.host(self.val);
 
-				extend(self.val, host);
+				extend(self.val, host); //?prototypal instead
 			}
 
 			,object: function(store)
@@ -620,49 +596,17 @@ NO2 Liscence
 				}
 			}
 		}
-
+		
 		//Decorators
 		//UI wrappers
-		self.element = function(p1, p2, p3) //an element that could have nested elements
+		self.box = function(data) //an element that could have children
 		{
-			if(arguments.length == 1) //the argument is an object, this is checked first as usual this will be the case
-				return new O_O.class.element(p1).wrapper;
-			
-			//the following is to implement the wrapper interface, for developer convenience; it allows to reduce some redundant code
-			//there are several arguments
-			var data = {$:{}};
-			
-			if(arguments.length == 2)
-				data.$[p1] = p2;
-				
-			else if(arguments.length == 3)
-			{
-				data.$[p1] = {};
-				data.$[p1][p2] = p3;
-			}
-			
-			return new O_O.class.element(data).wrapper;
+			return new O_O.class.box(data);
 		}
 		
-		self.repeat = function(p1, p2, p3) //an element that acts as a collection
+		self.pod = function(data) //an element that acts as a collection
 		{
-			if(arguments.length == 1) //the argument is an object, this is checked first as usual this will be the case
-				return new O_O.class.repeat(p1).wrapper;
-			
-			//the following is to implement the wrapper interface, for developer convenience; it allows to reduce some redundant code
-			//there are several arguments
-			var data = {$:{}};
-			
-			if(arguments.length == 2)
-				data.$[p1] = p2;
-				
-			else if(arguments.length == 3)
-			{
-				data.$[p1] = {};
-				data.$[p1][p2] = p3;
-			}
-			
-			return new O_O.class.repeat(data).wrapper;
+			return new O_O.class.pod(data);
 		}
 
 		//Data wrappers

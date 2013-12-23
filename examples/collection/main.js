@@ -4,25 +4,25 @@ var Server = mockServer;
 
 Server.add(routes); //setting up mockServer
 
-var App = O_O.element(new function()
+var App = O_O.box(new function()
 {
 	var self = this;
 
 	self.people = O_O.list({
 
-		idProp: 'name1',
+		idProp: 'name',
 		
 		data: [
 			{
-				name1: 'A',
+				name: 'A',
 				age: 65
 			},
 			{
-				name1: 'M',
+				name: 'M',
 				age: 77
 			},
 			{
-				name1: 'Z',
+				name: 'Z',
 				age: 90
 			}
 		]
@@ -30,7 +30,7 @@ var App = O_O.element(new function()
 
 	self.title = 'Collection - example';
 
-	self.collection = O_O.repeat({
+	self.collection = O_O.pod({
 
 		source:  self.people,
 		
@@ -41,7 +41,7 @@ var App = O_O.element(new function()
 				click: function()
 				{
 					console.log(App.people.items[this.id]);
-					console.log(App.collection[this.id]());
+					App.collection.change({name: this.id, age: 66});
 				}
 			}
 		}
@@ -50,5 +50,5 @@ var App = O_O.element(new function()
 
 O_O.ready(function()
 {
-	App('el', 'App');
+	App.$.el('App');
 });

@@ -69,3 +69,5 @@
 131222_0520	.repeat added.
 131222_0600 Decided to reintroduce $ syntax, as functions could not have children with the names name, caller, length etc.
 
+131223_0630	Re-adopted $ syntax. Renamed element to box and repeat to pod.
+131223_0650	v0.0.4 released.

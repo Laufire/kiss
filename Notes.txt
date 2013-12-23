@@ -121,13 +121,8 @@ Rules
 	
 	O_O.element
 	{
-		'el' cannot be set inside a constructor.
+		'el' can't be set inside the constructor.
 	
-		'init' should be passed within the constructor.
-		
-		the 'element' could be called as a function to get and set the values of its properties. Ex: elm('html') gives the elm's html, elm('classes', {hidden: true}) adds the class 'hidden' to it.
-	
-		/*
 		'$' properties
 		{
 			Relates to the elements properties such as html, props, attrs etc.
@@ -138,12 +133,11 @@ Rules
 			
 			Calling a $.<property> without parameters generally gets the value.
 		}
-		*/
 	}
 	
 	O_O.value
 	{
-		//
+		The 'change' is triggered onl when the new value doesn't '===' the old value.
 	}
 	
 	O_O.watch

@@ -24,7 +24,7 @@ passwordStrength = O_O.trans(function(val)
 	return strength;
 }),
 
-App = O_O.element(new function()
+App = O_O.box(new function()
 {
 	var self = this;
 
@@ -43,12 +43,13 @@ App = O_O.element(new function()
 
 		password: O_O.plugin.keyUpText(self.data.password),
 
-		login: O_O.element('event', 'click', function(e)
+		login: function(e)
 		{
+			console.log(App.loginForm.$.val());
 			Server.request({
 
 				url: 'login',
-				data: App.loginForm(),
+				data: App.loginForm.$.val(),
 				success: function(response)
 				{
 					usernameListener.stop();
@@ -59,7 +60,7 @@ App = O_O.element(new function()
 						alert('failure');
 				}
 			});
-		}),
+		},
 
 		display: {
 
@@ -78,14 +79,16 @@ App = O_O.element(new function()
 
 O_O.ready(function()
 {
-	App('el', 'App');
+	App.$.el('App');	
 
-	App.loginForm({username: App.data.username});
+	App.loginForm.$.digest({username: App.data.username});
 
 	usernameListener = O_O.listen(App.data.username, function(val)
 	{
 		console.log(val);
 	});
+	
+	console.log(App.$.val());
 
 	textWatch = O_O.watch(App.data.username, App.data.password)
 		.action(function(val, source)

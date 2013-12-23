@@ -7,7 +7,7 @@
 		
 			"window": ["microDOM", "mockServer"],
 			
-			"O_O": ["O_O.trans", "O_O.keyUpText"]
+			"O_O": ["O_O.trans"]
 			
 		},
 		
@@ -21,7 +21,7 @@
 		
 			"mockServer" : ["routes"],
 			
-			"O_O.plugin.trans, O_O.plugin.keyUpText" : ["main"]
+			"O_O.plugin.trans" : ["main"]
 			
 		}
 	}
