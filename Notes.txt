@@ -111,6 +111,8 @@ Way
 	A lego like modular architecture with plugs and hosts instead of pub-sub.
 	
 	A simple implementation of jquery under the $ symbol, which on demand could be replaced by jquery's $.
+	
+	No type checks are fallbacks are implemented, as this would ensure structure and maintainability.
 }
 
 Rules

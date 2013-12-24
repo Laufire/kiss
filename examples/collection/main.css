@@ -34,6 +34,13 @@ div
 .display
 {
 	background: #efe;
-	/*width: 8em;
-	float:left;*/
+	width: 8em;
+	float:left;
+}
+
+.display .close
+{
+	width: 1em;
+	float: right;
+	cursor: pointer;
 }

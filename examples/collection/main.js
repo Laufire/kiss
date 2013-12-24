@@ -14,6 +14,10 @@ var people = O_O.list({
 			age: 65
 		},
 		{
+			name: '$',
+			age: 65
+		},
+		{
 			name: 'M',
 			age: 77
 		},
@@ -71,8 +75,10 @@ var random = {
 		
 		var index = rndBtwn(0, keys.length - 1);
 		
-		if(index > -1)
-			return [keys[index]];
+		return [{
+			
+			name: keys[index]
+		}];
 	}
 }
 	
@@ -98,7 +104,7 @@ var App = O_O.box(new function()
 		
 		remove: function()
 		{
-			self.people(random.remove());
+			self.people(random.remove(), 0);
 		}
 	}		
 		
@@ -108,13 +114,16 @@ var App = O_O.box(new function()
 		
 		item: {
 		
-			event: {
+			$: {
 			
-				click: function(e, item)
-				{
-					console.log(item.$.id);
-					//console.log(App.people.items[this.id]);
-					//App.collection.change({name: this.id, age: 66});
+				event: {
+				
+					'click .close': function(e, item)
+					{
+						console.log(item.$.id);
+						//console.log(App.collection.items[item.$.id]);
+						//App.people([App.people[item.$.id]], 0);
+					}
 				}
 			}
 		}
@@ -127,10 +136,9 @@ O_O.ready(function()
 	
 	O_O.listen(App.collection.event, function(e, item)
 	{
+		console.log(item.$.id);
+		
 		if(e.type == 'add')
-		{
 			item.$.el.scrollIntoView();
-			console.log(item.$.id);
-		}
 	});
 });

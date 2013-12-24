@@ -79,3 +79,11 @@
 131223_2250 .box.$.el renamed to .box.$.at, as the previous now exposes the DOM element.
 131223_2250 .box and .pod exposes their DOM element through $.el, this is for easing the process of DOM manipulation with other libraries. 
 131223_2250 .box.$.$el exposes the DOM.$.element of .box.
+
+131224_0400 item could now have children.
+131224_0500 getElementById is now the default selector, as it performs better than querySelector.
+131224_0650 data passed into the constructors are not modified any more.
+131224_0710 every 'in' keyword is replaced by enumerate to improve performance.
+131224_0900 getElementById has been removed as the selector doesn't allow some chars like $.
+131224_0900 parents for .box and .pod exposed.
+131224_1040 events support selector syntax; elements inside .box and .pod.items, could have their own even handlers assigned through selectors.
