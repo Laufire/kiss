@@ -2,16 +2,16 @@
 
 131125_1610	Class 'nested' renamed to by 'element'.
 131125_1610	$html, $attrs etc has been changed to $.html, $.attrs etc.
-131125_1635	Now tieables could directlty be assigned to the 'default' attribute of elements.
+131125_1635	Now tieables could directly be assigned to the 'default' attribute of elements.
 131125_1900	Two-way binding achieved through 'default' behaviors for html elements and text, checkbox and select-single controls.
 131125_2150	Two-way binding achieved for select-multiple controls.
 
-131128_1050	Assigning values ditectly to element.$.default is now supported.
+131128_1050	Assigning values directly to element.$.default is now supported.
 131128_1150	*.load moved to *.$.load is now supported.
 131128_1230	$.classes added.
 
 131201_2250	A major redesign of the API.
-131201_2250	Completed rewritting O_O.element.
+131201_2250	Completed rewriting O_O.element.
 131201_2250	'$' syntax is dumped, in favor of using functions.
 131201_2250	Ties are renamed to plugs.
 
@@ -37,7 +37,7 @@
 131216_0000	O_O.object introduced.
 131216_0100	input controls could get default values.
 131216_0200	button controls could get default events.
-131216_0300	O_O.element now has as a 'data' container in it; which could be accesed through the wrapper. Calling the wrapper without arguments gives contained data of its forms and data objects.
+131216_0300	O_O.element now has as a 'data' container in it; which could be accessed through the wrapper. Calling the wrapper without arguments gives contained data of its forms and data objects.
 131216_0355	O_O.element now can 'digest' data.
 131216_0800	arrays replace objects as the store for plugs.
 131216_1000	'trans' completed.
@@ -53,7 +53,7 @@
 131219_0115	watch introduced.
 
 131219_0445	watch renamed to listen; as a new watch (with more features) is introduced.
-131219_0815	'hider' is re-introduced to hide the elements with keyAttr untill O_O.ready finishes executing.
+131219_0815	'hider' is re-introduced to hide the elements with keyAttr until O_O.ready finishes executing.
 131219_2200	Plugins introduced.
 131219_2200	Plugin 'trans' with commons transes written.
 131219_2355	O_O.element's wrapper interface got changed; it can now accept multiple arguments.
@@ -87,3 +87,7 @@
 131224_0900 getElementById has been removed as the selector doesn't allow some chars like $.
 131224_0900 parents for .box and .pod exposed.
 131224_1040 events support selector syntax; elements inside .box and .pod.items, could have their own even handlers assigned through selectors.
+131224_0110 *.wrapper renamed to *.wrap.
+
+131235_1100	data-binding within pod items achieved.
+131235_1100	typos in Change_log.txt corrected.

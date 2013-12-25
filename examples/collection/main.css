@@ -36,6 +36,12 @@ div
 	background: #efe;
 	width: 8em;
 	float:left;
+	cursor: pointer;
+}
+
+.display.selected
+{
+	background: #ddf;
 }
 
 .display .close
@@ -43,4 +49,20 @@ div
 	width: 1em;
 	float: right;
 	cursor: pointer;
+	display: none;
+}
+
+.selected .close
+{
+	display: block;
+}
+
+.display #name
+{
+	color: #00f;
+}
+
+.display #name.male
+{
+	color: #f00;
 }
