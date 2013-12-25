@@ -66,7 +66,9 @@ var Server = mockServer
 
 				name: keys[index],
 
-				age: rndBtwn(5, 90)
+				age: rndBtwn(5, 90),
+				
+				isMale: rndBtwn(0, 1)
 			}]
 		
 		return [];
@@ -74,6 +76,14 @@ var Server = mockServer
 }
 
 , selection = O_O.value()
+, genderFilter = O_O.value(2)
+
+, genderTrans = O_O.trans(function(val, source, data)
+{
+	var val = parseInt(val, 10);
+	
+	return !(val == 2 || val == data.isMale);
+})
 
 , App = O_O.box(new function()
 {
@@ -129,7 +139,9 @@ var Server = mockServer
 					}
 				}
 			}
-		}
+		},
+		
+		gender: genderFilter
 	}
 
 	self.collection = O_O.pod({
@@ -147,7 +159,8 @@ var Server = mockServer
 			}
 		},
 
-		item: function(){
+		item: function(itemData)
+		{
 
 			var sayName = function(e, box)
 			{
@@ -169,10 +182,15 @@ var Server = mockServer
 						App.people.remove(item.$.id);
 						e.stopPropagation();
 					}
+				},
+				
+				class: {
+				
+					hidden: genderTrans(genderFilter, itemData)
 				}
 			}
 
-			this.isMale = O_O.value();
+			this.isMale = O_O.value(itemData.isMale);
 
 			this.name = {
 
@@ -223,6 +241,12 @@ O_O.listen(App.collection.event, function(e, item)
 		if(item === selection())
 			selection('');
 	}
+});
+
+O_O.listen(App.toolbar.gender, function(val)
+{
+	//App.toolbar.gender could be listened until the box is loaded as a child (then this property will be replaced by a box; when a lasting connection is needed use an independent variable like 'genderFilter'
+	console.log(val);
 });
 
 /*Finally load the App

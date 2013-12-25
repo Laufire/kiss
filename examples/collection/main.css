@@ -1,3 +1,10 @@
+body
+{
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
 div
 {
 	padding: 1em;
@@ -37,6 +44,8 @@ div
 	width: 8em;
 	float:left;
 	cursor: pointer;
+	margin: 1em;
+	
 }
 
 .display.selected

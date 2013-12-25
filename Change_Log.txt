@@ -91,3 +91,5 @@
 
 131235_1100	data-binding within pod items achieved.
 131235_1100	typos in Change_log.txt corrected.
+131235_1430	.box.val modified to handle 'select' elements.
+131235_1715	.trans now supports passing a third paramater to the trans function along with the val and the host.

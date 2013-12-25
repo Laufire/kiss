@@ -1,5 +1,5 @@
-﻿//? todos could help fixing bugs
-//? cleaning the pod, removing pod's listeners to sources
+﻿//? cleaning the pod, removing pod's listeners to sources
+//? todos could help fixing bugs
 //?? elements / items and their data
 //? returning the 'fed data' box.val()
 //? ?using objects for static items?
@@ -234,11 +234,12 @@ NO2 Liscence
 
 				_$.val = function(newVal) //returns the default value when data is collected, sets the default values when hosts are directly assigned
 				{
-					if($el.el.readOnly !== undefined) //the element ias an input / text area, so it couldn't have html
+					if($el.el.required !== undefined) //the element is an editable control (input, textarea, select), so it couldn't have html
 					{
 						var prop;
 
-						if($el.el.type == 'checkbox') //?radio
+						//? type submit could cause problems
+						if($el.el.type == 'checkbox') //? radio
 							prop = 'checked';
 						else
 							prop = 'value';
@@ -254,11 +255,12 @@ NO2 Liscence
 								});
 						}
 						else
-							return _$.prop(prop);
+							return _$.prop(prop); //
 					}
-					else if(typeof newVal == 'function' && $el.el instanceof HTMLButtonElement)
+					else if($el.el.formAction !== undefined) //the element is a button
 					{
-						_$.event('click', newVal)
+						if(newVal)
+							_$.event('click', newVal)
 					}
 					else
 					{
@@ -503,7 +505,8 @@ NO2 Liscence
 
 					$el.$.$el.append(itemNode.cloneNode()).attr(keyAttr, id); //clone the node and append
 
-					items[id] = O_O.box(new item); //register a box to the items array
+					//!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
+					items[id] = O_O.box(new item(itemData)); //register a new box to the items array
 					items[id].$.at(id, $el).digest(itemData); //set its el
 				}
 
@@ -782,15 +785,15 @@ NO2 Liscence
 		//Factories
 		self.trans = function(process) //a function that transforms values
 		{
-			return function(host)
+			return function(host, param)
 			{
-				var inject = function(){return process(host())}
+				var inject = function(){return process(host(), host, param)}
 
 				inject.plug = function(outFunc)
 				{
-					return host.plug(function(val, source)
+					return host.plug(function(val, host)
 					{
-						outFunc(process(val, source));
+						outFunc(process(val, host, param));
 					});
 				}
 
