@@ -78,7 +78,7 @@ var Server = mockServer
 , selection = O_O.value()
 , genderFilter = O_O.value(2)
 
-, genderTrans = O_O.trans(function(val, source, data)
+, genderTrans = O_O.trans(function(val, source, data) //this hides the filtered gender when genderfilter changes. Note: this doen't hide the elements when their data changes; for that to hapen use .watch(genderFilter, this.isMale) on the iten, and set the results to a this.isVisible which determines the visibility
 {
 	var val = parseInt(val, 10);
 	
@@ -210,6 +210,45 @@ var Server = mockServer
 
 			this.age = {}
 		}
+		/*
+		item: {
+
+			$: {
+
+				event: {
+
+					click: function(e, item)
+					{
+						selection(item);
+						e.stopPropagation();
+					},
+
+					'click .close': function(e, item)
+					{
+						App.people.remove(item.$.id);
+						e.stopPropagation();
+					}
+				}
+			},
+
+			name: {
+
+				$: {
+
+					event: {
+
+						click: function(e, item)
+						{
+							console.log(item);
+							alert('hello, I am ' + item.$.html());
+						}
+					}
+				}
+			},
+			
+			age: {}
+		}
+		*/
 	});
 });
 
@@ -221,8 +260,8 @@ Server.add(routes); //setting up mockServer
 //Managing selection
 O_O.listen(selection, function(val, source)
 {
-	var prev = source();
-
+	var prev = source.prev;
+	
 	if(prev)
 		prev.$.class('selected', 0);
 
@@ -238,7 +277,7 @@ O_O.listen(App.collection.event, function(e, item)
 
 	else if(e.type == 'remove')
 	{
-		if(item === selection())
+		if(item === selection.prev)
 			selection('');
 	}
 });

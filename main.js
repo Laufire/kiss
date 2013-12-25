@@ -1,7 +1,7 @@
 ﻿var observed = O_O.value(false),
 	pv = O_O.value('Dynamic Value'),
 	
-	App = O_O.element({
+	App = O_O.box({
 		
 		simple: {
 		
@@ -55,6 +55,6 @@
 	
 O_O.ready(function()
 {
-	App('el', 'App');
+	App.$.at('App');
 	pv(1);
 });		

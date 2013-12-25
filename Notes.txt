@@ -1,18 +1,16 @@
 ToDos
 {
-	Map: a many to one to many router (Ex: to map several O_O.value-s to several vars in the localStorage, to map history urls to document states).
-	
 	The code for the App should be brief.
-	
-	Cleaning up with jQuery's 'onRemoved' event.
 	
 	Better collections.
 	
 	Iterator a plugin to linearly move through a collection.
 	
-	Redo the example page, with tabs.
-	
 	Dealing with history.
+	
+	A bootstrap app.
+	
+	Redo the example page, with tabs.
 }
 
 Plugins
@@ -121,7 +119,7 @@ Rules
 	
 	The order of properties in the objects, that are passed as parameters matters; they are processed in the order they are declared. So its better to have the init at last.
 	
-	O_O.element
+	O_O.box
 	{
 		'el' can't be set inside the constructor.
 	
@@ -135,6 +133,11 @@ Rules
 			
 			Calling a $.<property> without parameters generally gets the value.
 		}
+	}
+	
+	O_O.pod
+	{
+		Item could be a constructor function (when bindings are needed) or a static object (when there aren't any bindings).
 	}
 	
 	O_O.value
@@ -157,7 +160,7 @@ Structure
 Questions
 {
 
-	Could html be automatically injected for collections without thee needed mark-up in the document?
+	Could html be automatically injected for collections without the needed mark-up in the document?
 	
 	Could custom tag names be used to identify the class of the objects. Like: <Collection> <Item> <ScrollBar> etc?
 
@@ -210,4 +213,11 @@ Future
 	A module + plugin manager (with bundling etc).
 	
 	Consider not depending on microDOM, as the dependency is very little.
+}
+
+Thoughts
+{
+	Plugins may use lower level functions for performance (they don't have to depend on kiss).
+	
+	Building kiss entierly over microDOM will allow the easy replacement of microDOM, as microDOM does only simple tasks.
 }

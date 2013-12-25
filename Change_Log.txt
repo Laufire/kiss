@@ -89,7 +89,12 @@
 131224_1040 events support selector syntax; elements inside .box and .pod.items, could have their own even handlers assigned through selectors.
 131224_0110 *.wrapper renamed to *.wrap.
 
-131235_1100	data-binding within pod items achieved.
-131235_1100	typos in Change_log.txt corrected.
-131235_1430	.box.val modified to handle 'select' elements.
-131235_1715	.trans now supports passing a third paramater to the trans function along with the val and the host.
+131225_1100	data-binding within pod items achieved.
+131225_1100	typos in Change_log.txt corrected.
+131225_1430	.box.val modified to handle 'select' elements.
+131225_1715	.trans now supports passing a third paramater to the trans function along with the val and the host.
+131225_1725	.val now exposes a .prev property to get the previous value.
+131225_2225	.list.count added.
+
+131226_0055	.remove added for .box and .pod.
+131226_0145	bug fixed: .pod.items now have the pod as their parent instead of the pod's box.
