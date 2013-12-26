@@ -1,16 +1,12 @@
-﻿//? spliting digest to set($) and data(data)//? todos could help fixing bugs
-//? elements / items and their data
-//? renaming list.count to list.length (this would need the removal of the wrapper function)
+﻿//? todos could help fixing bugs
 //? DOM caching
 //? changing sources
 //? History and states
-//? data-type list (non-duplicated) with methods add, remove, restore etc.
+//? localStorage as a data source for O_O.values
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
-//? localStorage as a data source for O_O.values
 //? An automatic UI generation check
 //? ajax text templates - plugin
-
 /*!
 KISS v0.0.4
 
@@ -19,12 +15,12 @@ NO2 Liscence
 (function(window, document)
 {
 	"use strict";
-
+	
 	var O_O = window.O_O = new function()
 	{
 		document.documentElement.style.display = 'none'; //hide the document until DOM.ready fires
 
-		var self = this,
+		var O_O = this,
 		
 			//helpers
 			$ = DOM.$,
@@ -34,18 +30,18 @@ NO2 Liscence
 			ready, //store the ready function
 			keyAttr; //the keyAttr that marks the element to be KISSed
 
-		self.VERSION = '0.0.4';
+		O_O.VERSION = '0.0.4';
 		
-		self.keyAttr = function(attr) //change the keyAttr to be KISSed
+		O_O.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
 			keyAttr = attr;
 			
 			hider = $('script').before('style').html('[' + keyAttr + ']{display:none}')
 		}
 
-		self.keyAttr('id'); //the default keyAttr is id
+		O_O.keyAttr('id'); //the default keyAttr is id
 		
-		self.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
+		O_O.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
 		}
@@ -61,7 +57,7 @@ NO2 Liscence
 			}
 
 			else //a ready function is not available
-				self.ready = function(func) //so execute it as soon as it's available
+				O_O.ready = function(func) //so execute it as soon as it's available
 				{
 					func();
 					hider.remove();
@@ -124,7 +120,17 @@ NO2 Liscence
 			return value;
 		}
 
-		function getProp(obj, key)
+		function load(target, source, props)
+		{
+			var i, prop;
+			
+			for(i = 0; i < props.length; ++i)
+				prop = props[i], target[prop] = source[prop];
+				
+			return target;
+		}
+		
+		function getProp(obj, prop)
 		{
 			var prop = obj[prop];
 			
@@ -145,7 +151,7 @@ NO2 Liscence
 		}
 
 		//public
-		self.class = {
+		O_O.class = {
 
 			host: function()
 			{
@@ -177,13 +183,60 @@ NO2 Liscence
 			,box: function box(data/*consists of $data and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
 				var self = this,
-				_$, $el, events = {},
-				plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
+					_$, $el, events = {},
+					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/				
 				
-				children = Object.keys(extend(self, data)),				
-				_$ = self.$ = {};
+					$data = data.$ || {},
 				
-				remove(children, '$'); //remove the $ from the children 
+					children = Object.keys(extend(self, data));		
+				
+				remove(children, '$'); //remove the $ from the children
+				
+				var data = load({}, data, children),
+				
+				_$ = self.$ = function(data)
+				{
+					var keys = Object.keys(data);					
+
+					enumerate($data, function(key, val)
+					{
+						if(typeof val == 'object') //the prop is an enumerable
+							enumerate(val, function(k)
+							{
+								_$[key](k, val[k])
+							});
+						else if(_$[key])
+							_$[key](val)
+					});
+					
+					return _$;
+				}				
+				
+				load(self, data, children);
+				
+				_$.set = function(data)
+				{
+					var keys = Object.keys(data);
+					
+					for(var i = 0; i < keys.length; ++i)
+					{
+						var key = keys[i],
+							val = data[key],
+							child = self[key];
+						
+						if(child)
+							if(child.$)
+								child.$.val(val); //the child is ui element
+							
+							else if(child.data) //the child is a data source
+								child.data(val);
+								
+							else //the child is a value
+								child(val);
+					}
+					
+					return _$;
+				}				
 				
 				_$.at = function(query/*keyAttr, a DOM.$.el or a DOM element*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
@@ -198,13 +251,10 @@ NO2 Liscence
 					self.$.$el = $el;
 					self.$.el = $el.el;
 
-					if(data.$)
-					{
-						if(data.$.init)
-							data.$.init();
-							
-						_$.digest({$: data.$}); //load $data on to the element
-					}
+					if($data.init)
+						$data.init();
+					
+					_$($data); //load $data on to the element
 					
 					//data = undefined;
 
@@ -269,7 +319,9 @@ NO2 Liscence
 					else if($el.el.formAction !== undefined) //the element is a button
 					{
 						if(newVal)
-							_$.event('click', newVal)
+							_$.event('click', newVal);
+						else
+							return;
 					}
 					else
 					{
@@ -289,12 +341,10 @@ NO2 Liscence
 									name = children[i],
 									child = self[name];
 
-								if(typeof child == 'object')
+								if(child && child.$)
 									val = child.$.val();
-								else
-									val = child();
 
-								if(val !== undefined)
+								if(val !== undefined) //non form elements return undefined
 									ret[name] = val;
 							}
 
@@ -357,42 +407,6 @@ NO2 Liscence
 							handler(e, self);
 						});
 
-					return _$;
-				}
-
-				_$.digest = function(data)  /*setting properties for $el and children*/
-				{
-					var keys = Object.keys(data);
-					
-					if(data.$)
-					{
-						remove(keys, '$');
-
-						enumerate(data.$, function(key, val)
-						{
-							if(typeof val == 'object') //the prop is an enumerable
-								enumerate(val, function(k)
-								{
-									_$[key](k, val[k])
-								});
-							else if(_$[key])
-								_$[key](val)
-						});
-					}
-
-					for(var i = 0; i < keys.length; ++i)
-					{
-						var key = keys[i],
-							val = data[key],
-							child = self[key];
-						
-						if(child)
-							if(child.$)
-								child.$.val(val);
-							else
-								child(val);
-					}
-						
 					return _$;
 				}
 
@@ -483,7 +497,7 @@ NO2 Liscence
 
 				self.$ = box.$;
 
-				self.digest = function(data)
+				self.set = function(data)
 				{
 					enumerate(data, function(key, val)
 					{
@@ -517,7 +531,7 @@ NO2 Liscence
 					//item could be a constructor function (when bindings are needed) or a static object (when there aren't any bindings).
 					items[id] = O_O.box(typeof item == 'object' ? item : new item(itemData)); //!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
 					
-					items[id].$.at(id, self).digest(itemData); //set its el and digest the data
+					items[id].$.at(id, self).set(itemData); //set its el and digest the data
 				}
 
 				self.change = function(itemData) //changes an item
@@ -550,7 +564,6 @@ NO2 Liscence
 				}
 			}
 
-
 			//Data Classes
 			,value: function(val) // a host that stores a simple value
 			{
@@ -577,7 +590,7 @@ NO2 Liscence
 				self.val.unplug = host.unplug;
 			}
 
-			,object: function(store) //? could this be removed, getProp and set prop too will be removed
+			,object: function(store) //supports the handling of dynamic JSON data
 			{
 				this.wrap = function(newData)
 				{
@@ -607,39 +620,44 @@ NO2 Liscence
 			,list: function(options)
 			{
 				var self = this,
-					items = {},
-					idProp = options.idProp,
-					event = O_O.host(),
-
-				wrap = self.wrap = function(params/*an array*/, action) //? ?removing the wrap and using .update instead
+					items = self.items = {},
+					idProp = self.idProp = options.idProp,
+					event = self.event = O_O.host();
+				
+				self.data = function(data) //? ?removing the wrap and using .update instead
 				{
 					//? a size changed event
-					if(arguments.length == 1 || action) //the params must be objects
-					{
-						var i, param;
+					var i, item;
 						
-						for(i = 0; i < params.length; ++i)
-						{
-							param = params[i];
-							
-							if(items[param[idProp]])
-								wrap.change(param);
-							else
-								wrap.add(param);
-						}
+					for(i = 0; i < data.length; ++i)
+					{
+						item = data[i];
+						
+						if(items[item[idProp]])
+							change(item);
+						else
+							add(item);
 					}
-					else //the params must be ids
-						for(var i = 0; i < params.length; ++i)
-							wrap.remove(params[i]);
 
-					return wrap;
+					return self;
 				}
 				
-				wrap.count = 0;
-
-				wrap.add = function(data)
+				self.remove = function(ids)
 				{
-					wrap.count++;
+					if(Array.isArray(ids))
+						for(var i = 0; i < ids.length; ++i)
+							remove(ids[i]);
+					else
+						remove(ids);
+						
+					return self;
+				}
+				
+				self.length = 0;
+
+				function add(data)
+				{
+					self.length++;
 					
 					event({
 
@@ -649,7 +667,7 @@ NO2 Liscence
 					}, self);					
 				}
 
-				wrap.change = function(data)
+				function change(data)
 				{
 					event({
 
@@ -658,10 +676,10 @@ NO2 Liscence
 
 					}, self);
 				}
-
-				wrap.remove = function(id)
+				
+				function remove(id)
 				{
-					wrap.count--;
+					self.length--;
 					
 					event({
 
@@ -673,12 +691,8 @@ NO2 Liscence
 					delete items[id];
 				}
 
-				self.wrap(options.data);
-				//options = undefined;
-
-				self.wrap.items = items;
-				self.wrap.event = event;
-				self.wrap.idProp = idProp;
+				self.data(options.data);
+				options = undefined;
 			}
 
 			//control classes
@@ -747,39 +761,39 @@ NO2 Liscence
 
 		//Decorators
 		//UI wraps
-		self.box = function(data) //an element that could have children
+		O_O.box = function(data) //an element that could have children
 		{
 			return new O_O.class.box(data);
 		}
 
-		self.pod = function(data) //an element that acts as a collection
+		O_O.pod = function(data) //an element that acts as a collection
 		{
 			return new O_O.class.pod(data || {});
 		}
 
 		//Data wraps
-		self.host = function()
+		O_O.host = function()
 		{
 			return new O_O.class.host().wrap;
 		}
 
-		self.value = function(val)
+		O_O.value = function(val)
 		{
 			return new O_O.class.value(val).val;
 		}
 
-		self.object = function(data)
+		O_O.object = function(data)
 		{
 			return new O_O.class.object(data).wrap;
 		}
 
-		self.list = function(options)
+		O_O.list = function(options)
 		{
-			return new O_O.class.list(options).wrap;
+			return new O_O.class.list(options);
 		}
 
 		//control wraps
-		self.listen = function(val, func)
+		O_O.listen = function(val, func)
 		{
 			return {
 
@@ -787,7 +801,7 @@ NO2 Liscence
 			}
 		}
 
-		self.watch = function()
+		O_O.watch = function()
 		{
 			var i, _watch = new O_O.class.watch;
 
@@ -798,7 +812,7 @@ NO2 Liscence
 		}
 
 		//Factories
-		self.trans = function(process) //a function that transforms values
+		O_O.trans = function(process) //a function that transforms values
 		{
 			return function(host, param)
 			{
@@ -815,15 +829,49 @@ NO2 Liscence
 				return inject;
 			}
 		}
+		/*
+		O_O.state = new function()
+		{
+			var self = this,
+			
+			var list = self.list = {};
+			
+			self.add = function(hash, action)
+			{
+				list[hash] = action;
+			}
+			
+			self.remove = function(hash, action)
+			{
+				delete list[hash];
+			}
+			
+			self.set = function(hash)
+			{
+				var action = list[hash];
+				
+				if(action)
+					action(hash);					
+			}
+		}
+		*/
+		O_O.state = O_O.value();
 
 		//plugin wrap
-		self.plugin = function(name, plugin)
+		O_O.plugin = function(name, plugin)
 		{
 			if(!plugin)
 				return self.plugin[name];
 
-			self.plugin[name] = plugin;
+			O_O.plugin[name] = plugin;
 		}
 	}
+	
+	window.addEventListener('popstate', function()
+	{
+		O_O.state(location.hash.substr(1));
+		
+		//O_O.state.set(location.hash.substr(1));
+	});
 
 })(window, document);

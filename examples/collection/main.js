@@ -97,7 +97,7 @@ var Server = mockServer
 
 		add: function()
 		{
-			self.people(random.add());
+			self.people.data(random.add());
 		},
 
 		edit: {
@@ -113,7 +113,7 @@ var Server = mockServer
 
 					click: function()
 					{
-						self.people(random.change());
+						self.people.data(random.change());
 					}
 				}
 			}
@@ -135,7 +135,7 @@ var Server = mockServer
 						var selected = selection();
 						
 						if(selected)
-							self.people([selected.$.id], 0);
+							self.people.remove(selected.$.id);
 					}
 				}
 			}

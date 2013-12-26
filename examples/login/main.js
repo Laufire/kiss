@@ -32,7 +32,12 @@ App = O_O.box(new function()
 
 		username: O_O.value(localStorage.user || 'user'),
 
-		password: O_O.value(localStorage.pass || 'pass')
+		password: O_O.value(localStorage.pass || 'pass'),
+		
+		tree: O_O.object({
+		
+			a: 1, b: 2
+		})
 	});
 
 	self.title = 'Login - example';
@@ -45,7 +50,7 @@ App = O_O.box(new function()
 
 		login: function(e)
 		{
-			console.log(App.loginForm.$.val());
+			console.log(App.data());
 			Server.request({
 
 				url: 'login',
@@ -81,14 +86,12 @@ O_O.ready(function()
 {
 	App.$.at('App');	
 
-	App.loginForm.$.digest({username: App.data.username});
+	App.loginForm.$.set({username: App.data.username});
 
 	usernameListener = O_O.listen(App.data.username, function(val)
 	{
 		console.log(val);
 	});
-	
-	console.log(App.$.val());
 
 	textWatch = O_O.watch(App.data.username, App.data.password)
 		.action(function(val, source)

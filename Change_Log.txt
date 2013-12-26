@@ -98,3 +98,8 @@
 
 131226_0055	.remove added for .box and .pod.
 131226_0145	bug fixed: .pod.items now have the pod as their parent instead of the pod's box.
+131226_0530	.list.wrap removed; .list.data added; .list.count renamed to .list.length.
+131226_0530	box.digest got split into box.$ and box.$.set
+131226_0530	pod.digest renamed into pod.set
+131226_0850	the var 'self' refering to O_O got renamed to 'O_O' to enable the using of O_O within O_O.
+131226_0915	basic state handling added through O_O.value.
