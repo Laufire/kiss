@@ -11,6 +11,8 @@ ToDos
 	A bootstrap app.
 	
 	Redo the example page, with tabs.
+	
+	kiss recipies: a set of examples to demonstrate recipie style programming.
 }
 
 Plugins
@@ -24,6 +26,8 @@ Plugins
 	A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
 	
 	For history.
+	
+	A module importer.
 }
 
 Components
@@ -113,7 +117,7 @@ Way
 	No type checks are fallbacks are implemented, as this would ensure structure and maintainability.
 }
 
-Rules
+Usage
 {
 	The keyAttr can't be a '$'.
 	
@@ -142,7 +146,12 @@ Rules
 	
 	O_O.value
 	{
-		The 'change' is triggered onl when the new value doesn't '===' the old value.
+		The 'change' is triggered only when the new value doesn't '===' the old value.
+	}
+	
+	O_O.trans
+	{
+		Could be used inline. Ex: text = O_O.trans(pluralify)(itemCount)
 	}
 	
 	O_O.watch
@@ -160,7 +169,7 @@ Structure
 Questions
 {
 
-	Could html be automatically injected for collections without the needed mark-up in the document?
+	Could html be automatically injected for collections, without the needed mark-up in the document?
 	
 	Could custom tag names be used to identify the class of the objects. Like: <Collection> <Item> <ScrollBar> etc?
 

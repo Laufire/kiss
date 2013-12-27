@@ -1,4 +1,16 @@
-﻿//? todos could help fixing bugs
+﻿//? history state changes after O_O.ready executes, this causes a glitch (by rendering content regardless the state)
+//? .list.event doesn't fire when the intial data is loaded. (initial data might need a removal)
+//? event handlers could be passed to the constructors of .list
+//? if else vs object keys
+//? typescript
+//? adding item.$.data
+//? $wrap function
+//? should loadChildren after construction (this will need caching of $ properties), not after .at
+//? O_O.filter / .list.filter
+//? .list assigning id on addition
+//? .list.reset, invert
+//? .box.append
+//? todos could help fixing bugs
 //? DOM caching
 //? changing sources
 //? History and states
@@ -8,7 +20,7 @@
 //? An automatic UI generation check
 //? ajax text templates - plugin
 /*!
-KISS v0.0.4
+KISS v0.0.5
 
 NO2 Liscence
 */
@@ -28,9 +40,12 @@ NO2 Liscence
 			//init
 			hider, //a DOM.$ element that helps to hide the elements to be KISSed until kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
 			ready, //store the ready function
-			keyAttr; //the keyAttr that marks the element to be KISSed
+			keyAttr, //the keyAttr that marks the element to be KISSed
+			
+			//helpers functions
+			isArray = Array.isArray; 
 
-		O_O.VERSION = '0.0.4';
+		O_O.VERSION = '0.0.5';
 		
 		O_O.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
@@ -81,6 +96,25 @@ NO2 Liscence
 				func(key = keys[i], obj[key]);
 		}
 
+		function diff(obj1, obj2)
+		{
+			var i, key, prop,
+				ret = {},
+				keys = Object.keys(obj1);
+			
+			for(i = 0; i < keys.length; ++i)
+			{
+				key = keys[i], prop = obj1[key];
+				
+				if(obj2[key] !== prop)
+					ret[key] = prop;
+			}
+			
+			//console.log(ret, obj1, obj2)
+			
+			return ret;
+		}
+		
 		function extend(target)
 		{
 			var i, source, keys;
@@ -106,7 +140,7 @@ NO2 Liscence
 		
 		function get$el(key, parent)
 		{
-			if(typeof key == 'string')
+			if(typeof key != 'object')
 				return $('[' + keyAttr + '="' + key + '"]', parent);
 				
 			return $(key, parent);
@@ -189,7 +223,7 @@ NO2 Liscence
 					$data = data.$ || {},
 				
 					children = Object.keys(extend(self, data));		
-				
+				//? *here*
 				remove(children, '$'); //remove the $ from the children
 				
 				var data = load({}, data, children),
@@ -303,14 +337,14 @@ NO2 Liscence
 						else
 							prop = 'value';
 
-						if(newVal)
+						if(newVal !== undefined)
 						{
 							_$.prop(prop, newVal);
-
-							if(typeof newVal == 'function')
+							
+							if(newVal.plug)
 								_$.el.addEventListener('change', function(e) //this doesn't count as the 'single' handler for the control
 								{
-									newVal(e.currentTarget.value);
+									newVal(e.target[prop]);
 								});
 						}
 						else
@@ -325,9 +359,8 @@ NO2 Liscence
 					}
 					else
 					{
-						if(newVal)
+						if(newVal !== undefined)
 							_$.html(newVal);
-
 						else
 						{
 							if(!children.length) //the element has no children
@@ -387,7 +420,7 @@ NO2 Liscence
 						
 					if(pos > -1)
 					{
-						el = $el.$(name.substr(pos));
+						el = $el.$(name.substr(pos + 1));
 						eName = name.substr(0, pos);
 					}						
 					else
@@ -531,12 +564,12 @@ NO2 Liscence
 					//item could be a constructor function (when bindings are needed) or a static object (when there aren't any bindings).
 					items[id] = O_O.box(typeof item == 'object' ? item : new item(itemData)); //!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
 					
-					items[id].$.at(id, self).set(itemData); //set its el and digest the data
+					items[id].$.at(id, self).set(itemData); //set its el and its data
 				}
 
 				self.change = function(itemData) //changes an item
 				{
-					items[itemData[idProp]].$.digest(itemData);
+					items[itemData[idProp]].$.set(itemData);
 				}
 
 				self.remove = function(id) //removes an item
@@ -624,27 +657,32 @@ NO2 Liscence
 					idProp = self.idProp = options.idProp,
 					event = self.event = O_O.host();
 				
+				if(!options.data)
+					options.data = []; //allows the construction withour initial data
+					
 				self.data = function(data) //? ?removing the wrap and using .update instead
 				{
 					//? a size changed event
-					var i, item;
-						
-					for(i = 0; i < data.length; ++i)
-					{
-						item = data[i];
-						
-						if(items[item[idProp]])
-							change(item);
-						else
-							add(item);
-					}
+					if(isArray(data))
+						for(var i = 0; i < data.length; ++i)
+							setData(data[i]);
+					else
+						setData(data);
 
 					return self;
 				}
 				
+				function setData(item)
+				{
+					if(items[item[idProp]])
+						change(item);
+					else
+						add(item);
+				}
+				
 				self.remove = function(ids)
 				{
-					if(Array.isArray(ids))
+					if(isArray(ids))
 						for(var i = 0; i < ids.length; ++i)
 							remove(ids[i]);
 					else
@@ -659,20 +697,30 @@ NO2 Liscence
 				{
 					self.length++;
 					
+					//! converting the idProp to string might cause DB errors
+					//? consider using a separate _id for storing the idProp
+					var id = data[idProp] += ''; //convert the idProp to string (for storing it as an object key)
+					
 					event({
 
 						type: 'add',
-						data: items[data[idProp]] = extend({}, data)
+						id: id,
+						data: items[id] = extend({}, data)
 
 					}, self);					
 				}
 
-				function change(data)
+				function change(changes)
 				{
+					var id = changes[idProp];
+					var data = items[id];
+					
 					event({
 
 						type: 'change',
-						data: extend(items[data[idProp]], data)
+						id: id,
+						changes: diff(changes, data),
+						data: extend(data, changes)
 
 					}, self);
 				}
@@ -684,6 +732,7 @@ NO2 Liscence
 					event({
 
 						type: 'remove',
+						id: id,
 						data: items[id]
 
 					}, self);
