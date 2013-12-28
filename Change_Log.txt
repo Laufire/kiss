@@ -109,3 +109,10 @@
 131227_0000	Lots of bugs fixed.
 131227_0700	Inline usage of O_O.trans discovered.
 131227_1145	v0.0.5 released.
+131227_1525	.pod.item.$.data introduced.
+
+131228_0425	.pod.options.mode (allows to choose between 'append(default)' and  'prepend' new items) introduced.
+131228_0525	microDOM updated to v.0.0.4.
+131228_0735	the 'state' bug that caused a loading glitch got fixed.
+131228_1020 .state extended to have .add, .remove, .set methods.
+131228_1040 .list.reset added.

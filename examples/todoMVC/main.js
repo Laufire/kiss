@@ -2,43 +2,39 @@
 
 /*Define the variables
 ---------------------*/
-var todos = O_O.list({
+var now = Date.now,
+
+todos = O_O.list({
 
 	idProp: 'id',
 }),
 
+filterState = 2,
 noTodos = O_O.value(0),
 allChecked = O_O.value(0),
 activeCount = O_O.value(0),
 completedCount = O_O.value(0),
-filterState = O_O.value(2),
 
 todoCount, todoList,
 
 todoApp = O_O.box(new function()
 {
-	this.newTodo = {
+	this.newTodo = {$: { event: {
 
-		$: {
+		keyup: function(e)
+		{
+			if(e.keyCode == 13)
+			{
+				todos.data({
+					id: now(),
+					completed: false,
+					title: e.target.value
+				});
 
-			event: {
-
-				keyup: function(e)
-				{
-					if(e.keyCode == 13)
-					{
-						todos.data({
-							id: Date.now(),
-							completed: false,
-							title: e.target.value
-						});
-
-						e.target.value = '';
-					}
-				}
+				e.target.value = '';
 			}
 		}
-	}
+	}}}
 
 	this.toggleAll = {
 
@@ -84,26 +80,26 @@ todoApp = O_O.box(new function()
 	todoList = this.todoList = O_O.pod({
 
 		source:  todos,
+		
+		mode: 'prepend',
 
 		item: function(itemData)
 		{
-
 			function changeTitle(e, box)
 			{
-				var item = box.$.parent;
+				var $ = box.$.parent.$;
 				
-				todos.data({
+				$.data({
 				
-					id: item.$.id,
 					title: e.target.value
 				});
 				
-				item.$.class('editing', 0);
+				$.class('editing', 0);
 			}
 			
-			this.isHidden = O_O.value(filterState() == 2 ? false : Boolean(filterState()) == itemData.completed); //<-here
+			this.isHidden = O_O.value(filterState == 2 ? false : Boolean(filterState) == itemData.completed); //<-here
 			
-			this.isComplete = O_O.value(itemData.completed);
+			this.isDone = O_O.value(itemData.completed);
 			
 			this.$ = {
 
@@ -119,7 +115,7 @@ todoApp = O_O.box(new function()
 
 					hidden: this.isHidden,
 
-					completed: this.isComplete
+					completed: this.isDone
 				}
 			}
 			
@@ -153,13 +149,9 @@ todoApp = O_O.box(new function()
 			
 					change: function(e, box)
 					{
-						var item = box.$.parent,
-							checked = e.target.checked;
+						box.$.parent.$.data({
 						
-						todos.data({
-						
-							id: item.$.id,
-							completed: checked
+							completed: e.target.checked
 						});						
 					}
 				}
@@ -212,43 +204,45 @@ todoApp = O_O.box(new function()
 
 /*Initial setup
 --------------*/
-O_O.listen(O_O.state, function(state)
-{
-	var now;
+O_O.state.add({
+
+	'/': function()
+	{
+		filterState = 2;
+	},
 	
-	if(state == '/active')
-		now = 1
+	'/active': function()
+	{
+		filterState = 1;
+	},	
 	
-	else if(state == '/completed')
-		now = 0;
-		
-	else
-		now = 2;
-	
-	filterState(now);
+	'/completed': function()
+	{
+		filterState = 0;
+	}	
 });
 
-O_O.listen(filterState, function(val)
+O_O.listen(O_O.state.change, function()
 {
-	DOM.$('#filters li:nth-of-type(' + (3 - val) + ') a').class('selected', 1);
-	DOM.$('#filters li:nth-of-type(' + (3 - filterState.prev) + ') a').class('selected', 0);
+	DOM.$('#filters a.selected').class('selected', 0);
+	DOM.$('#filters li:nth-of-type(' + (3 - filterState) + ') a').class('selected', 1);
 	
-	var i, item, keys = Object.keys(todos.items);
+	var i = 0, item, keys = Object.keys(todos.items);
 	
-	for(i = 0; i < keys.length; ++i)
+	for(; i < keys.length; ++i)
 	{
 		item = todoList.items[keys[i]];
-		item.isHidden(val == 2 ? false : Boolean(val) == item.isComplete());
+		item.isHidden(filterState == 2 ? false : Boolean(filterState) == item.isDone());
 	}	
 });
 
 O_O.listen(todos.event, function(e, list)
 {
-	var active, completed, change, changes;
+	var active, completed, change;
 	
 	if(e.type == 'change')
 	{
-		var item = todoList.items[e.id];
+		var changes, item = todoList.items[e.id];
 		
 		item.$.set(changes = e.changes);
 		
@@ -257,10 +251,8 @@ O_O.listen(todos.event, function(e, list)
 		if(change === undefined)
 			return;
 		
-		var state = filterState();
-		
-		item.isHidden(state == 2 ? false : Boolean(state) == change);
-		item.isComplete(change);
+		item.isHidden(filterState == 2 ? false : Boolean(filterState) == change);
+		item.isDone(change);
 		
 		completed = change ? 1 : -1;
 		active = completed * -1;
@@ -269,40 +261,44 @@ O_O.listen(todos.event, function(e, list)
 	{
 		noTodos(todos.length == 0);
 		
+		change = e.data.completed;
+		
 		if(e.type == 'add')
-			e.data.completed ? completed = 1 : active = 1;
+			change ? completed = 1 : active = 1;
 		
 		else
-			e.data.completed ? completed = -1 : active = -1;
+			change ? completed = -1 : active = -1;
 	}
 	
 	if(completed)
-		completedCount(completedCount() + completed) == todos.length && allChecked(1);
+		completedCount(completedCount() + completed);
 		
 	if(active)
-		activeCount(activeCount() + active) > 0 && allChecked(0);
+		activeCount(activeCount() + active);
+		
+	allChecked(activeCount() == 0);
 });
 
 /*Finally load the todoApp
 ------------------------*/
 O_O.ready(function()
 {
-	todoApp.$.at('todoApp');
-	
 	todoCount = todoApp.todoCount;
 	
 	todos.data([{
 		
-		id: Date.now(),
+		id: now(),
 		completed: true,
 		title: 'Say hello'
 		
 	},
 	{
 		
-		id: Date.now() + 1,
+		id: now() + 1,
 		completed: false,
 		title: 'hi'
 		
 	}]);
+	
+	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
 });

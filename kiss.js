@@ -1,19 +1,18 @@
-﻿//? history state changes after O_O.ready executes, this causes a glitch (by rendering content regardless the state)
+﻿//? History and states
+//? .pod.item.$.hidden
+//? DOM caching seems to be necessar as th intial load is glitching
+//? jquery's .clone(true) could copy event handlers
+//? jquery's domManip
+//? caching the DOM could help more robust, care free development on the front end
+//? DOM caching (is it in microDOM's scope)
+//? should 'loadChildren' at construction (this will need DOM fragments / caching of $ properties), not after .at
+//? $ properties could be applied to a fragment before .at inserts it into the DOM
 //? .list.event doesn't fire when the intial data is loaded. (initial data might need a removal)
 //? event handlers could be passed to the constructors of .list
-//? if else vs object keys
-//? typescript
-//? adding item.$.data
-//? $wrap function
-//? should loadChildren after construction (this will need caching of $ properties), not after .at
 //? O_O.filter / .list.filter
 //? .list assigning id on addition
-//? .list.reset, invert
 //? .box.append
-//? todos could help fixing bugs
-//? DOM caching
 //? changing sources
-//? History and states
 //? localStorage as a data source for O_O.values
 //? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
@@ -63,10 +62,11 @@ NO2 Liscence
 
 		DOM.ready(function()
 		{
-			document.documentElement.style.display = '';
-
-			if(ready)
+			var hash = location.hash.substr(1);
+			
+			if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed)
 			{
+				O_O.state.set(hash);
 				ready();
 				hider.remove();
 			}
@@ -74,9 +74,12 @@ NO2 Liscence
 			else //a ready function is not available
 				O_O.ready = function(func) //so execute it as soon as it's available
 				{
+					O_O.state.set(hash);
 					func();
 					hider.remove();
 				}
+				
+			document.documentElement.style.display = '';
 		});
 
 		//helpers
@@ -87,22 +90,23 @@ NO2 Liscence
 			if(i > -1)
 				return arr.splice(i, 1);
 		}
-			
+		
 		function enumerate(obj, func)
 		{
-			var i, key, keys = Object.keys(obj);
+			var key, i = 0,
+				keys = Object.keys(obj);
 			
-			for(i = 0; i < keys.length; ++i)
+			for(; i < keys.length; ++i)
 				func(key = keys[i], obj[key]);
 		}
 
 		function diff(obj1, obj2)
 		{
-			var i, key, prop,
+			var key, prop, i = 0, 
 				ret = {},
 				keys = Object.keys(obj1);
 			
-			for(i = 0; i < keys.length; ++i)
+			for(; i < keys.length; ++i)
 			{
 				key = keys[i], prop = obj1[key];
 				
@@ -117,16 +121,16 @@ NO2 Liscence
 		
 		function extend(target)
 		{
-			var i, source, keys;
+			var i = 0, source, keys;
 			
-			for(i = 1; i < arguments.length; ++i)
+			for(; i < arguments.length; ++i)
 			{
 				source = arguments[i];
 				keys = Object.keys(source);
 				
-				var j, key, prop;
+				var j = 0, key, prop;
 				
-				for(j = 0; j < keys.length; ++j)
+				for(; j < keys.length; ++j)
 				{
 					key = keys[j], prop = source[key];
 					
@@ -156,9 +160,9 @@ NO2 Liscence
 
 		function load(target, source, props)
 		{
-			var i, prop;
+			var i = 0, prop;
 			
-			for(i = 0; i < props.length; ++i)
+			for(; i < props.length; ++i)
 				prop = props[i], target[prop] = source[prop];
 				
 			return target;
@@ -183,8 +187,10 @@ NO2 Liscence
 
 			return prop = value;
 		}
-
+		
 		//public
+		
+		//classes
 		O_O.class = {
 
 			host: function()
@@ -250,9 +256,9 @@ NO2 Liscence
 				
 				_$.set = function(data)
 				{
-					var keys = Object.keys(data);
+					var i = 0, keys = Object.keys(data);
 					
-					for(var i = 0; i < keys.length; ++i)
+					for(; i < keys.length; ++i)
 					{
 						var key = keys[i],
 							val = data[key],
@@ -302,9 +308,10 @@ NO2 Liscence
 				
 				_$.remove = function()
 				{
-					var i, child, childName;
+					var child, childName,
+						i = 0;
 					
-					for(i = 0; i < children.length; ++i) //remove all children (boxes and pods)
+					for(; i < children.length; ++i) //remove all children (boxes and pods)
 					{
 						childName = children[i], child = self[childName];
 						
@@ -366,9 +373,9 @@ NO2 Liscence
 							if(!children.length) //the element has no children
 								return; //so return empty
 
-							var i, ret = {};
+							var i = 0, ret = {};
 
-							for(i = 0; i < children.length; ++i)
+							for(; i < children.length; ++i)
 							{
 								var val,
 									name = children[i],
@@ -412,7 +419,7 @@ NO2 Liscence
 				{
 					return $elRouter('class', _class, newVal);
 				}
-
+				
 				_$.event = function(name, handler)
 				{
 					var el, eName,
@@ -446,7 +453,7 @@ NO2 Liscence
 				//helpers
 				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
-					if(typeof newVal == 'undefined') //!arguments.length won't work here
+					if(newVal === undefined) //!arguments.length won't work here as the interface functions pass their undefined variables directly to this function
 						return $el[method](prop);
 
 					if(plugs[method][prop]) //unplugs the existing plug
@@ -480,9 +487,9 @@ NO2 Liscence
 
 				function loadChildren()
 				{
-					var i, childName, child;
+					var childName, child, i = 0;
 					
-					for(i = 0; i < children.length; ++i) //load child objects with matching elements
+					for(; i < children.length; ++i) //load child objects with matching elements
 					{
 						childName = children[i];
 
@@ -523,13 +530,14 @@ NO2 Liscence
 				var source,
 					self = this,
 					idProp, //the name of the id property for the items
-					item = options.item || {}, //!the empty object could be removed
+					item = options.item, //!the empty object could be removed
 					items = self.items = {},
 					itemNode,
+					mode = options.mode || 'append',
 					box = O_O.box({$: options.$});
 
 				self.$ = box.$;
-
+				
 				self.set = function(data)
 				{
 					enumerate(data, function(key, val)
@@ -556,15 +564,17 @@ NO2 Liscence
 
 				self.add = function(itemData) //adds an item
 				{
-					var id = itemData[idProp];
+					var _item, id = itemData[idProp];
 
-					box.$.$el.append(itemNode.cloneNode()).attr(keyAttr, id); //clone the node and append
+					box.$.$el[mode](itemNode.cloneNode()).attr(keyAttr, id); //clone the node and append
 
 					//make a new box and register it to the items array
 					//item could be a constructor function (when bindings are needed) or a static object (when there aren't any bindings).
-					items[id] = O_O.box(typeof item == 'object' ? item : new item(itemData)); //!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
+					_item = items[id] = O_O.box(typeof item == 'object' ? item : new item(itemData)); //!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
 					
-					items[id].$.at(id, self).set(itemData); //set its el and its data
+					_item.$.at(id, self).set(itemData); //set its el and its data
+					
+					_item.$.data = setItemData;
 				}
 
 				self.change = function(itemData) //changes an item
@@ -582,18 +592,24 @@ NO2 Liscence
 
 				function listen(event)
 				{
-					if(event.type != 'remove')
-					{
-						self[event.type](event.data);
-						self.event(event, items[event.data[idProp]]);
-					}
-					else
-					{
-						var id = event.data[idProp];
+					var type = event.type,
+						data = event.data,
+						id = data[idProp],
+						item = items[id];
+					
+					if(type != 'remove')
+						self[type](data);
 						
+					else
 						self.remove(id);
-						self.event(event, items[id]);
-					}
+					
+					self.event(event, item);
+				}
+				
+				function setItemData(data)
+				{
+					data[idProp] = this.id;
+					source.data(data)
 				}
 			}
 
@@ -658,11 +674,10 @@ NO2 Liscence
 					event = self.event = O_O.host();
 				
 				if(!options.data)
-					options.data = []; //allows the construction withour initial data
+					options.data = []; //allows the construction without initial data
 					
-				self.data = function(data) //? ?removing the wrap and using .update instead
+				self.data = function(data) //? ?using .update instead
 				{
-					//? a size changed event
 					if(isArray(data))
 						for(var i = 0; i < data.length; ++i)
 							setData(data[i]);
@@ -689,6 +704,14 @@ NO2 Liscence
 						remove(ids);
 						
 					return self;
+				}
+				
+				self.reset = function(data)
+				{
+					self.remove(Object.keys(items));
+					
+					if(data)
+						self.data(data);
 				}
 				
 				self.length = 0;
@@ -760,9 +783,9 @@ NO2 Liscence
 
 				self.watch = function()
 				{
-					var i, arg;
+					var i = 0, arg;
 					
-					for(i = 0; i < arguments.length; ++i)
+					for(; i < arguments.length; ++i)
 					{
 						arg = arguments[i];
 						
@@ -852,9 +875,9 @@ NO2 Liscence
 
 		O_O.watch = function()
 		{
-			var i, _watch = new O_O.class.watch;
+			var i = 0, _watch = new O_O.class.watch;
 
-			for(i = 0; i < arguments.length; ++i)
+			for(; i < arguments.length; ++i)
 				_watch.watch(arguments[i]);
 
 			return _watch;
@@ -878,33 +901,59 @@ NO2 Liscence
 				return inject;
 			}
 		}
-		/*
+		
 		O_O.state = new function()
 		{
 			var self = this,
+			list = self.list = {};
 			
-			var list = self.list = {};
+			self.change = O_O.value();
 			
 			self.add = function(hash, action)
 			{
-				list[hash] = action;
+				if(typeof hash == 'object')
+					enumerate(hash, add);
+				
+				else
+					add(hash, action);
 			}
 			
-			self.remove = function(hash, action)
+			self.remove = function(hash)
 			{
+				var action = list[hash];
+				
 				delete list[hash];
+				
+				return action;
 			}
 			
 			self.set = function(hash)
+			{
+				//process the hash before setting it
+				
+				if(!hash)
+					hash ='/'; //the default hash
+				
+				self.change(hash);
+			}
+			
+			self.change.plug(function(hash)
 			{
 				var action = list[hash];
 				
 				if(action)
 					action(hash);					
+				
+				self.set(hash);
+				
+				window.location.hash = hash;
+			});
+			
+			function add(hash, action)
+			{
+				list[hash] = action;
 			}
 		}
-		*/
-		O_O.state = O_O.value();
 
 		//plugin wrap
 		O_O.plugin = function(name, plugin)
@@ -913,14 +962,13 @@ NO2 Liscence
 				return self.plugin[name];
 
 			O_O.plugin[name] = plugin;
-		}
+		}		
 	}
 	
+	//lisetn to changes in the history
 	window.addEventListener('popstate', function()
 	{
-		O_O.state(location.hash.substr(1));
-		
-		//O_O.state.set(location.hash.substr(1));
+		O_O.state.set(location.hash.substr(1));
 	});
 
 })(window, document);

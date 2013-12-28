@@ -1,9 +1,13 @@
 # Kiss.js TodoMVC Example
 Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 
+## History
+
+* 131228_1030: state-handling has been rewritten to adopt new changes to kiss.
+
 ## Issues
 
-* Filters are applied after the content is rendered, this causes a glitch that shows the filered-out items.
+* **Fixed:** Filters are applied after the content is rendered, this causes a glitch that shows the filered-out items.
 
 ## Learned
 

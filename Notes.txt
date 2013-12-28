@@ -154,10 +154,26 @@ Usage
 		Could be used inline. Ex: text = O_O.trans(pluralify)(itemCount)
 	}
 	
+	O_O.listen
+	{
+		Don't use listen as private variables of objects; it might cause memory leaks.
+	}
+	
 	O_O.watch
 	{
-		//
+		Don't use watch as private variables of objects; it might cause memory leaks.
 	}
+}
+
+How to kiss (recipie style)
+{
+	First define the values, with sensible defaults.
+	
+	Then define the UI.
+	
+	Followed by listeners.
+	
+	And at last the UI initiation.
 }
 
 Structure
@@ -186,13 +202,11 @@ Noted
 	
 	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
 	
-	RquireJs messed up a lot.
+	RequireJs messed up a lot.
 }
 
 Descisions
 {
-	The events on an element has the element, not the jQuery node as its context; as that would help in accessing the methods of the element.
-	
 	An element could only have one handler per event; as this would ensure simplicity. If multiple events are needed a host could be used. Or a 'queue' could be made as a plugin.
 }
 
@@ -222,6 +236,8 @@ Future
 	A module + plugin manager (with bundling etc).
 	
 	Consider not depending on microDOM, as the dependency is very little.
+	
+	Adoping the SPA projects's #-less history.
 }
 
 Thoughts
