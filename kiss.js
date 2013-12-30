@@ -1,23 +1,22 @@
 ﻿//? History and states
-//? .pod.item.$.hidden
-//? DOM caching seems to be necessar as th intial load is glitching
-//? jquery's .clone(true) could copy event handlers
-//? jquery's domManip
+
+//? DOM caching seems to be necessary as the initial load is glitching
 //? caching the DOM could help more robust, care free development on the front end
-//? DOM caching (is it in microDOM's scope)
 //? should 'loadChildren' at construction (this will need DOM fragments / caching of $ properties), not after .at
 //? $ properties could be applied to a fragment before .at inserts it into the DOM
-//? .list.event doesn't fire when the intial data is loaded. (initial data might need a removal)
-//? event handlers could be passed to the constructors of .list
+//? .box.append
+//? runtime bindings
+
+//? .pod.item.$.hidden
 //? O_O.filter / .list.filter
 //? .list assigning id on addition
-//? .box.append
 //? changing sources
+
 //? localStorage as a data source for O_O.values
-//? runtime bindings
 //? data stores, as interfaces to existing data objects like localStorage
 //? An automatic UI generation check
 //? ajax text templates - plugin
+
 /*!
 KISS v0.0.5
 
@@ -26,13 +25,13 @@ NO2 Liscence
 (function(window, document)
 {
 	"use strict";
-	
+
 	var O_O = window.O_O = new function()
 	{
 		document.documentElement.style.display = 'none'; //hide the document until DOM.ready fires
 
 		var O_O = this,
-		
+
 			//helpers
 			$ = DOM.$,
 
@@ -40,45 +39,53 @@ NO2 Liscence
 			hider, //a DOM.$ element that helps to hide the elements to be KISSed until kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
 			ready, //store the ready function
 			keyAttr, //the keyAttr that marks the element to be KISSed
-			
+
 			//helpers functions
-			isArray = Array.isArray; 
+			isArray = Array.isArray;
 
 		O_O.VERSION = '0.0.5';
-		
+
 		O_O.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
 			keyAttr = attr;
-			
+
 			hider = $('script').before('style').html('[' + keyAttr + ']{display:none}')
 		}
 
 		O_O.keyAttr('id'); //the default keyAttr is id
-		
+
 		O_O.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
 		}
+		
+		function init()
+		{
+			O_O.state.set(location.hash.substr(1));
+			hider.remove();
+			
+			//hiding the elements causes them to loose focus, so set the focus again
+			var focused = $('[autofocus]').el;
+			
+			if(focused)
+				focused.focus();
+		}
 
 		DOM.ready(function()
 		{
-			var hash = location.hash.substr(1);
-			
 			if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed)
 			{
-				O_O.state.set(hash);
 				ready();
-				hider.remove();
+				init();
 			}
 
 			else //a ready function is not available
 				O_O.ready = function(func) //so execute it as soon as it's available
 				{
-					O_O.state.set(hash);
 					func();
-					hider.remove();
+					init();
 				}
-				
+
 			document.documentElement.style.display = '';
 		});
 
@@ -90,63 +97,90 @@ NO2 Liscence
 			if(i > -1)
 				return arr.splice(i, 1);
 		}
-		
+
 		function enumerate(obj, func)
 		{
 			var key, i = 0,
 				keys = Object.keys(obj);
-			
+
 			for(; i < keys.length; ++i)
 				func(key = keys[i], obj[key]);
 		}
 
 		function diff(obj1, obj2)
 		{
-			var key, prop, i = 0, 
+			var key, prop, i = 0,
 				ret = {},
 				keys = Object.keys(obj1);
-			
+
 			for(; i < keys.length; ++i)
 			{
 				key = keys[i], prop = obj1[key];
-				
+
 				if(obj2[key] !== prop)
 					ret[key] = prop;
 			}
-			
-			//console.log(ret, obj1, obj2)
-			
+
 			return ret;
 		}
-		
+
 		function extend(target)
 		{
 			var i = 0, source, keys;
-			
+
 			for(; i < arguments.length; ++i)
 			{
 				source = arguments[i];
 				keys = Object.keys(source);
-				
+
 				var j = 0, key, prop;
-				
+
 				for(; j < keys.length; ++j)
 				{
 					key = keys[j], prop = source[key];
-					
+
 					if(prop !== undefined)
 						target[key] = prop;
 				}
 			}
-			
+
 			return target;
 		}
 		
+		function clone(source, depth)
+		{
+			var i = 0,
+				target = {},
+				source, keys;
+
+			if(!depth)
+				depth = 1;
+				
+			keys = Object.keys(source);
+
+			var j = 0, key, prop;
+
+			for(; j < keys.length; ++j)
+			{
+				key = keys[j], prop = source[key];
+
+				if(prop !== undefined)
+				{
+					if(typeof prop == 'object' && depth)
+						prop = clone(prop, depth - 1);
+				
+					target[key] = prop;
+				}
+			}
+
+			return target;
+		}
+
 		function get$el(key, parent)
 		{
 			if(typeof key != 'object')
 				return $('[' + keyAttr + '="' + key + '"]', parent);
-				
+
 			return $(key, parent);
 		}
 
@@ -161,17 +195,17 @@ NO2 Liscence
 		function load(target, source, props)
 		{
 			var i = 0, prop;
-			
+
 			for(; i < props.length; ++i)
 				prop = props[i], target[prop] = source[prop];
-				
+
 			return target;
 		}
-		
+
 		function getProp(obj, prop)
 		{
 			var prop = obj[prop];
-			
+
 			if(typeof  prop == 'function')
 				return prop ();
 
@@ -181,15 +215,15 @@ NO2 Liscence
 		function setProp(obj, prop, value)
 		{
 			var prop = obj[prop];
-			
+
 			if(typeof prop == 'function')
 				return prop(value);
 
 			return prop = value;
 		}
-		
+
 		//public
-		
+
 		//classes
 		O_O.class = {
 
@@ -203,7 +237,7 @@ NO2 Liscence
 						plugs[i](val, source);
 				};
 
-				wrap.plug = function(func)
+				wrap.plug = function(func) //plugs a function to this host
 				{
 					plugs.push(func);
 
@@ -213,7 +247,7 @@ NO2 Liscence
 					}
 				}
 
-				wrap.unplug = function(func)
+				wrap.unplug = function(func) //unplug an existing function
 				{
 					remove(plugs, func);
 				}
@@ -223,61 +257,58 @@ NO2 Liscence
 			,box: function box(data/*consists of $data and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
 				var self = this,
-					_$, $el, events = {},
-					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/				
-				
-					$data = data.$ || {},
-				
-					children = Object.keys(extend(self, data));		
-				//? *here*
-				remove(children, '$'); //remove the $ from the children
-				
-				var data = load({}, data, children),
-				
-				_$ = self.$ = function(data)
-				{
-					var keys = Object.keys(data);					
+					_$, $el, elType,
 
-					enumerate($data, function(key, val)
+					events = {},
+					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
+
+					$data = data.$,
+
+					children = Object.keys(extend(self, data));
+
+				remove(children, '$'); //remove the $ from the children
+
+				_$ = data.$ = self.$ = function(data)
+				{
+					enumerate(data, function(key, val)
 					{
 						if(typeof val == 'object') //the prop is an enumerable
 							enumerate(val, function(k)
 							{
 								_$[key](k, val[k])
 							});
+
 						else if(_$[key])
 							_$[key](val)
 					});
-					
+
 					return _$;
-				}				
-				
-				load(self, data, children);
-				
+				}
+
 				_$.set = function(data)
 				{
 					var i = 0, keys = Object.keys(data);
-					
+
 					for(; i < keys.length; ++i)
 					{
 						var key = keys[i],
 							val = data[key],
 							child = self[key];
-						
+
 						if(child)
 							if(child.$)
 								child.$.val(val); //the child is ui element
-							
+
 							else if(child.data) //the child is a data source
 								child.data(val);
-								
+
 							else //the child is a value
 								child(val);
 					}
-					
+
 					return _$;
-				}				
-				
+				}
+
 				_$.at = function(query/*keyAttr, a DOM.$.el or a DOM element*/, parent) /*sets the el for the element and loads it with existing html, attrs etc*/
 				{
 					if(!parent)
@@ -287,88 +318,70 @@ NO2 Liscence
 						self.$.parent = parent;
 						$el = get$el(query, parent.$.el);
 					}
-					
-					self.$.$el = $el;
-					self.$.el = $el.el;
 
-					if($data.init)
-						$data.init();
+					_$.$el = $el;
+					_$.el = $el.el;
+					_$.id = $el.attr(keyAttr); //give the element an id					
+					elType = getElType($el.el); //the type of the element (to be used in .val and .default);
 					
-					_$($data); //load $data on to the element
-					
-					//data = undefined;
-
-					_$.id = $el.attr(keyAttr); //give the element an id
-					$el.el.style.display = 'none';
+					init();					
 					loadChildren();
-					$el.el.style.display = '';
 
 					return _$;
 				}
-				
+
 				_$.remove = function()
 				{
 					var child, childName,
 						i = 0;
-					
+
 					for(; i < children.length; ++i) //remove all children (boxes and pods)
 					{
 						childName = children[i], child = self[childName];
-						
+
 						child.$ && child.$.remove();
-						
+
 						delete self[childName];
 					}
-					
+
 					//? should html be cleared to remove event handlers
 					enumerate(plugs, function(key, branch) //clear all plugs
-					{							
+					{
 						enumerate(branch, function(key, unplug)
 						{
 							unplug(); //unplug the plug
 						});
 					});
-					
+
 					$el.el.remove();
 				}
 
-				_$.val = function(newVal) //helps with form serialization, returns the default value when data is collected, sets the default values when hosts are directly assigned
+				_$.val = function(newVal) //helps with form serialization, returns the value when data is collected
 				{
-					if($el.el.required !== undefined) //the element is an editable control (input, textarea, select), so it couldn't have html
-					{
-						var prop;
+					var prop;
 
-						//? type submit could cause problems
-						if($el.el.type == 'checkbox') //? radio
-							prop = 'checked';
-						else
-							prop = 'value';
+					if(elType == 3) //the element is an editable control (input, textarea, select)
+						prop = 'value';
 
-						if(newVal !== undefined)
-						{
-							_$.prop(prop, newVal);
-							
-							if(newVal.plug)
-								_$.el.addEventListener('change', function(e) //this doesn't count as the 'single' handler for the control
-								{
-									newVal(e.target[prop]);
-								});
-						}
-						else
-							return _$.prop(prop); //
-					}
-					else if($el.el.formAction !== undefined) //the element is a button
+					else if(elType == 2) //the element is a checkable //? radio
+						prop = 'checked';
+
+					if(newVal !== undefined)
 					{
-						if(newVal)
-							_$.event('click', newVal);
+						if(prop)
+							$el.prop(prop, newVal);
+
 						else
-							return;
+							$el.html(newVal);
+
+						return _$;
 					}
 					else
 					{
-						if(newVal !== undefined)
-							_$.html(newVal);
-						else
+						if(prop)
+							return _$.prop(prop);
+
+						else if(elType == 0) //the element is an HTML so get the nested data
 						{
 							if(!children.length) //the element has no children
 								return; //so return empty
@@ -391,8 +404,6 @@ NO2 Liscence
 							return ret;
 						}
 					}
-
-					return _$;
 				}
 
 				_$.html = function(newVal)
@@ -419,27 +430,27 @@ NO2 Liscence
 				{
 					return $elRouter('class', _class, newVal);
 				}
-				
+
 				_$.event = function(name, handler)
 				{
 					var el, eName,
 						pos = name.indexOf(' ');
-						
+
 					if(pos > -1)
 					{
 						el = $el.$(name.substr(pos + 1));
 						eName = name.substr(0, pos);
-					}						
+					}
 					else
 					{
 						el = $el;
 						eName = name;
 					}
-						
+
 					if(events[name]) //the event already has a handler
 						el.off(eName, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
-					
-						
+
+
 					if(handler) //allows to remove the event listener by not passing a handler
 						el.on(eName, events[name] = function(e)
 						{
@@ -451,14 +462,99 @@ NO2 Liscence
 				}
 
 				//helpers
+				function init() //sets the default values (when hosts are directly assigned they are plugged)
+				{
+					if($data)
+					{
+						if($data.init)
+						{
+							$data.init();
+							delete $data.init;
+						}
+
+						if($data.default)
+						{
+
+							var evt = 'change',
+								def = $data.default;
+
+							if(def.event)
+								evt = def.event, def = def.value;
+
+							delete $data.default;
+
+							if(elType > 1) //the element is an editable control (input, textarea, select) or a check box
+							{
+								var prop = elType == 2 ? 'checked' : 'value';
+
+								if(def.plug)
+								{
+									def.plug(function(val)
+									{
+										$el.prop(prop, val); //set the property
+
+										//dispatch an event
+										var evt = document.createEvent('UIEvent');
+										evt.initUIEvent(evt, false, false, window, val);
+										$el.el.dispatchEvent(evt);
+									});
+
+									$el.el.addEventListener(evt, function(e) //this event won't be unplugged
+									{
+										def(e.target[prop]);
+									});
+
+									$el.prop(prop, def()); //run the function with initial value
+								}
+
+								else
+									return $el[method](prop, getVal(def)); //set the value
+
+								return _$;
+							}
+
+							else if(elType == 1) //the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the returb vakues as therir contebt though
+								_$.event('click', def);
+
+							else
+								_$.html(def);
+						}
+						
+						_$($data); //load $data on to the element
+					}
+					
+					$data = undefined; //deleting the var
+				}
+
+				//?? could this be exposed as $.type?
+				function getElType(el) //returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
+				{
+					if(el.required !== undefined)
+					{
+						var type = el.type;
+
+						if(type == 'checkbox') //? radio
+							return 2;
+
+						else if(type == 'submit')
+							return 1;
+
+						else return 3; //the element is an editable
+					}
+					else if($el.el.formAction !== undefined) //the element is a button
+						return 1;
+
+					return 0; //the element is a display
+				}
+
 				function $elRouter(method, prop, newVal) //sets attr/prop/etc via $
 				{
 					if(newVal === undefined) //!arguments.length won't work here as the interface functions pass their undefined variables directly to this function
 						return $el[method](prop);
 
-					if(plugs[method][prop]) //unplugs the existing plug
+					if(plugs[method][prop]) //if there already is a plug
 					{
-						plugs[method][prop]();
+						plugs[method][prop](); //unplug the existing plug
 						delete plugs[method][prop];
 					}
 
@@ -466,13 +562,13 @@ NO2 Liscence
 					{
 						var func = factory(method, prop); //generate a function to change the value
 
-						plugs[method][prop] = newVal.plug(func); //plug into the value and get unplug data
+						plugs[method][prop] = newVal.plug(func); //plug into the value and get the unplug function
 
-						func(newVal());
+						func(newVal()); //run the function with initial value
 					}
 
 					else
-						return $el[method](prop, getVal(newVal));
+						return $el[method](prop, getVal(newVal)); //set the value
 
 					return _$;
 				}
@@ -488,7 +584,7 @@ NO2 Liscence
 				function loadChildren()
 				{
 					var childName, child, i = 0;
-					
+
 					for(; i < children.length; ++i) //load child objects with matching elements
 					{
 						childName = children[i];
@@ -505,7 +601,7 @@ NO2 Liscence
 								self[childName] = O_O.box(child); //build a box using the given 'data' and replace the data with it
 						}
 						else
-							self[childName] = O_O.box({$:{val: child}}); //create a box with the assigned object as its default value
+							self[childName] = O_O.box({$:{default: child}}); //create a box with the assigned object as its default value
 
 						self[childName].$.at(childName, self);
 					}
@@ -524,7 +620,7 @@ NO2 Liscence
 					box.$.html(''); //empty the pod
 
 					self.source(options.source);
-					//options = undefined;
+					options = undefined; //cleaning the var
 				}
 
 				var source,
@@ -537,7 +633,7 @@ NO2 Liscence
 					box = O_O.box({$: options.$});
 
 				self.$ = box.$;
-				
+
 				self.set = function(data)
 				{
 					enumerate(data, function(key, val)
@@ -548,13 +644,21 @@ NO2 Liscence
 
 				self.source = function(_source) //sets the data source
 				{
+					if(_source === undefined)
+						return source;
+					
 					source = _source;
 
 					source.event.plug(listen);
 
 					idProp = source.idProp;
 
-					enumerate(source.items, function(i, val)
+					enumerate(items, function(i) //remove the existing items in the list
+					{
+						self.remove(i);
+					});
+					
+					enumerate(source.items, function(i, val) //add the existing items from the source
 					{
 						self.add(val);
 					});
@@ -568,13 +672,12 @@ NO2 Liscence
 
 					box.$.$el[mode](itemNode.cloneNode()).attr(keyAttr, id); //clone the node and append
 
-					//make a new box and register it to the items array
-					//item could be a constructor function (when bindings are needed) or a static object (when there aren't any bindings).
-					_item = items[id] = O_O.box(typeof item == 'object' ? item : new item(itemData)); //!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
-					
-					_item.$.at(id, self).set(itemData); //set its el and its data
-					
+					//!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
+					_item = items[id] = O_O.box(new item(itemData)); //make a new box and register it to the items array
+
 					_item.$.data = setItemData;
+
+					_item.$.at(id, self).set(itemData); //set its el and its data
 				}
 
 				self.change = function(itemData) //changes an item
@@ -596,16 +699,16 @@ NO2 Liscence
 						data = event.data,
 						id = data[idProp],
 						item = items[id];
-					
+
 					if(type != 'remove')
 						self[type](data);
-						
+
 					else
 						self.remove(id);
-					
+
 					self.event(event, item);
 				}
-				
+
 				function setItemData(data)
 				{
 					data[idProp] = this.id;
@@ -619,7 +722,7 @@ NO2 Liscence
 				var self = this;
 
 				self.val = function(newVal)
-				{					
+				{
 					if(arguments.length)
 					{
 						if(newVal === val) //this equality check is to break circular references (when the value is bound to a UI control) and false changes (the value is reset to the same value)
@@ -629,7 +732,7 @@ NO2 Liscence
 						val = newVal;
 						host(newVal, self.val); //fires the change; self.val() could be called to get the prevVal
 					}
-					
+
 					return val;
 				}
 
@@ -672,10 +775,10 @@ NO2 Liscence
 					items = self.items = {},
 					idProp = self.idProp = options.idProp,
 					event = self.event = O_O.host();
-				
+
 				if(!options.data)
 					options.data = []; //allows the construction without initial data
-					
+
 				self.data = function(data) //? ?using .update instead
 				{
 					if(isArray(data))
@@ -686,7 +789,7 @@ NO2 Liscence
 
 					return self;
 				}
-				
+
 				function setData(item)
 				{
 					if(items[item[idProp]])
@@ -694,7 +797,7 @@ NO2 Liscence
 					else
 						add(item);
 				}
-				
+
 				self.remove = function(ids)
 				{
 					if(isArray(ids))
@@ -702,42 +805,42 @@ NO2 Liscence
 							remove(ids[i]);
 					else
 						remove(ids);
-						
+
 					return self;
 				}
-				
+
 				self.reset = function(data)
 				{
 					self.remove(Object.keys(items));
-					
+
 					if(data)
 						self.data(data);
 				}
-				
+
 				self.length = 0;
 
 				function add(data)
 				{
 					self.length++;
-					
+
 					//! converting the idProp to string might cause DB errors
 					//? consider using a separate _id for storing the idProp
 					var id = data[idProp] += ''; //convert the idProp to string (for storing it as an object key)
-					
+
 					event({
 
 						type: 'add',
 						id: id,
 						data: items[id] = extend({}, data)
 
-					}, self);					
+					}, self);
 				}
 
 				function change(changes)
 				{
 					var id = changes[idProp];
 					var data = items[id];
-					
+
 					event({
 
 						type: 'change',
@@ -747,11 +850,11 @@ NO2 Liscence
 
 					}, self);
 				}
-				
+
 				function remove(id)
 				{
 					self.length--;
-					
+
 					event({
 
 						type: 'remove',
@@ -759,11 +862,10 @@ NO2 Liscence
 						data: items[id]
 
 					}, self);
-					
+
 					delete items[id];
 				}
 
-				self.data(options.data);
 				options = undefined;
 			}
 
@@ -784,11 +886,11 @@ NO2 Liscence
 				self.watch = function()
 				{
 					var i = 0, arg;
-					
+
 					for(; i < arguments.length; ++i)
 					{
 						arg = arguments[i];
-						
+
 						if(plugs.indexOf(arg) == -1) //don't watch the val if it's being watched already
 						{
 							plugs.push(arg);
@@ -901,54 +1003,55 @@ NO2 Liscence
 				return inject;
 			}
 		}
-		
+
 		O_O.state = new function()
 		{
 			var self = this,
 			list = self.list = {};
-			
+
 			self.change = O_O.value();
-			
+
 			self.add = function(hash, action)
 			{
 				if(typeof hash == 'object')
 					enumerate(hash, add);
-				
+
 				else
 					add(hash, action);
 			}
-			
+
 			self.remove = function(hash)
 			{
 				var action = list[hash];
-				
+
 				delete list[hash];
-				
+
 				return action;
 			}
-			
+
 			self.set = function(hash)
 			{
 				//process the hash before setting it
-				
+				//nested routess as object trees + functions with /, *, :, ** etc
+
 				if(!hash)
-					hash ='/'; //the default hash
-				
+					hash = '/'; //the default hash
+
 				self.change(hash);
 			}
-			
+
 			self.change.plug(function(hash)
 			{
 				var action = list[hash];
-				
+
 				if(action)
-					action(hash);					
-				
+					action(hash);
+
 				self.set(hash);
-				
-				window.location.hash = hash;
+
+				location.hash = hash;
 			});
-			
+
 			function add(hash, action)
 			{
 				list[hash] = action;
@@ -962,10 +1065,10 @@ NO2 Liscence
 				return self.plugin[name];
 
 			O_O.plugin[name] = plugin;
-		}		
+		}
 	}
-	
-	//lisetn to changes in the history
+
+	//listen to changes in the history
 	window.addEventListener('popstate', function()
 	{
 		O_O.state.set(location.hash.substr(1));

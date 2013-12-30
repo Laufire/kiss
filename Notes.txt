@@ -136,6 +136,11 @@ Usage
 			Calling a $.<property> with parameters generally sets the value.
 			
 			Calling a $.<property> without parameters generally gets the value.
+			
+			$.val
+			{
+				With input controls, reSerializes the given box (generally a form) and returns the data as an object.
+			}
 		}
 	}
 	
@@ -163,6 +168,11 @@ Usage
 	{
 		Don't use watch as private variables of objects; it might cause memory leaks.
 	}
+	
+	General
+	{
+		Constructor functions like O_O.box and O_O.pod modifies the passed options object.
+	}
 }
 
 How to kiss (recipie style)
@@ -181,10 +191,8 @@ Structure
 	The components communicate through an API.
 }
 
-
 Questions
 {
-
 	Could html be automatically injected for collections, without the needed mark-up in the document?
 	
 	Could custom tag names be used to identify the class of the objects. Like: <Collection> <Item> <ScrollBar> etc?
@@ -198,11 +206,13 @@ Noted
 {
 	HTML's Custom tag-names appear to be case insensitive.
 	
-	Unlike the DOM, having duplicate IDs in a document is fine with CSS.
+	Duplicate IDs may be used inside a document; baut have to be accessed through querySelector, not through getElementById.
 	
 	The precedence of the values $.default and $.html etc depends on the 'last declared' value.
 	
 	RequireJs messed up a lot.
+	
+	Chrome was a lot faster than firefox.
 }
 
 Descisions
@@ -212,7 +222,23 @@ Descisions
 
 Performance
 {
+	1000 todos test
+	{
+		kiss is 2.5x faster than angular in rendering, modifiying the items and state change.
+		
+		kiss is 4x faster than knockout in rendering.
 	
+		Backbone couldn't pull the weight of '1000 todos'. kiss is 230x faster than backbone in rendering, 20x faster in modifiying the items and 15x faster in state change.
+		
+		kiss took a lot of time with the bulk-modifications right after the page load, but picked up speed, after it warmed up. This could be because of the browser might not have allocated resources as there weren't any bulk operation till then.
+	}
+	
+	DOM Manipulation
+	{
+		DOM-manipulation is the most costly process (tuning it will be highly benificial).
+		
+		Removing the node and manipulating it doesn't seem to bring any performance benifits (checked with .pod.add and .pod.change). The browsers seems to cache the results before rendering it.
+	}
 }
 
 Known Issues

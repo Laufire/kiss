@@ -1,6 +1,4 @@
 ﻿{
-	"live" : true,
-	
 	"imports": {
 	
 		"../../lib/" : {

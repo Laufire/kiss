@@ -105,7 +105,7 @@
 131226_0915	basic state handling added through O_O.state.
 131226_2250	.list.data can now handle both arrays and non arrays.
 
-131227_0000	A todoMVC clone added to the example.
+131227_0000	A todoMVC clone added to the examples.
 131227_0000	Lots of bugs fixed.
 131227_0700	Inline usage of O_O.trans discovered.
 131227_1145	v0.0.5 released.
@@ -116,3 +116,15 @@
 131228_0735	the 'state' bug that caused a loading glitch got fixed.
 131228_1020 .state extended to have .add, .remove, .set methods.
 131228_1040 .list.reset added.
+
+131229_0550 .box.$.default introduced as a bug fix.
+131229_1200 .box'es internals tuned.
+131229_1400 pluggables assigned to .box'es defaults now fire the respective events, when they are changed. This allows the manipulation of .box-es through .value-s. This also enable better co-ordination with server data (the element id could care about the css, where as the values name could correspond to the server data).
+131229_1600 .list.reset introduced.
+
+131230_0000 constructors are allowed to consume the passed objects.
+131230_0000 .pod.item shold be a constructor function; simple objects are droped in favor of simplicity and performance.
+131230_0600 .box.$.default could have a default event.
+131230_1200 lists don't support setting initial data through the constructor anymore.
+131230_1400 tested the performance against that of angular, knockout and backbone.
+131230_1500 autofocus bug fixed (hiding the elements causes them to loose focus, so the focus has to be set again)

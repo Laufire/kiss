@@ -30,7 +30,7 @@ App = O_O.box(new function()
 
 	self.data = O_O.object({
 
-		username: O_O.value(localStorage.user || 'user'),
+		username: O_O.value(),
 
 		password: O_O.value(localStorage.pass || 'pass'),
 		
@@ -44,7 +44,12 @@ App = O_O.box(new function()
 
 	self.loginForm = {
 
-		username: {},
+		username: {$ : { default: {
+		
+			value: self.data.username,
+			
+			event: 'keyup'
+		}}},
 
 		password: O_O.plugin.keyUpText(self.data.password),
 
@@ -86,7 +91,7 @@ O_O.ready(function()
 {
 	App.$.at('App');	
 
-	App.loginForm.$.set({username: App.data.username});
+	App.loginForm.username.$.val(localStorage.user || 'user');
 
 	usernameListener = O_O.listen(App.data.username, function(val)
 	{

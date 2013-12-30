@@ -1,16 +1,16 @@
-﻿"use strict";
+﻿(function()
+{
+"use strict";
 
 /*Define the variables
 ---------------------*/
-var now = Date.now,
-
-todos = O_O.list({
+var todos = O_O.list({
 
 	idProp: 'id',
 }),
 
 filterState = 2,
-noTodos = O_O.value(0),
+noTodos = O_O.value(1),
 allChecked = O_O.value(0),
 activeCount = O_O.value(0),
 completedCount = O_O.value(0),
@@ -26,8 +26,8 @@ todoApp = O_O.box(new function()
 			if(e.keyCode == 13)
 			{
 				todos.data({
-					id: now(),
-					completed: false,
+					id: todos.length,
+					isDone: false,
 					title: e.target.value
 				});
 
@@ -44,24 +44,22 @@ todoApp = O_O.box(new function()
 
 				change: function(e)
 				{
-					var i, key, 
-						checked = e.target.checked,
-						keys = Object.keys(todoList.items),
-						data = [];
+					//var start = Date.now();
+					var i, checked = e.target.checked,
+						data = [],
+						keys = Object.keys(todos.items);
 
 					for(i = 0; i < keys.length; ++i)
-					{
-						key = keys[i];
+						data.push({
 						
-						if(!checked == todos.items[key].completed)
-							data.push({
+							id: keys[i],
+							isDone: checked
 							
-								id: key,
-								completed: checked
-							})
-					}
-					
+						});
+						
 					todos.data(data);
+					
+					//console.log(Date.now() - start);
 				}
 			},
 			
@@ -81,10 +79,10 @@ todoApp = O_O.box(new function()
 
 		source:  todos,
 		
-		mode: 'prepend',
-
 		item: function(itemData)
 		{
+			var self = this;
+			
 			function changeTitle(e, box)
 			{
 				var $ = box.$.parent.$;
@@ -123,12 +121,13 @@ todoApp = O_O.box(new function()
 
 				dblclick: function(e, box)
 				{
-					var item = box.$.parent,
-						edit = item.edit;
+					var item =  box.$.parent,
+						item$ = item.$,
+						edit$ = item.edit.$;						
 					
-					item.$.class('editing', 1);
-					edit.$.val(todos.items[item.$.id].title);
-					edit.$.el.select();
+					item$.class('editing', 1);
+					edit$.val(todos.items[item$.id].title);
+					edit$.el.select();
 				}
 			}}}
 			
@@ -142,64 +141,69 @@ todoApp = O_O.box(new function()
 				
 				blur: changeTitle
 			}}}
-
-			this.completed = {$: {
 			
-				event: {
+			this.completed = this.isDone;
 			
-					change: function(e, box)
-					{
-						box.$.parent.$.data({
-						
-							completed: e.target.checked
-						});						
-					}
-				}
-			}}
+			O_O.listen(this.isDone, function(val, source)
+			{
+				self.$.data({
+				
+					isDone: val
+				});
+			});
 		}
 	});
 	
-	this.todoCount = O_O.trans(function(val) //!inline-trans
+	this.footer = new function()
 	{
-		if(val > 1)
-			return val + ' items left';
+		this.$ = { class: {
+		
+			hidden: noTodos
+		
+		}}
+		
+		this.todoCount = O_O.trans(function(val) //!inline-trans
+		{
+			if(val > 1)
+				return val + ' items left';
+				
+			if(val == 1)
+				return '1 item left';
 			
-		if(val == 1)
-			return '1 item left';
-		
-		return 'No items left'
-		
-	})(activeCount)
-	
-	this.clearCompleted = {
-	
-		$: {
-		
-			class: {
+			return 'No items left'
 			
-				hidden: O_O.trans(function(val)
-				{
-					return val == 0;
-					
-				})(completedCount)
+		})(activeCount)
+		
+		this.clearCompleted = {
+		
+			$: {
+			
+				class: {
+				
+					hidden: O_O.trans(function(val)
+					{
+						return val == 0;
+						
+					})(completedCount)
+				},
+				
+				event: {
+				
+					click: function(e)
+					{
+						var i, id,
+							items = todos.items,
+							ids = Object.keys(items);
+						
+						for(i = 0; i < ids.length; ++i)
+							id = ids[i], items[id].isDone && todos.remove(id);
+					}
+				}
 			},
 			
-			event: {
-			
-				click: function(e)
-				{
-					var i, id,
-						items = todos.items,
-						ids = Object.keys(items);
-					
-					for(i = 0; i < ids.length; ++i)
-						id = ids[i], items[id].completed && todos.remove(id);
-				}
-			}
-		},
-		
-		count: completedCount
-	}		
+			count: completedCount
+		}
+	}
 });
 
 /*Initial setup
@@ -224,6 +228,8 @@ O_O.state.add({
 
 O_O.listen(O_O.state.change, function()
 {
+	//var start = Date.now();
+	
 	DOM.$('#filters a.selected').class('selected', 0);
 	DOM.$('#filters li:nth-of-type(' + (3 - filterState) + ') a').class('selected', 1);
 	
@@ -233,7 +239,9 @@ O_O.listen(O_O.state.change, function()
 	{
 		item = todoList.items[keys[i]];
 		item.isHidden(filterState == 2 ? false : Boolean(filterState) == item.isDone());
-	}	
+	}
+	
+	//console.log(Date.now() - start);
 });
 
 O_O.listen(todos.event, function(e, list)
@@ -244,9 +252,7 @@ O_O.listen(todos.event, function(e, list)
 	{
 		var changes, item = todoList.items[e.id];
 		
-		item.$.set(changes = e.changes);
-		
-		change = changes.completed;
+		change = e.changes.isDone;
 		
 		if(change === undefined)
 			return;
@@ -261,7 +267,7 @@ O_O.listen(todos.event, function(e, list)
 	{
 		noTodos(todos.length == 0);
 		
-		change = e.data.completed;
+		change = e.data.isDone;
 		
 		if(e.type == 'add')
 			change ? completed = 1 : active = 1;
@@ -285,20 +291,21 @@ O_O.ready(function()
 {
 	todoCount = todoApp.todoCount;
 	
-	todos.data([{
-		
-		id: now(),
-		completed: true,
-		title: 'Say hello'
-		
-	},
-	{
-		
-		id: now() + 1,
-		completed: false,
-		title: 'hi'
-		
-	}]);
+	var data = [];
 	
+	for(var i = 0; i < 2; ++i)
+		data.push({
+		
+			id: i,
+			isDone: Boolean(i%2),
+			title: i
+			
+		});
+		
+	todos.data(data);
+	
+	//var start = Date.now();
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
+	//console.log(Date.now() - start);
 });
+})()

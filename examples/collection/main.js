@@ -210,45 +210,6 @@ var Server = mockServer
 
 			this.age = {}
 		}
-		/*
-		item: {
-
-			$: {
-
-				event: {
-
-					click: function(e, item)
-					{
-						selection(item);
-						e.stopPropagation();
-					},
-
-					'click .close': function(e, item)
-					{
-						App.people.remove(item.$.id);
-						e.stopPropagation();
-					}
-				}
-			},
-
-			name: {
-
-				$: {
-
-					event: {
-
-						click: function(e, item)
-						{
-							console.log(item);
-							alert('hello, I am ' + item.$.html());
-						}
-					}
-				}
-			},
-			
-			age: {}
-		}
-		*/
 	});
 });
 
