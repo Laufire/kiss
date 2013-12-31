@@ -45,7 +45,7 @@ body {
 #todoApp {
 	background: #fff;
 	background: rgba(255, 255, 255, 0.9);
-	margin: 130px 0 40px 0;
+	margin: 50px 0 40px 0;
 	border: 1px solid #ccc;
 	position: relative;
 	border-top-left-radius: 2px;
@@ -74,9 +74,7 @@ body {
 	color: #a9a9a9;
 }
 
-#todoApp h1 {
-	position: absolute;
-	top: -120px;
+h1 {
 	width: 100%;
 	font-size: 70px;
 	font-weight: bold;
@@ -560,4 +558,19 @@ hr {
 		width: 550px;
 		margin: 130px auto 40px auto;
 	}
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  -webkit-animation-name: fadeIn;
+  -webkit-animation-duration: 1s;
 }

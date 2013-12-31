@@ -128,3 +128,9 @@
 131230_1200 lists don't support setting initial data through the constructor anymore.
 131230_1400 tested the performance against that of angular, knockout and backbone.
 131230_1500 autofocus bug fixed (hiding the elements causes them to loose focus, so the focus has to be set again)
+
+131231_0000 tested various DOM tuning methods (node removal, fragments, HTML replacement etc), only to tune the existing methods.
+131231_0905 hiding elements discarded (in favor of not-intruding into the UI flow, it has to be done at the UI layer).
+131231_1000 .box.$.init now gets the box as its argument.
+131231_1010 .pod.$.init introduced.
+131231_1245 v0.0.6 released.

@@ -4,6 +4,7 @@ Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 ## History
 
 * 131228_1030: state-handling has been rewritten to adopt new changes to kiss.
+* 131231_1000: The UI hs been modified a bit to achieve a better UserXperience.
 
 ## Issues
 

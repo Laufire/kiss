@@ -15,7 +15,7 @@ allChecked = O_O.value(0),
 activeCount = O_O.value(0),
 completedCount = O_O.value(0),
 
-todoCount, todoList,
+todoList,
 
 todoApp = O_O.box(new function()
 {
@@ -27,7 +27,7 @@ todoApp = O_O.box(new function()
 			{
 				todos.data({
 					id: todos.length,
-					isDone: false,
+					isDone: 0,
 					title: e.target.value
 				});
 
@@ -53,7 +53,7 @@ todoApp = O_O.box(new function()
 						data.push({
 						
 							id: keys[i],
-							isDone: checked
+							isDone: Number(checked)
 							
 						});
 						
@@ -238,7 +238,7 @@ O_O.listen(O_O.state.change, function()
 	for(; i < keys.length; ++i)
 	{
 		item = todoList.items[keys[i]];
-		item.isHidden(filterState == 2 ? false : Boolean(filterState) == item.isDone());
+		item.isHidden(filterState == 2 ? false : filterState == item.isDone());
 	}
 	
 	//console.log(Date.now() - start);
@@ -246,18 +246,19 @@ O_O.listen(O_O.state.change, function()
 
 O_O.listen(todos.event, function(e, list)
 {
-	var active, completed, change;
+	var active, completed, change,
+		type = e.type;
 	
-	if(e.type == 'change')
+	if(type == 'change')
 	{
-		var changes, item = todoList.items[e.id];
+		var item = todoList.items[e.id];
 		
 		change = e.changes.isDone;
 		
 		if(change === undefined)
 			return;
 		
-		item.isHidden(filterState == 2 ? false : Boolean(filterState) == change);
+		item.isHidden(filterState == 2 ? false : filterState == change);
 		item.isDone(change);
 		
 		completed = change ? 1 : -1;
@@ -269,7 +270,7 @@ O_O.listen(todos.event, function(e, list)
 		
 		change = e.data.isDone;
 		
-		if(e.type == 'add')
+		if(type == 'add')
 			change ? completed = 1 : active = 1;
 		
 		else
@@ -289,23 +290,25 @@ O_O.listen(todos.event, function(e, list)
 ------------------------*/
 O_O.ready(function()
 {
-	todoCount = todoApp.todoCount;
+	var start = Date.now();
 	
 	var data = [];
 	
-	for(var i = 0; i < 2; ++i)
+	for(var i = 0; i < 10; ++i)
 		data.push({
 		
 			id: i,
-			isDone: Boolean(i%2),
+			isDone: i%2,
 			title: i
 			
 		});
 		
 	todos.data(data);
 	
-	//var start = Date.now();
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
-	//console.log(Date.now() - start);
+	console.log(Date.now() - start);
+	
+	todoApp.$.class('hidden', 0);
+	DOM.$('#info p').class('hidden', 0);
 });
 })()

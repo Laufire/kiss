@@ -10,16 +10,16 @@
 	</head>
 	<body>
 	
-		<section id="todoApp">
-			<header id="header">
-				<h1>todos</h1>
+		<h1>todos</h1>
+		<section id="todoApp" class="hidden fadeIn">
+			<header id="header">				
 				<input id="newTodo" placeholder="What needs to be done?" autofocus>
 			</header>
 			<section id="main">
 				<input id="toggleAll" type="checkbox">
 				<label for="toggleAll">Mark all as complete</label>
 				<ul id="todoList">				
-					<li>
+					<li class="fadeIn">
 						<div class="view">
 							<input id="completed" class="toggle" type="checkbox"/>
 							<label id="title"></label>
@@ -29,7 +29,7 @@
 					</li>
 				</ul>
 			</section>
-			<footer id="footer">
+			<footer id="footer" class="fadeIn">
 				
 				<span id="todoCount"></span>
 				
@@ -45,7 +45,7 @@
 		</section>
 		
 		<footer id="info">
-			<p>Double-click to edit a todo</p>
+			<p class="hidden fadeIn">Double-click to edit a todo</p>
 			<p>Thanks to: <a href="https://github.com/addyosmani">Addy Osmani</a></p>
 		</footer>
 		

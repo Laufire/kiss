@@ -1,24 +1,23 @@
 ﻿//? History and states
 
-//? DOM caching seems to be necessary as the initial load is glitching
-//? caching the DOM could help more robust, care free development on the front end
-//? should 'loadChildren' at construction (this will need DOM fragments / caching of $ properties), not after .at
-//? $ properties could be applied to a fragment before .at inserts it into the DOM
+//? is init needed; init & loadChildren
 //? .box.append
+//? .box.style
 //? runtime bindings
+//? renaming $.parent to $.root/host (to avoid possible confusion)
 
-//? .pod.item.$.hidden
 //? O_O.filter / .list.filter
 //? .list assigning id on addition
-//? changing sources
+//? master list
 
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
+
 //? An automatic UI generation check
 //? ajax text templates - plugin
 
 /*!
-KISS v0.0.5
+KISS v0.0.6
 
 NO2 Liscence
 */
@@ -28,65 +27,47 @@ NO2 Liscence
 
 	var O_O = window.O_O = new function()
 	{
-		document.documentElement.style.display = 'none'; //hide the document until DOM.ready fires
-
 		var O_O = this,
 
 			//helpers
 			$ = DOM.$,
 
 			//init
-			hider, //a DOM.$ element that helps to hide the elements to be KISSed until kissing completes; //? could also be used to show a 'loading' indicator, it would be more cool...
 			ready, //store the ready function
-			keyAttr, //the keyAttr that marks the element to be KISSed
+			keyAttr = 'id', //the keyAttr that marks the element to be KISSed (the default is 'id')
 
 			//helpers functions
-			isArray = Array.isArray;
+			isArray = Array.isArray,
+			getKeys = Object.keys;
 
-		O_O.VERSION = '0.0.5';
+		O_O.VERSION = '0.0.6';
 
 		O_O.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
 			keyAttr = attr;
-
-			hider = $('script').before('style').html('[' + keyAttr + ']{display:none}')
 		}
-
-		O_O.keyAttr('id'); //the default keyAttr is id
 
 		O_O.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
 		}
-		
-		function init()
-		{
-			O_O.state.set(location.hash.substr(1));
-			hider.remove();
-			
-			//hiding the elements causes them to loose focus, so set the focus again
-			var focused = $('[autofocus]').el;
-			
-			if(focused)
-				focused.focus();
-		}
 
 		DOM.ready(function()
 		{
-			if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed)
+			var hash = location.hash.substr(1);
+			
+			if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
 			{
 				ready();
-				init();
+				O_O.state.set(hash);
 			}
 
 			else //a ready function is not available
 				O_O.ready = function(func) //so execute it as soon as it's available
 				{
 					func();
-					init();
+					O_O.state.set(hash);
 				}
-
-			document.documentElement.style.display = '';
 		});
 
 		//helpers
@@ -101,7 +82,7 @@ NO2 Liscence
 		function enumerate(obj, func)
 		{
 			var key, i = 0,
-				keys = Object.keys(obj);
+				keys = getKeys(obj);
 
 			for(; i < keys.length; ++i)
 				func(key = keys[i], obj[key]);
@@ -111,7 +92,7 @@ NO2 Liscence
 		{
 			var key, prop, i = 0,
 				ret = {},
-				keys = Object.keys(obj1);
+				keys = getKeys(obj1);
 
 			for(; i < keys.length; ++i)
 			{
@@ -131,7 +112,7 @@ NO2 Liscence
 			for(; i < arguments.length; ++i)
 			{
 				source = arguments[i];
-				keys = Object.keys(source);
+				keys = getKeys(source);
 
 				var j = 0, key, prop;
 
@@ -156,7 +137,7 @@ NO2 Liscence
 			if(!depth)
 				depth = 1;
 				
-			keys = Object.keys(source);
+			keys = getKeys(source);
 
 			var j = 0, key, prop;
 
@@ -264,7 +245,7 @@ NO2 Liscence
 
 					$data = data.$,
 
-					children = Object.keys(extend(self, data));
+					children = getKeys(extend(self, data));
 
 				remove(children, '$'); //remove the $ from the children
 
@@ -287,7 +268,7 @@ NO2 Liscence
 
 				_$.set = function(data)
 				{
-					var i = 0, keys = Object.keys(data);
+					var i = 0, keys = getKeys(data);
 
 					for(; i < keys.length; ++i)
 					{
@@ -324,7 +305,7 @@ NO2 Liscence
 					_$.id = $el.attr(keyAttr); //give the element an id					
 					elType = getElType($el.el); //the type of the element (to be used in .val and .default);
 					
-					init();					
+					init();
 					loadChildren();
 
 					return _$;
@@ -344,7 +325,6 @@ NO2 Liscence
 						delete self[childName];
 					}
 
-					//? should html be cleared to remove event handlers
 					enumerate(plugs, function(key, branch) //clear all plugs
 					{
 						enumerate(branch, function(key, unplug)
@@ -468,7 +448,7 @@ NO2 Liscence
 					{
 						if($data.init)
 						{
-							$data.init();
+							$data.init(self);
 							delete $data.init;
 						}
 
@@ -521,9 +501,9 @@ NO2 Liscence
 						}
 						
 						_$($data); //load $data on to the element
+						
+						$data = undefined; //deleting the var
 					}
-					
-					$data = undefined; //deleting the var
 				}
 
 				//?? could this be exposed as $.type?
@@ -610,31 +590,30 @@ NO2 Liscence
 
 			,pod: function pod(options)
 			{
-				if(!options.$)
-					options.$ = {};
-
-				//? ?should pod have an 'init'
-				options.$.init = function() //this is to queue the tasks after the el is set
-				{
-					itemNode = box.$.prop('firstElementChild').cloneNode(); //clone the node for reuse while adding elements
-					box.$.html(''); //empty the pod
-
-					self.source(options.source);
-					options = undefined; //cleaning the var
-				}
-
-				var source,
+				var source = options.source,
 					self = this,
 					idProp, //the name of the id property for the items
-					item = options.item, //!the empty object could be removed
+					item = options.item,
 					items = self.items = {},
 					itemNode,
 					mode = options.mode || 'append',
-					box = O_O.box({$: options.$});
+					box = O_O.box({$: options.$}),
+					options = undefined; //cleaning the var
 
-				self.$ = box.$;
+				self.$ = extend({}, box.$);
+				
+				self.$.at = function(query, parent)
+				{
+					box.$.at(query, parent);
+					
+					itemNode = box.$.prop('firstElementChild'); //use the first chid element as the template for items
+					box.$.html(''); //empty the pod's box
 
-				self.set = function(data)
+					if(source)
+						self.source(source);					
+				}
+
+				self.set = function(data) //? is this necessary?
 				{
 					enumerate(data, function(key, val)
 					{
@@ -811,7 +790,7 @@ NO2 Liscence
 
 				self.reset = function(data)
 				{
-					self.remove(Object.keys(items));
+					self.remove(getKeys(items));
 
 					if(data)
 						self.data(data);
@@ -937,7 +916,7 @@ NO2 Liscence
 		//UI wraps
 		O_O.box = function(data) //an element that could have children
 		{
-			return new O_O.class.box(data);
+			return new O_O.class.box(data || {});
 		}
 
 		O_O.pod = function(data) //an element that acts as a collection
@@ -1004,6 +983,7 @@ NO2 Liscence
 			}
 		}
 
+		//Monoliths
 		O_O.state = new function()
 		{
 			var self = this,

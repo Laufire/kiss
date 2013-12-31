@@ -6,30 +6,7 @@ var Server = mockServer
 
 , people = O_O.list({
 
-	idProp: 'name',
-
-	data: [
-		{
-			name: 'A',
-			age: 65,
-			isMale: 0
-		},
-		{
-			name: '$',
-			age: 65,
-			isMale: 1
-		},
-		{
-			name: 'M',
-			age: 77,
-			isMale: 1
-		},
-		{
-			name: 'Z',
-			age: 90,
-			isMale: 0
-		}
-	]
+	idProp: 'name'
 })
 
 , rndBtwn = function(n1, n2)
@@ -253,5 +230,28 @@ O_O.listen(App.toolbar.gender, function(val)
 --------------------*/
 O_O.ready(function()
 {
-	App.$.at('App');	
+	people.data([
+		{
+			name: 'A',
+			age: 65,
+			isMale: 0
+		},
+		{
+			name: '$',
+			age: 65,
+			isMale: 1
+		},
+		{
+			name: 'M',
+			age: 77,
+			isMale: 1
+		},
+		{
+			name: 'Z',
+			age: 90,
+			isMale: 0
+		}
+	]);
+	
+	App.$.at('App');
 });
