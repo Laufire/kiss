@@ -9,7 +9,7 @@ var todos = O_O.list({
 	idProp: 'id',
 }),
 
-filterState = 2,
+filterState = O_O.value(2),
 noTodos = O_O.value(1),
 allChecked = O_O.value(0),
 activeCount = O_O.value(0),
@@ -27,7 +27,7 @@ todoApp = O_O.box(new function()
 			{
 				todos.data({
 					id: Date.now(),
-					isDone: false,
+					isDone: true,
 					title: e.target.value
 				});
 
@@ -76,9 +76,9 @@ todoApp = O_O.box(new function()
 		{
 			var self = this;
 			
-			this.isHidden = O_O.value(filterState == 2 ? false : Boolean(filterState) == itemData.completed); //<-here
+			this.isHidden = O_O.value(filterState() == 2 ? false : Boolean(filterState()) == itemData.completed); //<-here
 			
-			this.isDone = O_O.value(itemData.completed);
+			this.isDone = O_O.value(itemData.isDone);
 			
 			this.$ = {
 
@@ -86,7 +86,7 @@ todoApp = O_O.box(new function()
 
 					'click .destroy': function(e, item)
 					{
-						item.$.event('click .destroy'); //remove the event listener so it isn't invoked during the fade out
+						item.$.event('click .destroy', function(){}); //remove the event listener so it isn't invoked during the fade out
 						item.$.class('fadeOutUp', 1);
 						
 						setTimeout(function()
@@ -101,6 +101,11 @@ todoApp = O_O.box(new function()
 					hidden: this.isHidden,
 
 					completed: this.isDone
+				},
+				
+				clean: function()
+				{
+					alterCounts(self.isDone(), -1);
 				}
 			}
 			
@@ -150,6 +155,10 @@ todoApp = O_O.box(new function()
 				
 				$.class('editing', 0);
 			}
+			
+			//global changes
+			noTodos(false);
+			alterCounts(itemData.isDone, 1);
 		}
 	});
 	
@@ -205,39 +214,43 @@ todoApp = O_O.box(new function()
 	}
 });
 
+function alterCounts(isDone, change)
+{
+	if(isDone)
+		completedCount(completedCount() + change);
+	else
+		activeCount(activeCount() + change);
+		
+	allChecked(activeCount() == 0);
+}
+
 /*Initial setup
 --------------*/
-O_O.state.routes = {
+O_O.state.routes = new function(){
 
-	'*': function()
-	{
-		filterState = 2;
-	},
+	var states = ['active', 'completed']
 	
-	'active': function()
+	this['*'] = function(hash)
 	{
-		filterState = 1;
-	},	
-	
-	'completed': function()
-	{
-		filterState = 0;
+		filterState(1 - states.indexOf(hash));
 	}
-};
+}
 
 O_O.listen(O_O.state.change, function()
 {
 	//var start = Date.now();
 	
-	DOM.$('#filters a.selected').class('selected', 0);
-	DOM.$('#filters li:nth-of-type(' + (3 - filterState) + ') a').class('selected', 1);
+	var i = 0, item,
+		keys = Object.keys(todos.items),
+		state = filterState();
 	
-	var i = 0, item, keys = Object.keys(todos.items);
+	DOM.$('#filters a.selected').class('selected', 0);
+	DOM.$('#filters li:nth-of-type(' + (3 - state) + ') a').class('selected', 1);
 	
 	for(; i < keys.length; ++i)
 	{
 		item = todoList.items[keys[i]];
-		item.isHidden(filterState == 2 ? false : filterState == item.isDone());
+		item.isHidden(state == 2 ? false : state == item.isDone());
 	}
 	
 	//console.log(Date.now() - start);
@@ -245,43 +258,24 @@ O_O.listen(O_O.state.change, function()
 
 O_O.listen(todos.event, function(e, list)
 {
-	var active, completed, change,
-		type = e.type;
-	
-	if(type == 'change')
+	if(e.type == 'change')
 	{
-		var item = todoList.items[e.id];
+		var item = todoList.items[e.id],
+			state = filterState(),
+			completed, change;
 		
 		change = e.changes.isDone;
 		
 		if(change === undefined)
 			return;
 		
-		item.isHidden(filterState == 2 ? false : filterState == change);
+		item.isHidden(state == 2 ? false : state == change);
 		
 		completed = change ? 1 : -1;
-		active = completed * -1;
-	}
-	else
-	{
-		noTodos(todos.length == 0);
 		
-		change = e.data.isDone;
-		
-		if(type == 'add')
-			change ? completed = 1 : active = 1;
-		
-		else
-			change ? completed = -1 : active = -1;
-	}
-	
-	if(completed)
 		completedCount(completedCount() + completed);
-		
-	if(active)
-		activeCount(activeCount() + active);
-		
-	allChecked(activeCount() == 0);
+		activeCount(activeCount() + completed * -1);
+	}
 });
 
 /*Finally load the todoApp

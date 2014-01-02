@@ -131,6 +131,15 @@
 
 131231_0000 tested various DOM tuning methods (node removal, fragments, HTML replacement etc), only to tune the existing methods.
 131231_0905 hiding elements discarded (in favor of not-intruding into the UI flow, it has to be done at the UI layer).
-131231_1000 .box.$.init now gets the box as its argument.
-131231_1010 .pod.$.init introduced.
+131231_1000 .box'es init now gets the box as its argument.
+131231_1010 .pod too has an init now.
 131231_1245 v0.0.6 released.
+
+140101_0240 O_O.state changed, to support nested routes with functions and params. .state shed .add, .remove and .list; infavor of a private 'resolve' function.
+140101_0810 O_O.state improved, by adding .change and .set.
+140101_1815 .box.text introduced (it allows safer content injection by preventing HTML injections).
+140101_1815 .box.val sets the $.text instead of $.html.
+140101_1830 .box.val returns the $.text on display elements.
+
+140102_0755 .box'es constructor could have a 'clean' function.
+

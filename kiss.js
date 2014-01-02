@@ -1,14 +1,14 @@
-﻿//? History and states
+﻿//? escaping html on data access
+//? O_O.filter / .list.filter
+//? .list assigning id on addition
+//? master list
 
 //? is init needed; init & loadChildren
 //? .box.append
 //? .box.style
 //? runtime bindings
 //? renaming $.parent to $.root/host (to avoid possible confusion)
-
-//? O_O.filter / .list.filter
-//? .list assigning id on addition
-//? master list
+//? allowing pre-and-post addition/deletion events
 
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
@@ -25,7 +25,12 @@ NO2 Liscence
 {
 	"use strict";
 
-	var O_O = window.O_O = new function()
+	var
+	
+	changeState,
+	ready, //store the ready function
+	
+	O_O = window.O_O = new function()
 	{
 		var O_O = this,
 
@@ -33,12 +38,12 @@ NO2 Liscence
 			$ = DOM.$,
 
 			//init
-			ready, //store the ready function
 			keyAttr = 'id', //the keyAttr that marks the element to be KISSed (the default is 'id')
 
 			//helpers functions
 			isArray = Array.isArray,
-			getKeys = Object.keys;
+			getKeys = Object.keys,
+			dCode = decodeURIComponent;
 
 		O_O.VERSION = '0.0.6';
 
@@ -47,28 +52,10 @@ NO2 Liscence
 			keyAttr = attr;
 		}
 
-		O_O.ready = function(func) /*multiple read functions are not implemented, as it could make the code complex*/
+		O_O.ready = function(func) /*multiple ready functions are not implemented, as it could make the code complex*/
 		{
 			ready = func;
 		}
-
-		DOM.ready(function()
-		{
-			var hash = location.hash.substr(1);
-			
-			if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
-			{
-				ready();
-				O_O.state.set(hash);
-			}
-
-			else //a ready function is not available
-				O_O.ready = function(func) //so execute it as soon as it's available
-				{
-					func();
-					O_O.state.set(hash);
-				}
-		});
 
 		//helpers
 		function remove(arr, val)
@@ -156,6 +143,15 @@ NO2 Liscence
 
 			return target;
 		}
+		
+		function extract(obj, prop)
+		{
+			var ret = obj[prop];
+
+			delete obj[prop];
+
+			return ret;
+		}
 
 		function get$el(key, parent)
 		{
@@ -238,7 +234,7 @@ NO2 Liscence
 			,box: function box(data/*consists of $data and child element data, saved until the element is set*/) //!the passed object will be modified
 			{
 				var self = this,
-					_$, $el, elType,
+					_$, $el, elType, cleanUp,
 
 					events = {},
 					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
@@ -332,11 +328,16 @@ NO2 Liscence
 							unplug(); //unplug the plug
 						});
 					});
+					
+					if(cleanUp)
+						cleanUp(self);
 
 					$el.el.remove();
 				}
 
-				_$.val = function(newVal) //helps with form serialization, returns the value when data is collected
+				/*/helps with form serialization, returns the value when data is collected
+					custon controls may use this method to return a custom val*/
+				_$.val = function(newVal)
 				{
 					var prop;
 
@@ -352,7 +353,7 @@ NO2 Liscence
 							$el.prop(prop, newVal);
 
 						else
-							$el.html(newVal);
+							$el.text(newVal);
 
 						return _$;
 					}
@@ -361,24 +362,24 @@ NO2 Liscence
 						if(prop)
 							return _$.prop(prop);
 
-						else if(elType == 0) //the element is an HTML so get the nested data
+						else if(elType == 0) //the element is an HTML element
 						{
-							if(!children.length) //the element has no children
-								return; //so return empty
-
-							var i = 0, ret = {};
-
-							for(; i < children.length; ++i)
+							var length = children.length;
+							
+							if(!length) //the element has no children
+								return _$.text(); //so return its text
+								
+							var i = 0,
+								length = children.length,
+								ret = {};
+								
+							for(; i < length; ++i) // the element has children so get the nested data
 							{
-								var val,
-									name = children[i],
+								var name = children[i],
 									child = self[name];
 
 								if(child && child.$)
-									val = child.$.val();
-
-								if(val !== undefined) //non form elements return undefined
-									ret[name] = val;
+									ret[name] = child.$.val();
 							}
 
 							return ret;
@@ -394,6 +395,14 @@ NO2 Liscence
 					$elRouter('prop', 'innerHTML', newVal);
 
 					loadChildren();
+				}
+				
+				_$.text = function(newVal)
+				{
+					if(!arguments.length)
+						return $el.text()
+
+					$elRouter('prop', 'textContent', newVal);
 				}
 
 				_$.prop = function(prop, newVal)
@@ -446,22 +455,20 @@ NO2 Liscence
 				{
 					if($data)
 					{
-						if($data.init)
+						var init = extract($data, 'init'),
+							def = extract($data, 'default');
+							
+						cleanUp = extract($data, 'clean');
+						
+						if(init)
+							init(self);
+						
+						if(def)
 						{
-							$data.init(self);
-							delete $data.init;
-						}
-
-						if($data.default)
-						{
-
-							var evt = 'change',
-								def = $data.default;
+							var evt = 'change';
 
 							if(def.event)
 								evt = def.event, def = def.value;
-
-							delete $data.default;
 
 							if(elType > 1) //the element is an editable control (input, textarea, select) or a check box
 							{
@@ -986,55 +993,73 @@ NO2 Liscence
 		//Monoliths
 		O_O.state = new function()
 		{
-			var self = this,
-			list = self.list = {};
-
+			var self = this;
+			
+			/*/use 'change' to change the state and set the history*/
 			self.change = O_O.value();
+			
+			self.routes = {}; // to be overrided by the user provided routes
 
-			self.add = function(hash, action)
+			/*/use 'set' if the state has to be changed without affecting the history*/
+			self.set = function(hash) //processes the hash, ececutes the related function and changes the hash on sucessful execution
 			{
-				if(typeof hash == 'object')
-					enumerate(hash, add);
-
-				else
-					add(hash, action);
+				if(!hash) //firefox sets an 'undefined' has when there's no hash
+					hash = ''; //the default hash
+					
+				if(resolve(self.routes, hash)) //the state is set if the route is resolved successfully (a non-truthy value is returned)
+					return;
 			}
 
-			self.remove = function(hash)
+			self.change.plug(function(hash) //listens to the hash changes and sets the route
 			{
-				var action = list[hash];
-
-				delete list[hash];
-
-				return action;
-			}
-
-			self.set = function(hash)
-			{
-				//process the hash before setting it
-				//nested routess as object trees + functions with /, *, :, ** etc
-
-				if(!hash)
-					hash = '/'; //the default hash
-
-				self.change(hash);
-			}
-
-			self.change.plug(function(hash)
-			{
-				var action = list[hash];
-
-				if(action)
-					action(hash);
-
 				self.set(hash);
-
-				location.hash = hash;
+				window.location.hash = hash;
 			});
-
-			function add(hash, action)
+			
+			/*/route resolution
+			
+				state.routes = {
+				
+					a: {
+					
+						'*' : {
+						
+							b: {
+							
+								'*': function(finalParam, otherCollectedParamsArray)
+								{
+									//
+								}
+							}
+						}
+					}
+				}
+				
+				state.change('a/param1/b/param/2') resolves to a.*.b('param/2', [param1])
+			*/
+			function resolve(route, path, params) //resolves the route
 			{
-				list[hash] = action;
+				if(!route)
+					return 1; //notify failure if the route is not suresolved
+				
+				if(!params)
+					params = [];
+				
+				if(typeof route == 'function')
+					return route(dCode(path), params);
+				
+				var pos = path.indexOf('/'),
+					part = pos > 0 ? path.substr(0, pos) : path,
+					target = route[part],
+					rest = path.substr(pos + 1);
+				
+				if(!target)
+				{
+					params.push(dCode(part));
+					target = route['*'];
+				}
+				
+				return resolve(target, rest, params); //move one level deeper
 			}
 		}
 
@@ -1046,12 +1071,31 @@ NO2 Liscence
 
 			O_O.plugin[name] = plugin;
 		}
+		
+		changeState = O_O.state.change;
 	}
 
 	//listen to changes in the history
 	window.addEventListener('popstate', function()
 	{
-		O_O.state.set(location.hash.substr(1));
+		changeState(location.hash.substr(1));
 	});
+	
+	DOM.ready(function()
+	{
+		var hash = location.hash.substr(1);
+		
+		if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
+		{
+			ready();
+			changeState(hash);
+		}
 
+		else //a ready function is not available
+		O_O.ready = function(func) //so execute it as soon as it's available
+		{
+			func();
+			changeState(hash);
+		}
+	});
 })(window, document);

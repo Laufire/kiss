@@ -5,6 +5,10 @@ Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 
 * 131228_1030: state-handling has been rewritten to adopt new changes to kiss.
 * 131231_1000: The UI hs been modified a bit to achieve a better UserXperience.
+* 141201_2200: Addded faded removal of items.
+* 141202_0840: Removed develop.json as the app is considered to be matured.
+* 141202_0845: Added a slightly modified version (by moving add/remove logic to the item's constructor); it seems to have a **10 %** performance gain on rendering (1000 todos).
+* 141202_1045: Bug: in calculating completed items fixed (caused by type conversion of isDone).
 
 ## Issues
 

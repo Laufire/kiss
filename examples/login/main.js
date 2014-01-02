@@ -91,7 +91,7 @@ O_O.ready(function()
 {
 	App.$.at('App');	
 
-	App.loginForm.username.$.val(localStorage.user || 'user');
+	App.data.username(localStorage.user || 'user');
 
 	usernameListener = O_O.listen(App.data.username, function(val)
 	{
