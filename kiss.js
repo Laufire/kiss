@@ -1,11 +1,7 @@
-﻿//? escaping html on data access
-//? O_O.filter / .list.filter
-//? .list assigning id on addition
+﻿//? O_O.filter / .list.filter (.restrict)
 //? master list
 
-//? is init needed; init & loadChildren
 //? .box.append
-//? .box.style
 //? runtime bindings
 //? renaming $.parent to $.root/host (to avoid possible confusion)
 //? allowing pre-and-post addition/deletion events
@@ -25,10 +21,8 @@ NO2 Liscence
 {
 	"use strict";
 
-	var
-	
-	changeState,
-	ready, //store the ready function
+	var changeState,
+		ready, //stores the ready function
 	
 	O_O = window.O_O = new function()
 	{
@@ -57,7 +51,12 @@ NO2 Liscence
 			ready = func;
 		}
 
-		//helpers
+		//helpers		
+		function emptyFunction()
+		{
+			return function(){}
+		}
+		
 		function remove(arr, val)
 		{
 			var i = arr.indexOf(val);
@@ -71,8 +70,8 @@ NO2 Liscence
 			var key, i = 0,
 				keys = getKeys(obj);
 
-			for(; i < keys.length; ++i)
-				func(key = keys[i], obj[key]);
+			for(; i < keys.length;)
+				func(key = keys[i++], obj[key]);
 		}
 
 		function diff(obj1, obj2)
@@ -81,9 +80,9 @@ NO2 Liscence
 				ret = {},
 				keys = getKeys(obj1);
 
-			for(; i < keys.length; ++i)
+			for(; i < keys.length;)
 			{
-				key = keys[i], prop = obj1[key];
+				key = keys[i++], prop = obj1[key];
 
 				if(obj2[key] !== prop)
 					ret[key] = prop;
@@ -96,16 +95,16 @@ NO2 Liscence
 		{
 			var i = 0, source, keys;
 
-			for(; i < arguments.length; ++i)
+			for(; i < arguments.length;)
 			{
-				source = arguments[i];
+				source = arguments[i++];
 				keys = getKeys(source);
 
 				var j = 0, key, prop;
 
-				for(; j < keys.length; ++j)
+				for(; j < keys.length;)
 				{
-					key = keys[j], prop = source[key];
+					key = keys[j++], prop = source[key];
 
 					if(prop !== undefined)
 						target[key] = prop;
@@ -119,18 +118,16 @@ NO2 Liscence
 		{
 			var i = 0,
 				target = {},
-				source, keys;
-
+				source,
+				key, prop,
+				keys = getKeys(source);
+			
 			if(!depth)
 				depth = 1;
-				
-			keys = getKeys(source);
-
-			var j = 0, key, prop;
-
-			for(; j < keys.length; ++j)
+			
+			for(; i < keys.length;)
 			{
-				key = keys[j], prop = source[key];
+				key = keys[i++], prop = source[key];
 
 				if(prop !== undefined)
 				{
@@ -144,6 +141,20 @@ NO2 Liscence
 			return target;
 		}
 		
+		function getFreeKey(obj) //returns a 'free' key name (with alpha-numeric) characters for the given object;
+		{
+			var key = '';
+
+			do{
+
+				key += (0 + (Math.round(Math.random() * 25))).toString(36);
+
+			}while(obj[key] !== undefined);
+
+			return key;
+		}
+
+
 		function extract(obj, prop)
 		{
 			var ret = obj[prop];
@@ -173,8 +184,8 @@ NO2 Liscence
 		{
 			var i = 0, prop;
 
-			for(; i < props.length; ++i)
-				prop = props[i], target[prop] = source[prop];
+			for(; i < props.length;)
+				prop = props[i++], target[prop] = source[prop];
 
 			return target;
 		}
@@ -210,8 +221,8 @@ NO2 Liscence
 
 				wrap = this.wrap = function(val, source) //set the value and fire the event
 				{
-					for(var i = 0; i < plugs.length; ++i)
-						plugs[i](val, source);
+					for(var i = 0; i < plugs.length;)
+						plugs[i++](val, source);
 				};
 
 				wrap.plug = function(func) //plugs a function to this host
@@ -266,9 +277,9 @@ NO2 Liscence
 				{
 					var i = 0, keys = getKeys(data);
 
-					for(; i < keys.length; ++i)
+					for(; i < keys.length;)
 					{
-						var key = keys[i],
+						var key = keys[i++],
 							val = data[key],
 							child = self[key];
 
@@ -312,9 +323,9 @@ NO2 Liscence
 					var child, childName,
 						i = 0;
 
-					for(; i < children.length; ++i) //remove all children (boxes and pods)
+					for(; i < children.length;) //remove all children (boxes and pods)
 					{
-						childName = children[i], child = self[childName];
+						childName = children[i++], child = self[childName];
 
 						child.$ && child.$.remove();
 
@@ -373,9 +384,9 @@ NO2 Liscence
 								length = children.length,
 								ret = {};
 								
-							for(; i < length; ++i) // the element has children so get the nested data
+							for(; i < length;) // the element has children so get the nested data
 							{
-								var name = children[i],
+								var name = children[i++],
 									child = self[name];
 
 								if(child && child.$)
@@ -486,7 +497,7 @@ NO2 Liscence
 										$el.el.dispatchEvent(evt);
 									});
 
-									$el.el.addEventListener(evt, function(e) //this event won't be unplugged
+									$el.on(evt, function(e) //this event won't be unplugged
 									{
 										def(e.target[prop]);
 									});
@@ -504,7 +515,7 @@ NO2 Liscence
 								_$.event('click', def);
 
 							else
-								_$.html(def);
+								_$.text(def);
 						}
 						
 						_$($data); //load $data on to the element
@@ -547,7 +558,10 @@ NO2 Liscence
 
 					if(newVal.plug)
 					{
-						var func = factory(method, prop); //generate a function to change the value
+						var func = function(val) //a function to change the value
+						{
+							$el[method](prop, val);
+						}
 
 						plugs[method][prop] = newVal.plug(func); //plug into the value and get the unplug function
 
@@ -560,21 +574,13 @@ NO2 Liscence
 					return _$;
 				}
 
-				function factory(method, prop)
-				{
-					return function(val)
-					{
-						$el[method](prop, val);
-					}
-				}
-
 				function loadChildren()
 				{
 					var childName, child, i = 0;
 
-					for(; i < children.length; ++i) //load child objects with matching elements
+					for(; i < children.length;) //load child objects with matching elements
 					{
-						childName = children[i];
+						childName = children[i++];
 
 						if(!get$el(childName, $el.el).el)
 							continue;  //tags without matching objects are left intact; so to play nice with other libs
@@ -637,38 +643,36 @@ NO2 Liscence
 
 					source.event.plug(listen);
 
-					idProp = source.idProp;
-
 					enumerate(items, function(i) //remove the existing items in the list
 					{
 						self.remove(i);
 					});
 					
-					enumerate(source.items, function(i, val) //add the existing items from the source
-					{
-						self.add(val);
-					});
+					var order = source.order, i = 0, id;
+					
+					for(; i < order.length;) //add the existing items from the source
+						id = order[i++], self.add(id, source.items[id].data);
 
 					return self;
 				}
 
-				self.add = function(itemData) //adds an item
+				self.add = function(id, data) //adds an item
 				{
-					var _item, id = itemData[idProp];
-
-					box.$.$el[mode](itemNode.cloneNode()).attr(keyAttr, id); //clone the node and append
-
+					var _item,
+						node = itemNode.cloneNode(); //clone the node 
+					
+					box.$.$el[mode](node).attr(keyAttr, id); //add it to the pod
+					
 					//!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
-					_item = items[id] = O_O.box(new item(itemData)); //make a new box and register it to the items array
-
+					_item = items[id] = O_O.box(new item(data)); //make a new box and register it to the items array
 					_item.$.data = setItemData;
-
-					_item.$.at(id, self).set(itemData); //set its el and its data
+					
+					_item.$.at(node, self).set(data); //set its el and its data
 				}
 
-				self.change = function(itemData) //changes an item
+				self.change = function(id, data) //changes an item
 				{
-					items[itemData[idProp]].$.set(itemData);
+					items[id].$.set(data);
 				}
 
 				self.remove = function(id) //removes an item
@@ -681,24 +685,15 @@ NO2 Liscence
 
 				function listen(event)
 				{
-					var type = event.type,
-						data = event.data,
-						id = data[idProp],
-						item = items[id];
+					self[event.type](event.id, event.changes || event.data);
 
-					if(type != 'remove')
-						self[type](data);
-
-					else
-						self.remove(id);
-
-					self.event(event, item);
+					//pass the event to along so it could be consumed by UI handlers
+					self.event(event, items[event.id]);
 				}
 
 				function setItemData(data)
 				{
-					data[idProp] = this.id;
-					source.data(data)
+					source.change(this.id, data);
 				}
 			}
 
@@ -759,36 +754,49 @@ NO2 Liscence
 			{
 				var self = this,
 					items = self.items = {},
-					idProp = self.idProp = options.idProp,
+					order = self.order = [], //holds the list of ids in the order of addition
 					event = self.event = O_O.host();
 
-				if(!options.data)
-					options.data = []; //allows the construction without initial data
-
-				self.data = function(data) //? ?using .update instead
+				self.length = O_O.value(0);
+				
+				self.add = function(id, data)
 				{
-					if(isArray(data))
-						for(var i = 0; i < data.length; ++i)
-							setData(data[i]);
-					else
-						setData(data);
+					var item = items[id] = {		
+							id: id,
+							data: data
+						}
+					
+					order.push(id);
+					self.length(order.length);
 
-					return self;
+					event({
+
+						type: 'add',
+						id: id,
+						data: data
+
+					}, self);
 				}
-
-				function setData(item)
+				
+				self.change = function(id, changes)
 				{
-					if(items[item[idProp]])
-						change(item);
-					else
-						add(item);
-				}
+					var data = items[id].data;
+					
+					event({
 
+						type: 'change',
+						id: id,
+						changes: diff(changes, data),
+						data: extend(data, changes)
+
+					}, self);
+				}
+				
 				self.remove = function(ids)
 				{
 					if(isArray(ids))
-						for(var i = 0; i < ids.length; ++i)
-							remove(ids[i]);
+						for(var i = 0; i < ids.length;)
+							remove(ids[i++]);
 					else
 						remove(ids);
 
@@ -800,56 +808,28 @@ NO2 Liscence
 					self.remove(getKeys(items));
 
 					if(data)
-						self.data(data);
+						for(var i = 0; i < data.length;)
+							self.add(data[i++]);
 				}
-
-				self.length = 0;
-
-				function add(data)
+				
+				function remove(id) //? needed only if multiple removes are to be allowed
 				{
-					self.length++;
-
-					//! converting the idProp to string might cause DB errors
-					//? consider using a separate _id for storing the idProp
-					var id = data[idProp] += ''; //convert the idProp to string (for storing it as an object key)
-
-					event({
-
-						type: 'add',
-						id: id,
-						data: items[id] = extend({}, data)
-
-					}, self);
-				}
-
-				function change(changes)
-				{
-					var id = changes[idProp];
-					var data = items[id];
-
-					event({
-
-						type: 'change',
-						id: id,
-						changes: diff(changes, data),
-						data: extend(data, changes)
-
-					}, self);
-				}
-
-				function remove(id)
-				{
-					self.length--;
-
+					var item = items[id];
+					
+					if(!item)
+						return;
+					
+					delete items[id];
+					order.splice(order.indexOf(id), 1);
+					self.length(order.length);
+					
 					event({
 
 						type: 'remove',
 						id: id,
-						data: items[id]
+						data: item.data
 
-					}, self);
-
-					delete items[id];
+					}, self);					
 				}
 
 				options = undefined;
@@ -860,7 +840,7 @@ NO2 Liscence
 			{
 				var self = this,
 
-					action = function(){},
+					action = emptyFunction(),
 
 					plug = function(val, source) //the action to take whent one of the watches change
 					{
@@ -873,9 +853,9 @@ NO2 Liscence
 				{
 					var i = 0, arg;
 
-					for(; i < arguments.length; ++i)
+					for(; i < arguments.length;)
 					{
-						arg = arguments[i];
+						arg = arguments[i++];
 
 						if(plugs.indexOf(arg) == -1) //don't watch the val if it's being watched already
 						{
@@ -889,9 +869,9 @@ NO2 Liscence
 
 				self.unwatch = function()
 				{
-					for(var i = 0; i < arguments.length; ++i)
+					for(var i = 0; i < arguments.length;)
 					{
-						plug = remove(plugs, arguments[i]);
+						plug = remove(plugs, arguments[i++]);
 
 						if(plug)
 							plugs.unplug(plug);
@@ -902,8 +882,8 @@ NO2 Liscence
 
 				self.clear = function()
 				{
-					for(var i = 0; i < plugs.length; ++i)
-						plugs[i].unplug(plug);
+					for(var i = 0; i < plugs.length;)
+						plugs[i++].unplug(plug);
 
 					plugs = [];
 
@@ -965,8 +945,8 @@ NO2 Liscence
 		{
 			var i = 0, _watch = new O_O.class.watch;
 
-			for(; i < arguments.length; ++i)
-				_watch.watch(arguments[i]);
+			for(; i < arguments.length;)
+				_watch.watch(arguments[i++]);
 
 			return _watch;
 		}

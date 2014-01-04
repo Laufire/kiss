@@ -142,4 +142,13 @@
 140101_1830 .box.val returns the $.text on display elements.
 
 140102_0755 .box'es constructor could have a 'clean' function.
+140102_1635 .list doesn't need an id prop anymore.
+140102_1940 .list items are sorted now.
 
+140103_0750 automatic sort discarded, in favor of .list.order (the added order of items). As sorting items on the DOM level, is to be delegated to a 'sorter' plugin.
+140103_0815 .list.length is a O_O.value now.
+140103_1010 Bug fixed. Caused by calling .list.remove on non exisiting items.
+140103_1025 .list.data removed.
+140103_1530 Performance improvement discovered. .pod.add was passing the item's id for creating a .box; now it passes the element instead, this cuts the time for searching for the node. This improves the performance by 12% (on 1000 todos).
+
+140104_0900 .box.default sets the $.text on display elements.

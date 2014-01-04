@@ -226,6 +226,16 @@
 
 * kiss took a lot of time with the bulk-modifications right after the page load, but picked up speed, after it warmed up. This could be because of the browser might not have allocated resources as there weren't any bulk operation till then.
 
+## Possible improvements
+
+* Not depending on microDOM will improve the **init time** by reducing the need for constructing $ objects, and the **update time** by removing the layer.
+
+* Hard-coding the internals (using for loops instead of enumerate) etc will increase the performance.
+
+* Prototyping/cloning/sharing the item constructor of .pod could improve the performance. (.box construction seems to take 80% of the initial execution, it's almost 4x costlier than DOM manipulation)
+
+* .pod.item-s could be compiled / fabricated (in a factory) to increase init/change performances. Even, .box-es could be compiled.
+
 
 ## DOM Manipulation
 

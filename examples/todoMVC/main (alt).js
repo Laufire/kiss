@@ -4,18 +4,16 @@
 
 /*Define the variables
 ---------------------*/
-var todos = O_O.list({
-
-	idProp: 'id',
-}),
+var todoList = O_O.list(),
 
 filterState = O_O.value(2),
-noTodos = O_O.value(1),
 allChecked = O_O.value(0),
 activeCount = O_O.value(0),
 completedCount = O_O.value(0),
 
-todoList,
+noTodos = O_O.value(true),
+
+todoPod,
 
 todoApp = O_O.box(new function()
 {
@@ -25,9 +23,8 @@ todoApp = O_O.box(new function()
 		{
 			if(e.keyCode == 13)
 			{
-				todos.data({
-					id: Date.now(),
-					isDone: true,
+				todoList.add(Date.now(), {
+					isDone: false,
 					title: e.target.value
 				});
 
@@ -46,7 +43,7 @@ todoApp = O_O.box(new function()
 				{
 					//var start = Date.now();
 					var i, checked = e.target.checked,
-						items = todoList.items,
+						items = todoPod.items,
 						keys = Object.keys(items);
 
 					for(i = 0; i < keys.length; ++i)
@@ -68,17 +65,17 @@ todoApp = O_O.box(new function()
 		}
 	}
 
-	todoList = this.todoList = O_O.pod({
+	todoPod = this.todoPod = O_O.pod({
 
-		source:  todos,
+		source:  todoList,
 		
-		item: function(itemData)
+		item: function(data)
 		{
 			var self = this;
 			
-			this.isHidden = O_O.value(filterState() == 2 ? false : Boolean(filterState()) == itemData.completed); //<-here
+			this.isHidden = O_O.value(filterState() == 2 ? false : Boolean(filterState()) == data.isDone);
 			
-			this.isDone = O_O.value(itemData.isDone);
+			this.isDone = O_O.value(data.isDone);
 			
 			this.$ = {
 
@@ -86,12 +83,12 @@ todoApp = O_O.box(new function()
 
 					'click .destroy': function(e, item)
 					{
-						item.$.event('click .destroy', function(){}); //remove the event listener so it isn't invoked during the fade out
+						item.$.event('click .destroy'); //remove the event listener so it isn't invoked during the fade out
 						item.$.class('fadeOutUp', 1);
 						
 						setTimeout(function()
 						{
-							todos.remove(item.$.id);
+							todoList.remove(item.$.id);
 						}, 400);
 					}
 				},
@@ -106,6 +103,7 @@ todoApp = O_O.box(new function()
 				clean: function()
 				{
 					alterCounts(self.isDone(), -1);
+					noTodos(todoList.length() == 0);
 				}
 			}
 			
@@ -118,7 +116,7 @@ todoApp = O_O.box(new function()
 						edit$ = item.edit.$;						
 					
 					item$.class('editing', 1);
-					edit$.val(todos.items[item$.id].title);
+					edit$.val(todoList.items[item$.id].data.title);
 					edit$.el.select();
 				}
 			}}}
@@ -146,19 +144,25 @@ todoApp = O_O.box(new function()
 			
 			function changeTitle(e, box)
 			{
-				var $ = box.$.parent.$;
+				var $ = box.$.parent.$,
+					value = e.target.value;
 				
-				$.data({
-				
-					title: e.target.value
-				});
-				
-				$.class('editing', 0);
+				if(value)
+				{
+					$.data({
+					
+						title: value
+					});
+					
+					$.class('editing', 0);
+				}
+				else
+					todoList.remove($.id);
 			}
 			
 			//global changes
 			noTodos(false);
-			alterCounts(itemData.isDone, 1);
+			alterCounts(data.isDone, 1);
 		}
 	});
 	
@@ -200,11 +204,11 @@ todoApp = O_O.box(new function()
 					click: function(e)
 					{
 						var i, id,
-							items = todos.items,
-							ids = Object.keys(items);
+							items = todoList.items,
+							keys = Object.keys(todoList.items);
 						
-						for(i = 0; i < ids.length; ++i)
-							id = ids[i], items[id].isDone && todos.remove(id);
+						for(i = 0; i < keys.length; ++i)
+							id = keys[i], items[id].data.isDone && todoList.remove(id);
 					}
 				}
 			},
@@ -238,29 +242,28 @@ O_O.state.routes = new function(){
 
 O_O.listen(O_O.state.change, function()
 {
-	//var start = Date.now();
-	
+	//var start = Date.now();	
 	var i = 0, item,
-		keys = Object.keys(todos.items),
+		keys = Object.keys(todoList.items),
 		state = filterState();
-	
+		
 	DOM.$('#filters a.selected').class('selected', 0);
 	DOM.$('#filters li:nth-of-type(' + (3 - state) + ') a').class('selected', 1);
 	
 	for(; i < keys.length; ++i)
 	{
-		item = todoList.items[keys[i]];
+		item = todoPod.items[keys[i]];
 		item.isHidden(state == 2 ? false : state == item.isDone());
 	}
 	
 	//console.log(Date.now() - start);
 });
 
-O_O.listen(todos.event, function(e, list)
+O_O.listen(todoList.event, function(e, list)
 {
 	if(e.type == 'change')
 	{
-		var item = todoList.items[e.id],
+		var item = todoPod.items[e.id],
 			state = filterState(),
 			completed, change;
 		
@@ -284,20 +287,27 @@ O_O.ready(function()
 {
 	var start = Date.now();
 	
-	var data = [];
-	
-	for(var i = 0; i < 8; ++i)
-		data.push({
+	for(var i = 0; i < 1000; ++i)
+		todoList.add(i, {
 		
-			id: i,
 			isDone: Boolean(i%2),
 			title: i
 			
 		});
-		
-	todos.data(data);
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
+	console.log(Date.now() - start);
+	
+	var start = Date.now();
+	
+	for(var i = 0; i < 1000; ++i)
+		todoList.change(i, {
+		
+			isDone: !Boolean(i%2),
+			title: i + i
+			
+		});
+		
 	console.log(Date.now() - start);
 	
 	todoApp.$.class('hidden', 0);
