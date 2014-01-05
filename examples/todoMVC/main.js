@@ -1,10 +1,12 @@
-﻿(function()
+﻿var l, p;
+
+(function()
 {
 "use strict";
 
 /*Define the variables
 ---------------------*/
-var todoList = O_O.list(),
+var todoList = l = O_O.list(),
 
 filterState = 2,
 allChecked = O_O.value(0),
@@ -27,9 +29,13 @@ todoApp = O_O.box(new function()
 		{
 			if(e.keyCode == 13)
 			{
-				todoList.add(Date.now(), {
-					isDone: false,
-					title: e.target.value
+				todoList.add({
+				
+					data: {
+						
+						isDone: false,
+						title: e.target.value
+					}
 				});
 
 				e.target.value = '';
@@ -69,7 +75,7 @@ todoApp = O_O.box(new function()
 		}
 	}
 
-	todoPod = this.todoPod = O_O.pod({
+	todoPod = p = this.todoPod = O_O.pod({
 
 		source:  todoList,
 		
@@ -87,12 +93,12 @@ todoApp = O_O.box(new function()
 
 					'click .destroy': function(e, item)
 					{
-						item.$.event('click .destroy'); //remove the event listener so it isn't invoked during the fade out
 						item.$.class('fadeOutUp', 1);
 						
 						setTimeout(function()
 						{
-							todoList.remove(item.$.id);
+							todoList.remove(item.$.modelId);
+							
 						}, 400);
 					}
 				},
@@ -110,12 +116,10 @@ todoApp = O_O.box(new function()
 				dblclick: function(e, box)
 				{
 					var item =  box.$.parent,
-						item$ = item.$,
-						edit$ = item.edit.$;						
+						item$ = item.$;						
 					
 					item$.class('editing', 1);
-					edit$.val(todoList.items[item$.id].data.title);
-					edit$.el.select();
+					item.edit.$.val(todoList.items[item$.id].data.title).el.select();
 				}
 			}}}
 			
@@ -134,6 +138,8 @@ todoApp = O_O.box(new function()
 			
 			O_O.listen(this.isDone, function(val, source)
 			{
+				self.isHidden(filterState == 2 ? false : filterState == val);
+				
 				self.$.data({
 				
 					isDone: val
@@ -236,14 +242,15 @@ O_O.listen(O_O.state.change, function()
 {
 	//var start = Date.now();
 	var i = 0, item,
-		keys = Object.keys(todoList.items);
+		keys = Object.keys(todoPod.items);
 		
 	DOM.$('#filters a.selected').class('selected', 0);
 	DOM.$('#filters li:nth-of-type(' + (3 - filterState) + ') a').class('selected', 1);
 	
-	for(; i < keys.length; ++i)
+	for(; i < keys.length;)
 	{
-		item = todoPod.items[keys[i]];
+		item = todoPod.items[keys[i++]];
+		
 		item.isHidden(filterState == 2 ? false : filterState == item.isDone());
 	}
 	
@@ -253,25 +260,22 @@ O_O.listen(O_O.state.change, function()
 O_O.listen(todoList.event, function(e, list)
 {
 	var active, completed, change,
-		type = e.type;
+		type = e.type,
+		model = e.model;
 	
 	if(type == 'change')
 	{
-		var item = todoPod.items[e.id];
-		
-		change = e.changes.isDone;
+		change = model.changes.isDone;
 		
 		if(change === undefined)
 			return;
-		
-		item.isHidden(filterState == 2 ? false : filterState == change);
 		
 		completed = change ? 1 : -1;
 		active = completed * -1;
 	}
 	else
 	{
-		change = e.data.isDone;
+		change = model.data.isDone;
 		
 		if(type == 'add')
 			change ? completed = 1 : active = 1;
@@ -295,11 +299,15 @@ O_O.ready(function()
 {
 	var start = Date.now();
 	
-	for(var i = 0; i < 1000; ++i)
-		todoList.add(i, {
-		
-			isDone: Boolean(i%2),
-			title: i
+	var count = 10;
+	
+	for(var i = 0; i < count; ++i)
+		todoList.add(
+		{
+			data: {
+				isDone: Boolean(i%2),
+				title: i
+			}
 			
 		});
 	
@@ -308,8 +316,11 @@ O_O.ready(function()
 	
 	var start = Date.now();
 	
-	for(var i = 0; i < 1000; ++i)
-		todoList.change(i, {
+	var i = 0,
+		keys = todoList.order;
+	
+	for(; i < keys.length;)
+		todoList.change(keys[i++], {
 		
 			isDone: !Boolean(i%2),
 			title: i + i
@@ -321,4 +332,4 @@ O_O.ready(function()
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);
 });
-})()
+})();

@@ -4,8 +4,6 @@
 
 * Better collections.
 
-* Dealing with history.
-
 * A bootstrap app.
 
 * Redo the example page, with tabs.
@@ -24,10 +22,6 @@
 * To parse KO like data-binding attribute (without the evaluations of the expressions).
 
 * A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
-
-* For history.
-
-* A module importer.
 
 
 # Components
@@ -86,7 +80,6 @@
 	* Should work with backbone.
 	
 	* Could adapt jQuery UI as is.
-
 
 
 # Way
@@ -163,7 +156,6 @@
 * Constructor functions like O\_O.box and O\_O.pod modifies the passed options object.
 
 
-
 # How to kiss (recipe style)
 
 * First define the observable values, with sensible defaults.
@@ -214,6 +206,8 @@
 
 * kiss does not affect the UI, as it's to be a separate concern.
 
+* Minifying kiss, breeaks the code. It's decided not to minify the code until a stable release.
+
 
 # Performance
 ## 1000 todos test
@@ -228,7 +222,13 @@
 
 ## Possible improvements
 
-* Not depending on microDOM will improve the **init time** by reducing the need for constructing $ objects, and the **update time** by removing the layer.
+* After some performance tuning microDOM's overhead is 61ms on 1000 todos, previoulsy it was 107 ms.
+
+* Getting rid of microDOM could improve the performance, **but** it could bring some other slower alternative, thus could cause more harm.
+
+* If kiss could stop at providing the structure, it could surpass the speed of pureJs *(by providing the structure and by preventing from pitfalls)*
+
+* Not depending on microDOM, **for the internals** will improve the **init time** by reducing the need for constructing $ objects, and the **update time** by removing the layer.
 
 * Hard-coding the internals (using for loops instead of enumerate) etc will increase the performance.
 
@@ -252,7 +252,7 @@
 
 * Though some performance check has been done; this is still a proof of concept. So it has to be checked for performance issues, memory leaks etc.
 
-* The DOM isn't gracefully loaded.
+* kiss is not yet unit tested.
 
 
 # Uses

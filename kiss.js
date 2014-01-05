@@ -1,10 +1,9 @@
 ﻿//? O_O.filter / .list.filter (.restrict)
+//? passing the models around
 //? master list
 
 //? .box.append
 //? runtime bindings
-//? renaming $.parent to $.root/host (to avoid possible confusion)
-//? allowing pre-and-post addition/deletion events
 
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
@@ -77,7 +76,7 @@ NO2 Liscence
 		function diff(obj1, obj2)
 		{
 			var key, prop, i = 0,
-				ret = {},
+				diff = {},
 				keys = getKeys(obj1);
 
 			for(; i < keys.length;)
@@ -85,10 +84,10 @@ NO2 Liscence
 				key = keys[i++], prop = obj1[key];
 
 				if(obj2[key] !== prop)
-					ret[key] = prop;
+					diff[key] = prop;
 			}
 
-			return ret;
+			return diff;
 		}
 
 		function extend(target)
@@ -487,14 +486,15 @@ NO2 Liscence
 
 								if(def.plug)
 								{
+									//? should an event be fired
 									def.plug(function(val)
 									{
 										$el.prop(prop, val); //set the property
 
 										//dispatch an event
-										var evt = document.createEvent('UIEvent');
-										evt.initUIEvent(evt, false, false, window, val);
-										$el.el.dispatchEvent(evt);
+										var event = document.createEvent('UIEvent');
+										event.initUIEvent(evt, true, true, window);
+										$el.el.dispatchEvent(event);
 									});
 
 									$el.on(evt, function(e) //this event won't be unplugged
@@ -576,13 +576,14 @@ NO2 Liscence
 
 				function loadChildren()
 				{
-					var childName, child, i = 0;
+					var childName, child, child$el, i = 0;
 
 					for(; i < children.length;) //load child objects with matching elements
 					{
-						childName = children[i++];
+						childName = children[i++],
+						child$el = get$el(childName, $el.el);
 
-						if(!get$el(childName, $el.el).el)
+						if(!child$el.el)
 							continue;  //tags without matching objects are left intact; so to play nice with other libs
 
 						child = self[childName];
@@ -596,7 +597,7 @@ NO2 Liscence
 						else
 							self[childName] = O_O.box({$:{default: child}}); //create a box with the assigned object as its default value
 
-						self[childName].$.at(childName, self);
+						self[childName].$.at(child$el, self);
 					}
 				}
 			}
@@ -605,12 +606,15 @@ NO2 Liscence
 			{
 				var source = options.source,
 					self = this,
-					idProp, //the name of the id property for the items
+					items = self.items = {}, //holds all the items
+					order = self.order = [], //holds the list of ids in the order of addition
+					event = self.event = O_O.host(),
 					item = options.item,
-					items = self.items = {},
-					itemNode,
 					mode = options.mode || 'append',
+					freeId = 0,
 					box = O_O.box({$: options.$}),
+					modelIdMap = {},
+					itemNode,
 					options = undefined; //cleaning the var
 
 				self.$ = extend({}, box.$);
@@ -619,81 +623,147 @@ NO2 Liscence
 				{
 					box.$.at(query, parent);
 					
-					itemNode = box.$.prop('firstElementChild'); //use the first chid element as the template for items
+					itemNode = box.$.prop('firstElementChild'); //use the first child element as the template for items
 					box.$.html(''); //empty the pod's box
 
 					if(source)
 						self.source(source);					
 				}
-
-				self.set = function(data) //? is this necessary?
+				
+				self.add = function(data) //adds an item
 				{
-					enumerate(data, function(key, val)
-					{
-						setProp(self[key], val);
+					addItem(data);
+				}
+
+				self.remove = function(id) //removes an item
+				{
+					var item = items[id];
+					
+					order.splice(order.indexOf(id), 1);
+					item.$.remove();
+					delete items[id];
+					
+					event({
+					
+						type: 'remove',
+						item: item
 					});
 				}
 
 				self.source = function(_source) //sets the data source
 				{
-					if(_source === undefined)
-						return source;
-					
 					source = _source;
-
+					
+					self.reset();
+					
+					var i = 0, model,
+						order = source.order;
+					
+					for(; i < order.length;) //add the existing items from the source
+					{
+						model = source.items[order[i++]];
+						addItem(model.data, model.id);
+					}
+					
 					source.event.plug(listen);
-
-					enumerate(items, function(i) //remove the existing items in the list
+				}
+				
+				self.reset = function(data)
+				{
+					enumerate(items, function(i) //remove the existing items in the pod
 					{
 						self.remove(i);
 					});
 					
-					var order = source.order, i = 0, id;
+					freeId = 0;
 					
-					for(; i < order.length;) //add the existing items from the source
-						id = order[i++], self.add(id, source.items[id].data);
-
-					return self;
+					if(data)
+						for(var i = 0; i < data.length;) //add the given data
+							self.add(data[i++]);
 				}
-
-				self.add = function(id, data) //adds an item
+				
+				self.refresh = function() //mirror the order changes in the source
 				{
-					var _item,
+					var i = 0, model, itemId,
+						sOrder = source.order,
+						models = source.items;					
+				
+					for(; i < sOrder.length; i++)
+					{
+						model = models[sOrder[i]];
+						changeModel(model, order[i]); //change the model
+					}
+				}
+				
+				function listen(event) //listen to the events from the source-list
+				{
+					var model = event.model,
+						id = model.id,
+						data = model.data,
+						type = event.type;						
+					
+					if(type == 'add')
+						addItem(data, id);
+					
+					else
+					{
+						var mappedId = modelIdMap[id]; //get the item id related to the model
+						
+						if(type == 'change')
+							items[mappedId].$.set(data);
+							
+						else //remove the item
+						{
+							delete modelIdMap[id];
+							self.remove(mappedId);
+						}
+					}
+				}
+				
+				function addItem(data, modelId) //adds an item
+				{
+					var _item$,
+						id = freeId++ + '',
 						node = itemNode.cloneNode(); //clone the node 
 					
 					box.$.$el[mode](node).attr(keyAttr, id); //add it to the pod
 					
-					//!passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
-					_item = items[id] = O_O.box(new item(data)); //make a new box and register it to the items array
-					_item.$.data = setItemData;
+					/*/passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group*/
+					items[id] = O_O.box(new item(data)); //make a new box and register it to the items array
 					
-					_item.$.at(node, self).set(data); //set its el and its data
+					_item$ = items[id].$;
+					
+					if(modelId !== undefined) //tie the model with the item
+					{
+						modelIdMap[modelId] = id;
+						_item$.modelId = modelId;
+						_item$.data = setItemData;
+					}
+					
+					order.push(id);
+					
+					_item$.at(node, self).set(data); //set its el and its data
+					
+					event({
+					
+						type: 'add',
+						item: items[id]
+					});
 				}
-
-				self.change = function(id, data) //changes an item
-				{
-					items[id].$.set(data);
-				}
-
-				self.remove = function(id) //removes an item
-				{
-					items[id].$.remove();
-					delete items[id];
-				}
-
-				self.event = O_O.host();
-
-				function listen(event)
-				{
-					self[event.type](event.id, event.changes || event.data);
-
-					//pass the event to along so it could be consumed by UI handlers
-					self.event(event, items[event.id]);
-				}
-
+				
 				function setItemData(data)
 				{
-					source.change(this.id, data);
+					source.change(this.modelId, data);
+				}
+				
+				function changeModel(model, itemId)
+				{
+					var item$ = items[itemId].$,
+						modelId = model.id;
+					
+					item$.modelId = modelId;
+					modelIdMap[modelId] = itemId;
+					item$.set(model.data);
 				}
 			}
 
@@ -754,40 +824,42 @@ NO2 Liscence
 			{
 				var self = this,
 					items = self.items = {},
-					order = self.order = [], //holds the list of ids in the order of addition
+					order = self.order = [], //holds the list of ids in the order of addition, is used by .pod-s to refresh data.
 					event = self.event = O_O.host();
 
 				self.length = O_O.value(0);
 				
-				self.add = function(id, data)
+				self.add = function(model)
 				{
-					var item = items[id] = {		
-							id: id,
-							data: data
-						}
+					var id = model.id;
+
+					id = id !== undefined  ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
 					
-					order.push(id);
+					order.push(model.id = id);
+					items[id] = model;
+					
 					self.length(order.length);
 
 					event({
 
 						type: 'add',
-						id: id,
-						data: data
+						model: model
 
 					}, self);
 				}
 				
 				self.change = function(id, changes)
 				{
-					var data = items[id].data;
+					var model = items[id],
+						data = model.data;
+						
+					model.changes = diff(changes, data);
+					extend(model.data, model.changes);
 					
 					event({
 
 						type: 'change',
-						id: id,
-						changes: diff(changes, data),
-						data: extend(data, changes)
+						model: model
 
 					}, self);
 				}
@@ -814,21 +886,21 @@ NO2 Liscence
 				
 				function remove(id) //? needed only if multiple removes are to be allowed
 				{
-					var item = items[id];
+					var model = items[id];
 					
-					if(!item)
+					if(!model)
 						return;
 					
 					delete items[id];
 					order.splice(order.indexOf(id), 1);
+					
 					self.length(order.length);
 					
 					event({
 
 						type: 'remove',
-						id: id,
-						data: item.data
-
+						model: model
+						
 					}, self);					
 				}
 

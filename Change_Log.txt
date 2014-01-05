@@ -152,3 +152,17 @@
 140103_1530 Performance improvement discovered. .pod.add was passing the item's id for creating a .box; now it passes the element instead, this cuts the time for searching for the node. This improves the performance by 12% (on 1000 todos).
 
 140104_0900 .box.default sets the $.text on display elements.
+
+140105_1010 performance improved by 5%, by caching the $el on loadChildren.
+140105_1050 microDOM updated to v0.0.5.
+140105_1230 .pod can now work with out a .list.
+140105_1320 .pod.set removed.
+140105_1330 .pod.event removed (a list has to be used if the events have to be watched for).
+140105_1700 Bugs caused b detaching .list from .pod fixed.
+140105_1755 .pod.order added.
+140105_1800 .pod.event reintroduced with 'add' and 'remove' events (considering to ease UI development)
+140105_1910 .pod.refresh added (used tp refresh the data from the 'source list' after its order has been sorted (by a third part lib).
+140105_1930 Bug fixed. .order of .list and .pod had type conversion errors (string <-> int); for type safety the have to be strings.
+140105_2045 event dispatching in .box.default tweaked.
+140105_2140 Bug fixed. .list's model.id-s weren't type safed.
+140105_2255 .list.add needs a model as it's paramter; it could assign an id to the model if an id isn't present in the paramater.
