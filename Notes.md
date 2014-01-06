@@ -208,6 +208,8 @@
 
 * Minifying kiss, breeaks the code. It's decided not to minify the code until a stable release.
 
+* Plugins do not replace their placeholder tags (as this might bring in unwanted complexities); but they still could by injecting code with a custom **$.at** method.
+
 
 # Performance
 ## 1000 todos test
@@ -261,6 +263,7 @@
 
 * Could be used to support drop-in plugins like 'share via facebook' etc.
 
+
 # Future
 
 * A plugin for undoable values.
@@ -279,3 +282,5 @@
 * Plugins may use lower level functions for performance (they don't have to depend on kiss).
 
 * Building kiss entirely over microDOM will allow the easy replacement of microDOM, as microDOM does only simple tasks.
+
+* If jQuery were to be used instead of microDOM, a wrapper over jQuery may be built to suuport the microDOM API. Or they might work along.

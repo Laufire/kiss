@@ -1,0 +1,46 @@
+.container
+{
+	padding: 1em;
+	background: #eee;
+	border: 1px solid #ddd;
+	margin: 0px auto;
+	width: 20em;
+	text-align: center;
+}
+
+.autocomplete input
+{
+	width: 90%;
+}
+
+.autocomplete
+{
+	text-align: left;
+}
+
+.autocomplete #suggestions
+{
+	position: relative;
+}
+
+.autocomplete .suggestion
+{
+	border: 1px solid #333;
+}
+
+.autocomplete .selected
+{
+	background: #ddf;
+}
+
+#possibleValues
+{
+	margin: 1em;
+	padding: 1em;
+	border: 1px solid #888;
+}
+
+.hidden
+{
+	display: none;
+}

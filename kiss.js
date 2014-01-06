@@ -2,17 +2,11 @@
 //? passing the models around
 //? master list
 
-//? .box.append
-//? runtime bindings
-
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
 
-//? An automatic UI generation check
-//? ajax text templates - plugin
-
 /*!
-KISS v0.0.6
+KISS v0.0.7
 
 NO2 Liscence
 */
@@ -38,7 +32,7 @@ NO2 Liscence
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
 
-		O_O.VERSION = '0.0.6';
+		O_O.VERSION = '0.0.7';
 
 		O_O.keyAttr = function(attr) //change the keyAttr to be KISSed
 		{
@@ -403,8 +397,6 @@ NO2 Liscence
 						return $el.html()
 
 					$elRouter('prop', 'innerHTML', newVal);
-
-					loadChildren();
 				}
 				
 				_$.text = function(newVal)
@@ -447,7 +439,7 @@ NO2 Liscence
 					}
 
 					if(events[name]) //the event already has a handler
-						el.off(eName, events[name]); //remove the handler; having a single handler per event by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
+						el.off(eName, events[name]); //remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 
 
 					if(handler) //allows to remove the event listener by not passing a handler
@@ -469,9 +461,6 @@ NO2 Liscence
 							def = extract($data, 'default');
 							
 						cleanUp = extract($data, 'clean');
-						
-						if(init)
-							init(self);
 						
 						if(def)
 						{
@@ -519,6 +508,9 @@ NO2 Liscence
 						}
 						
 						_$($data); //load $data on to the element
+						
+						if(init)
+							init(self);
 						
 						$data = undefined; //deleting the var
 					}
@@ -590,14 +582,14 @@ NO2 Liscence
 
 						if(typeof child == 'object')
 						{
-							//!Any plugin that needs to be loaded within a box should be constructed using a 'named' function
+							/*/Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class*/
 							if(child.constructor.name == '' || child.constructor.name == 'Object') //a plain object containing self attrs and children
 								self[childName] = O_O.box(child); //build a box using the given 'data' and replace the data with it
 						}
 						else
 							self[childName] = O_O.box({$:{default: child}}); //create a box with the assigned object as its default value
 
-						self[childName].$.at(child$el, self);
+						self[childName].$.at(child$el, self); //plugins may have a plugin.$.at function to merge themself with the tree.
 					}
 				}
 			}

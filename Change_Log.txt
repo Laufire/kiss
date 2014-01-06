@@ -166,3 +166,10 @@
 140105_2045 event dispatching in .box.default tweaked.
 140105_2140 Bug fixed. .list's model.id-s weren't type safed.
 140105_2255 .list.add needs a model as it's paramter; it could assign an id to the model if an id isn't present in the paramater.
+
+140106_1400 Started writting an auto-complete plugin.
+140106_1600 Bug fixed. Loaading the children after setting .box.html caused some errors; and so was removed.
+140106_1915 .box.init is to be executed after applying $ properties.
+140106_2010 Example plugin - AutoComplete done.
+140106_2020 convention to add .BASE to the plugins introduced. It denotes the version of kiss the plug-in is based on.
+140106_2025 v0.0.7 released.
