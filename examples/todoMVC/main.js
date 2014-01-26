@@ -1,12 +1,10 @@
-﻿var l, p;
-
-(function()
+﻿(function()
 {
 "use strict";
 
 /*Define the variables
 ---------------------*/
-var todoList = l = O_O.list(),
+var todoList = O_O.list(),
 
 filterState = 2,
 allChecked = O_O.value(0),
@@ -75,7 +73,7 @@ todoApp = O_O.box(new function()
 		}
 	}
 
-	todoPod = p = this.todoPod = O_O.pod({
+	todoPod = this.todoPod = O_O.pod({
 
 		source:  todoList,
 		

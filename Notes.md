@@ -1,8 +1,6 @@
 # ToDos
 
-* The code for the App should be brief.
-
-* Better collections.
+* A cheat sheet.
 
 * A bootstrap app.
 
@@ -13,9 +11,15 @@
 
 # Plugins
 
+* Limited pod (a pod with a limited number of items, to enable pagination, infinite scrolling etc), in which removed nodes are cached for reuse.
+
+* Labeled checkbox.
+
 * To communicate with the server.
 
-* Iterator: a plugin to linearly move through a collection.
+* Texter: a simple i18n plugin for kiss that sets the textContet of the boxes.
+
+* Iterator: a plugin to linearly move through a collection (like a slide show).
 
 * To parse custom tags.
 
@@ -23,17 +27,14 @@
 
 * A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
 
-
-# Components
-
-* Observable dictionary.
-
-* Sorted List: With just Add, Remove and Replace methods.
-
-* Filtered Arrays.
+* O_O.sync to snyc a O_O.value to a store (localStorage / cloud / DB)
 
 
 # Consider
+
+* O_O.bind, to bind a behavior with different params (like calculator buttons).
+
+* returning FormData of forms with $.val calls on form elements.
 
 * Instead of having a single file, multiple modules could be brought together to maintain compatibility.
 
@@ -170,6 +171,13 @@
 # Structure
 
 * The components communicate through an API.
+
+* Classes are to be with the bare mininmum of functionality, in order to avoid bloating. Needed futures could be added through extensions.
+
+
+# Decisions
+
+* O_O.list won't have methods or events related to sorting.
 
 
 # Questions

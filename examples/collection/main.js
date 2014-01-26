@@ -4,10 +4,7 @@
 ---------------------*/
 var Server = mockServer
 
-, people = O_O.list({
-
-	idProp: 'name'
-})
+, people = O_O.list()
 
 , rndBtwn = function(n1, n2)
 {
@@ -18,37 +15,24 @@ var Server = mockServer
 
 	add: function()
 	{
-		var ret;
-
-		while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
-
-		return [{
-
-			name: ret,
+		return {
+		
+			name: String.fromCharCode(rndBtwn(65, 90)),
 
 			age: rndBtwn(5, 90),
 
 			isMale: rndBtwn(0, 1)
-		}]
+		}
 	},
 
-	change: function()
+	change: function(name)
 	{
-		var keys = Object.keys(people.items);
+		return {
+			
+			age: rndBtwn(5, 90),
 
-		var index = rndBtwn(0, keys.length - 1);
-
-		if(index > -1)
-			return [{
-
-				name: keys[index],
-
-				age: rndBtwn(5, 90),
-				
-				isMale: rndBtwn(0, 1)
-			}]
-		
-		return [];
+			isMale: rndBtwn(0, 1)
+		}
 	}
 }
 
@@ -64,17 +48,26 @@ var Server = mockServer
 
 , App = O_O.box(new function()
 {
-	var self = this;
+	var App = this;
 
-	self.people = people;
+	App.people = people;
 
-	self.title = 'Collection - example';
+	App.title = 'Collection - example';
 
-	self.toolbar = {
+	App.toolbar = {
 
 		add: function()
 		{
-			self.people.data(random.add());
+			var ret;
+
+			while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
+		
+			App.people.add({
+			
+				id: ret,
+				
+				data: random.add()
+			});
 		},
 
 		edit: {
@@ -90,7 +83,10 @@ var Server = mockServer
 
 					click: function()
 					{
-						self.people.data(random.change());
+						var selected = selection();
+						
+						if(selected)
+							App.people.change(selected.$.modelId, random.change());
 					}
 				}
 			}
@@ -112,7 +108,7 @@ var Server = mockServer
 						var selected = selection();
 						
 						if(selected)
-							self.people.remove(selected.$.id);
+							App.people.remove(selected.$.modelId);
 					}
 				}
 			}
@@ -121,9 +117,9 @@ var Server = mockServer
 		gender: genderFilter
 	}
 
-	self.collection = O_O.pod({
+	App.peoplePod = O_O.pod({
 
-		source:  self.people,
+		source:  App.people,
 
 		$: {
 
@@ -156,7 +152,7 @@ var Server = mockServer
 
 					'click .close': function(e, item)
 					{
-						App.people.remove(item.$.id);
+						App.people.remove(item.$.modelId); //? here
 						e.stopPropagation();
 					}
 				},
@@ -208,16 +204,15 @@ O_O.listen(selection, function(val, source)
 });
 
 //Responding to collection events
-O_O.listen(App.collection.event, function(e, item)
+O_O.listen(App.peoplePod.event, function(e)
 {
+	var item = e.item;
+	
 	if(e.type == 'add')
 		item.$.el.scrollIntoView();
 
 	else if(e.type == 'remove')
-	{
-		if(item === selection.prev)
-			selection('');
-	}
+		selection('');
 });
 
 O_O.listen(App.toolbar.gender, function(val)
@@ -230,28 +225,29 @@ O_O.listen(App.toolbar.gender, function(val)
 --------------------*/
 O_O.ready(function()
 {
-	people.data([
-		{
-			name: 'A',
-			age: 65,
-			isMale: 0
-		},
-		{
-			name: '$',
-			age: 65,
-			isMale: 1
-		},
-		{
-			name: 'M',
-			age: 77,
-			isMale: 1
-		},
-		{
-			name: 'Z',
-			age: 90,
-			isMale: 0
-		}
-	]);
-	
 	App.$.at('App');
+	
+	people.add({id: 1, data: {
+		name: 'A',
+		age: 65,
+		isMale: 0
+	}});
+	
+	people.add({id: 2, data: {
+		name: '$',
+		age: 65,
+		isMale: 1
+	}});
+	
+	people.add({id: 3, data: {
+		name: 'M',
+		age: 77,
+		isMale: 1
+	}});
+	
+	people.add({id: 4, data: {
+		name: 'Z',
+		age: 90,
+		isMale: 0
+	}});
 });

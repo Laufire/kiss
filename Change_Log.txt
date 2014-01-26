@@ -158,7 +158,7 @@
 140105_1230 .pod can now work with out a .list.
 140105_1320 .pod.set removed.
 140105_1330 .pod.event removed (a list has to be used if the events have to be watched for).
-140105_1700 Bugs caused b detaching .list from .pod fixed.
+140105_1700 Bugs caused by detaching .list from .pod fixed.
 140105_1755 .pod.order added.
 140105_1800 .pod.event reintroduced with 'add' and 'remove' events (considering to ease UI development)
 140105_1910 .pod.refresh added (used tp refresh the data from the 'source list' after its order has been sorted (by a third part lib).
@@ -173,3 +173,23 @@
 140106_2010 Example plugin - AutoComplete done.
 140106_2020 convention to add .BASE to the plugins introduced. It denotes the version of kiss the plug-in is based on.
 140106_2025 v0.0.7 released.
+
+140107_1600 Bug fixed. .box.$.val on elType '0' had undefined values for buttons.
+140107_1830 Bug fixed. Error while setting strings as the defaults for .box-es.
+140107_2120 Bug fixed. helper method extend had some issues with looping.
+
+140110_1220 Double quotes removed form get$el's selector string.
+140110_1420 Bug fixed. State was set after the 'ready' function is fired, this caused some complexities. It's neen moved before executiong the ready function.
+140110_1455 Bug fix revoked. Bug fix 0n 140110_1420 revoked.
+
+140117_1945	Bug fixed. The listener syncing window.popstate with O_O.state is made to be set after O_O.ready, as the previous approach caused the state to change before O_O is 'ready'.
+
+140119_0240	Bug fixed. At .list.addItem the node has to be deep cloned.
+140119_0320	Plugin O_O.texter added.
+
+140127_0240	O_O.box.append added.
+140127_0240	O_O.box.remove renamed to 'clear', O_O.box'es param $.clean renamed to $.clear.
+140127_0245	O_O.box.remove now removes the specified child of the box.
+140127_0430	O_O.pod.item added (to change the item-template dynamically).
+140127_0430	Example - Collection rewritten (to check the changes to O_O.pod).
+140127_0455	Example - todoMVC(alt) fixed (to check the agility of kiss - it took around 5 mins).

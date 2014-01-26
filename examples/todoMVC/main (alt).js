@@ -23,9 +23,14 @@ todoApp = O_O.box(new function()
 		{
 			if(e.keyCode == 13)
 			{
-				todoList.add(Date.now(), {
-					isDone: false,
-					title: e.target.value
+				todoList.add({
+				
+					id: Date.now(),
+					
+					data: {
+						isDone: false,
+						title: e.target.value
+					}
 				});
 
 				e.target.value = '';
@@ -263,11 +268,11 @@ O_O.listen(todoList.event, function(e, list)
 {
 	if(e.type == 'change')
 	{
-		var item = todoPod.items[e.id],
+		var item = todoPod.items[e.model.id],
 			state = filterState(),
 			completed, change;
 		
-		change = e.changes.isDone;
+		change = e.model.changes.isDone;
 		
 		if(change === undefined)
 			return;
@@ -279,6 +284,13 @@ O_O.listen(todoList.event, function(e, list)
 		completedCount(completedCount() + completed);
 		activeCount(activeCount() + completed * -1);
 	}
+	else if(e.type == 'remove')
+	{
+		if(e.model.data.isDone)
+			completedCount(completedCount() - 1);
+		else
+			activeCount(activeCount() - 1);
+	}
 });
 
 /*Finally load the todoApp
@@ -287,12 +299,15 @@ O_O.ready(function()
 {
 	var start = Date.now();
 	
-	for(var i = 0; i < 1000; ++i)
-		todoList.add(i, {
+	for(var i = 0; i < 10; ++i)
+		todoList.add({
 		
-			isDone: Boolean(i%2),
-			title: i
+			id: i,
 			
+			data: {
+				isDone: Boolean(i%2),
+				title: i
+			}
 		});
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
@@ -300,7 +315,7 @@ O_O.ready(function()
 	
 	var start = Date.now();
 	
-	for(var i = 0; i < 1000; ++i)
+	for(var i = 0; i < 10; ++i)
 		todoList.change(i, {
 		
 			isDone: !Boolean(i%2),

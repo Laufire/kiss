@@ -86,7 +86,7 @@ NO2 Liscence
 
 		function extend(target)
 		{
-			var i = 0, source, keys;
+			var i = 1, source, keys;
 
 			for(; i < arguments.length;)
 			{
@@ -160,7 +160,7 @@ NO2 Liscence
 		function get$el(key, parent)
 		{
 			if(typeof key != 'object')
-				return $('[' + keyAttr + '="' + key + '"]', parent);
+				return $('[' + keyAttr + '=' + key + ']', parent);
 
 			return $(key, parent);
 		}
@@ -310,20 +310,14 @@ NO2 Liscence
 
 					return _$;
 				}
-
-				_$.remove = function()
+				
+				_$.clear = function(name, tagName, boxProps)
 				{
 					var child, childName,
 						i = 0;
 
 					for(; i < children.length;) //remove all children (boxes and pods)
-					{
-						childName = children[i++], child = self[childName];
-
-						child.$ && child.$.remove();
-
-						delete self[childName];
-					}
+						_$.remove(children[i++]);
 
 					enumerate(plugs, function(key, branch) //clear all plugs
 					{
@@ -337,6 +331,26 @@ NO2 Liscence
 						cleanUp(self);
 
 					$el.el.remove();
+				}
+				
+				_$.append = function(childName, tagName, boxProps)
+				{
+					var $el = self.$.$el.append(tagName).attr('id', childName),
+						box = self[childName] = O_O.box(boxProps);
+					
+					return box.$.at(childName, self);
+				}
+				
+				_$.remove = function(childName)
+				{
+					var $child = self[childName].$;
+
+					if($child)
+					{
+						$child.clear();
+						delete self[childName];
+						children.splice(children.indexOf(childName), 1);
+					}
 				}
 
 				/*/helps with form serialization, returns the value when data is collected
@@ -380,10 +394,17 @@ NO2 Liscence
 							for(; i < length;) // the element has children so get the nested data
 							{
 								var name = children[i++],
-									child = self[name];
+									child = self[name],
+									val;
 
 								if(child && child.$)
-									ret[name] = child.$.val();
+								{
+									val = child.$.val()
+									
+									if(val !== undefined) //to skip buttons and the like
+										ret[name] = val;
+										
+								}
 							}
 
 							return ret;
@@ -428,7 +449,7 @@ NO2 Liscence
 						pos = name.indexOf(' ');
 
 					if(pos > -1)
-					{
+					{	
 						el = $el.$(name.substr(pos + 1));
 						eName = name.substr(0, pos);
 					}
@@ -460,7 +481,7 @@ NO2 Liscence
 						var init = extract($data, 'init'),
 							def = extract($data, 'default');
 							
-						cleanUp = extract($data, 'clean');
+						cleanUp = extract($data, 'clear');
 						
 						if(def)
 						{
@@ -495,7 +516,7 @@ NO2 Liscence
 								}
 
 								else
-									return $el[method](prop, getVal(def)); //set the value
+									return $el.prop(prop, getVal(def)); //set the value
 
 								return _$;
 							}
@@ -568,16 +589,20 @@ NO2 Liscence
 
 				function loadChildren()
 				{
-					var childName, child, child$el, i = 0;
+					var child, child$el, i = 0;
 
 					for(; i < children.length;) //load child objects with matching elements
+						loadChild(children[i++]);
+				}
+				
+				function loadChild(childName)
+				{
+					var child, child$el;
+
+					child$el = get$el(childName, $el.el);
+
+					if(child$el.el) //tags without matching objects are left intact; so to play nice with other libs
 					{
-						childName = children[i++],
-						child$el = get$el(childName, $el.el);
-
-						if(!child$el.el)
-							continue;  //tags without matching objects are left intact; so to play nice with other libs
-
 						child = self[childName];
 
 						if(typeof child == 'object')
@@ -615,11 +640,24 @@ NO2 Liscence
 				{
 					box.$.at(query, parent);
 					
-					itemNode = box.$.prop('firstElementChild'); //use the first child element as the template for items
-					box.$.html(''); //empty the pod's box
+					getItemNode();
 
 					if(source)
 						self.source(source);					
+				}
+				
+				self.item = function(_item, html)
+				{
+					box.$.html(html);
+					
+					if(_item)
+						item = _item;
+					
+					if(html)
+						getItemNode();
+					
+					if(source)
+						readd();
 				}
 				
 				self.add = function(data) //adds an item
@@ -631,9 +669,9 @@ NO2 Liscence
 				{
 					var item = items[id];
 					
-					order.splice(order.indexOf(id), 1);
-					item.$.remove();
+					item.$.clear();
 					delete items[id];
+					order.splice(order.indexOf(id), 1);
 					
 					event({
 					
@@ -648,14 +686,7 @@ NO2 Liscence
 					
 					self.reset();
 					
-					var i = 0, model,
-						order = source.order;
-					
-					for(; i < order.length;) //add the existing items from the source
-					{
-						model = source.items[order[i++]];
-						addItem(model.data, model.id);
-					}
+					readd();
 					
 					source.event.plug(listen);
 				}
@@ -684,6 +715,24 @@ NO2 Liscence
 					{
 						model = models[sOrder[i]];
 						changeModel(model, order[i]); //change the model
+					}
+				}
+				
+				function getItemNode()
+				{
+					itemNode = box.$.prop('firstElementChild'); //use the first child element as the template for items
+					box.$.html(''); //empty the pod's box
+				}
+				
+				function readd()
+				{
+					var i = 0, model,
+						order = source.order;
+					
+					for(; i < order.length;) //add the existing items from the source
+					{
+						model = source.items[order[i++]];
+						addItem(model.data, model.id);
 					}
 				}
 				
@@ -716,7 +765,7 @@ NO2 Liscence
 				{
 					var _item$,
 						id = freeId++ + '',
-						node = itemNode.cloneNode(); //clone the node 
+						node = itemNode.cloneNode(true); //deep clone the node 
 					
 					box.$.$el[mode](node).attr(keyAttr, id); //add it to the pod
 					
@@ -1120,10 +1169,7 @@ NO2 Liscence
 	}
 
 	//listen to changes in the history
-	window.addEventListener('popstate', function()
-	{
-		changeState(location.hash.substr(1));
-	});
+	
 	
 	DOM.ready(function()
 	{
@@ -1131,15 +1177,25 @@ NO2 Liscence
 		
 		if(ready) //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
 		{
-			ready();
-			changeState(hash);
+			ready();			
+			initState(hash); //resolve the provided state
 		}
 
 		else //a ready function is not available
-		O_O.ready = function(func) //so execute it as soon as it's available
-		{
-			func();
-			changeState(hash);
-		}
+			O_O.ready = function(func) //so execute it as soon as it's available
+			{
+				func();
+				initState(hash); //resolve the provided state
+			}
 	});
+	
+	function initState(hash)
+	{
+		changeState(hash); //resolve the provided state
+		
+		window.addEventListener('popstate', function()
+		{
+			changeState(location.hash.substr(1));
+		});
+	}
 })(window, document);

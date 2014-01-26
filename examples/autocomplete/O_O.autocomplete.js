@@ -14,7 +14,7 @@
 			matches = [],
 			values = [],
 		
-		autocomplete = new O_O.class.box({
+		autocomplete = O_O.box({
 
 			$: {
 
