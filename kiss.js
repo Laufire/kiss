@@ -630,7 +630,6 @@ NO2 Liscence
 					mode = options.mode || 'append',
 					freeId = 0,
 					box = O_O.box({$: options.$}),
-					modelIdMap = {},
 					itemNode,
 					options = undefined; //cleaning the var
 
@@ -657,12 +656,12 @@ NO2 Liscence
 						getItemNode();
 					
 					if(source)
-						readd();
+						addAll();
 				}
 				
-				self.add = function(data) //adds an item
+				self.add = function(data, id) //adds an item
 				{
-					addItem(data);
+					addItem(data, id);
 				}
 
 				self.remove = function(id) //removes an item
@@ -686,7 +685,7 @@ NO2 Liscence
 					
 					self.reset();
 					
-					readd();
+					addAll();
 					
 					source.event.plug(listen);
 				}
@@ -707,15 +706,25 @@ NO2 Liscence
 				
 				self.refresh = function() //mirror the order changes in the source
 				{
-					var i = 0, model, itemId,
+					var i = 0, model, id, sId, item$, _items = {},
 						sOrder = source.order,
-						models = source.items;					
+						models = source.items;
 				
 					for(; i < sOrder.length; i++)
 					{
-						model = models[sOrder[i]];
-						changeModel(model, order[i]); //change the model
+						sId = sOrder[i];
+						id = order[i];
+						
+						_items[id] = items[sId];
+						model = source.items[sId];
+						
+						item$ = items[id].$;
+						item$.id = order[i] = model.id;
+						item$.set(model.data);						
 					}
+					
+					self.items = items = _items;
+					self.order = order;
 				}
 				
 				function getItemNode()
@@ -724,7 +733,7 @@ NO2 Liscence
 					box.$.html(''); //empty the pod's box
 				}
 				
-				function readd()
+				function addAll()
 				{
 					var i = 0, model,
 						order = source.order;
@@ -748,24 +757,23 @@ NO2 Liscence
 					
 					else
 					{
-						var mappedId = modelIdMap[id]; //get the item id related to the model
-						
 						if(type == 'change')
-							items[mappedId].$.set(data);
+							items[id].$.set(data);
 							
 						else //remove the item
-						{
-							delete modelIdMap[id];
-							self.remove(mappedId);
-						}
+							self.remove(id);
 					}
 				}
 				
-				function addItem(data, modelId) //adds an item
+				function addItem(data, id) //adds an item
 				{
 					var _item$,
-						id = freeId++ + '',
-						node = itemNode.cloneNode(true); //deep clone the node 
+						node = itemNode.cloneNode(true); //deep clone the node
+						
+					if(id === undefined)
+						id = freeId++;
+
+					id += ''
 					
 					box.$.$el[mode](node).attr(keyAttr, id); //add it to the pod
 					
@@ -773,13 +781,7 @@ NO2 Liscence
 					items[id] = O_O.box(new item(data)); //make a new box and register it to the items array
 					
 					_item$ = items[id].$;
-					
-					if(modelId !== undefined) //tie the model with the item
-					{
-						modelIdMap[modelId] = id;
-						_item$.modelId = modelId;
-						_item$.data = setItemData;
-					}
+					_item$.data = setItemData;
 					
 					order.push(id);
 					
@@ -794,17 +796,7 @@ NO2 Liscence
 				
 				function setItemData(data)
 				{
-					source.change(this.modelId, data);
-				}
-				
-				function changeModel(model, itemId)
-				{
-					var item$ = items[itemId].$,
-						modelId = model.id;
-					
-					item$.modelId = modelId;
-					modelIdMap[modelId] = itemId;
-					item$.set(model.data);
+					source.change(this.id, data);
 				}
 			}
 

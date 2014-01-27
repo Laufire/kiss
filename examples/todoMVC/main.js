@@ -95,7 +95,7 @@ todoApp = O_O.box(new function()
 						
 						setTimeout(function()
 						{
-							todoList.remove(item.$.modelId);
+							todoList.remove(item.$.id);
 							
 						}, 400);
 					}

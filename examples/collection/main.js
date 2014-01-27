@@ -86,7 +86,7 @@ var Server = mockServer
 						var selected = selection();
 						
 						if(selected)
-							App.people.change(selected.$.modelId, random.change());
+							App.people.change(selected.$.id, random.change());
 					}
 				}
 			}
@@ -108,7 +108,7 @@ var Server = mockServer
 						var selected = selection();
 						
 						if(selected)
-							App.people.remove(selected.$.modelId);
+							App.people.remove(selected.$.id);
 					}
 				}
 			}
@@ -152,7 +152,7 @@ var Server = mockServer
 
 					'click .close': function(e, item)
 					{
-						App.people.remove(item.$.modelId); //? here
+						App.people.remove(item.$.id); //? here
 						e.stopPropagation();
 					}
 				},
