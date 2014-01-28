@@ -28,12 +28,9 @@ todoApp = O_O.box(new function()
 			if(e.keyCode == 13)
 			{
 				todoList.add({
-				
-					data: {
-						
-						isDone: false,
-						title: e.target.value
-					}
+					
+					isDone: false,
+					title: e.target.value
 				});
 
 				e.target.value = '';
@@ -206,7 +203,7 @@ todoApp = O_O.box(new function()
 							keys = Object.keys(todoList.items);
 						
 						for(i = 0; i < keys.length; ++i)
-							id = keys[i], items[id].data.isDone && todoList.remove(id);
+							id = keys[i], items[id].isDone && todoList.remove(id);
 					}
 				}
 			},
@@ -257,29 +254,29 @@ O_O.listen(O_O.state.change, function()
 
 O_O.listen(todoList.event, function(e, list)
 {
-	var active, completed, change,
+	var active, completed, isDone,
 		type = e.type,
-		model = e.model;
+		data = e.data;
 	
 	if(type == 'change')
 	{
-		change = model.changes.isDone;
+		isDone = e.changes.isDone;
 		
-		if(change === undefined)
+		if(isDone === undefined)
 			return;
 		
-		completed = change ? 1 : -1;
+		completed = isDone ? 1 : -1;
 		active = completed * -1;
 	}
 	else
 	{
-		change = model.data.isDone;
+		isDone = data.isDone;
 		
 		if(type == 'add')
-			change ? completed = 1 : active = 1;
+			isDone ? completed = 1 : active = 1;
 		
 		else
-			change ? completed = -1 : active = -1;
+			isDone ? completed = -1 : active = -1;
 	}
 	
 	if(completed)
@@ -300,13 +297,9 @@ O_O.ready(function()
 	var count = 10;
 	
 	for(var i = 0; i < count; ++i)
-		todoList.add(
-		{
-			data: {
-				isDone: Boolean(i%2),
-				title: i
-			}
-			
+		todoList.add({
+			isDone: Boolean(i%2),
+			title: i
 		});
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done

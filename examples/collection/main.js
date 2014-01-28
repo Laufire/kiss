@@ -15,8 +15,14 @@ var Server = mockServer
 
 	add: function()
 	{
+		var ret;
+
+		while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
+		
 		return {
 		
+			_id: ret,
+			
 			name: String.fromCharCode(rndBtwn(65, 90)),
 
 			age: rndBtwn(5, 90),
@@ -25,7 +31,7 @@ var Server = mockServer
 		}
 	},
 
-	change: function(name)
+	change: function()
 	{
 		return {
 			
@@ -58,16 +64,7 @@ var Server = mockServer
 
 		add: function()
 		{
-			var ret;
-
-			while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
-		
-			App.people.add({
-			
-				id: ret,
-				
-				data: random.add()
-			});
+			App.people.add(random.add());
 		},
 
 		edit: {
@@ -227,27 +224,31 @@ O_O.ready(function()
 {
 	App.$.at('App');
 	
-	people.add({id: 1, data: {
+	people.add({
+		_id: 1,
 		name: 'A',
 		age: 65,
 		isMale: 0
-	}});
+	});
 	
-	people.add({id: 2, data: {
+	people.add({
+		_id: 2,
 		name: '$',
 		age: 65,
 		isMale: 1
-	}});
+	});
 	
-	people.add({id: 3, data: {
+	people.add({
+		_id: 3,
 		name: 'M',
 		age: 77,
 		isMale: 1
-	}});
+	});
 	
-	people.add({id: 4, data: {
+	people.add({
+		_id: 4,
 		name: 'Z',
 		age: 90,
 		isMale: 0
-	}});
+	});
 });

@@ -213,7 +213,7 @@ todoApp = O_O.box(new function()
 							keys = Object.keys(todoList.items);
 						
 						for(i = 0; i < keys.length; ++i)
-							id = keys[i], items[id].data.isDone && todoList.remove(id);
+							id = keys[i], items[id].isDone && todoList.remove(id);
 					}
 				}
 			},
@@ -268,11 +268,11 @@ O_O.listen(todoList.event, function(e, list)
 {
 	if(e.type == 'change')
 	{
-		var item = todoPod.items[e.model.id],
+		var item = todoPod.items[e.data._id],
 			state = filterState(),
 			completed, change;
 		
-		change = e.model.changes.isDone;
+		change = e.changes.isDone;
 		
 		if(change === undefined)
 			return;
@@ -286,7 +286,7 @@ O_O.listen(todoList.event, function(e, list)
 	}
 	else if(e.type == 'remove')
 	{
-		if(e.model.data.isDone)
+		if(e.data.isDone)
 			completedCount(completedCount() - 1);
 		else
 			activeCount(activeCount() - 1);
@@ -301,13 +301,10 @@ O_O.ready(function()
 	
 	for(var i = 0; i < 10; ++i)
 		todoList.add({
-		
-			id: i,
 			
-			data: {
-				isDone: Boolean(i%2),
-				title: i
-			}
+			_id: i,
+			isDone: Boolean(i%2),
+			title: i
 		});
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
