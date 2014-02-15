@@ -190,7 +190,7 @@
 140127_0240	O_O.box.append added.
 140127_0240	O_O.box.remove renamed to 'clear', O_O.box'es param $.clean renamed to $.clear.
 140127_0245	O_O.box.remove now removes the specified child of the box.
-140127_0430	O_O.pod.item added (to change the item-template dynamically).
+140127_0430	O_O.pod.item added (to change the item-constructor).
 140127_0430	Example - Collection rewritten (to check the changes to O_O.pod).
 140127_0455	Example - todoMVC(alt) fixed (to check the agility of kiss - it took around 5 mins).
 140127_2005	pod.item.$.modelId removed. items now have the id of their models as their own id. And they change along with the changes to the model. This was done in order to simplify the process.
@@ -198,3 +198,14 @@
 140128_2140	O_O.list supports loading data while being constructed through options.data.
 
 140129_0500	Structure of the items of O_O.list has been changed to Document Oriented DB(Mongo/Couch) style. From {id:id, data:{...}} to {_id:id, ...}.
+
+140130_0445	Bug fixed. At O_O.list.add, assigning the _id to the primary key of sql result sets caused an error (as the primary keys are read only).
+
+140208_1355	Bug fixed. Setting child.data removed form box.$.set.
+140208_1435	Bug fixed. Missing O_O.pod.$ properties ($el, el, id) added from the pod's box.
+
+140211_1000	Bug fixed. Bug fixed. box.$.set failed when the data had values for 'untouched' properties.
+140211_1155	Calling $.event with just the name returns the handler. To turn off existing event a falsy value should be passed for the handler.
+
+140214_0000	O_O.plugin.podSelect added.
+

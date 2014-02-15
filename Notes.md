@@ -1,4 +1,23 @@
-# ToDos
+# kiss
+### a library to make app making simple and stupid
+
+## Goal
+
+* To enable the rapid development of plugins that enable maintainable UIs, on the web stack.
+
+
+## Idea
+
+* Using the same application stucture with all the frontend technologies (HTML, JS, CSS)
+
+
+## ToDos
+
+* default event for contenteditable tags: blur.
+
+* O_O.kebab
+
+* O_O.podSelect
 
 * A cheat sheet.
 
@@ -9,7 +28,11 @@
 * kiss recipes: a set of examples to demonstrate recipe style programming.
 
 
-# Plugins
+## Plugins
+
+* O_O.filter.
+
+* O_O.masterList: to handle complex data interactions like undoing etc. This is achieved by passing models between multiple (child-)lists.
 
 * Limited pod (a pod with a limited number of items, to enable pagination, infinite scrolling etc), in which removed nodes are cached for reuse.
 
@@ -27,12 +50,12 @@
 
 * A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
 
-* O_O.sync to snyc a O_O.value to a store (localStorage / cloud / DB)
+* O\_O.sync to snyc a O\_O.value to a store (localStorage / cloud / DB)
 
 
-# Consider
+## Consider
 
-* O_O.bind, to bind a behavior with different params (like calculator buttons).
+* O\_O.bind, to bind a behavior with different params (like calculator buttons).
 
 * returning FormData of forms with $.val calls on form elements.
 
@@ -45,7 +68,7 @@
 * Combining multiple plugins to create a new plugin. Might be as simple as "O\_O.plugin(jQuery.AutoComplete).decorate(O\_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.
 
 
-# Goals
+## Goals
 
 * To build a simple and powerful front-end-framework that enables "truly" rapid development.
 
@@ -63,7 +86,7 @@
 
 * Should easily communicate with the Server (so to reduce the burdens of the front end developer).
 
-	## Design
+	### Design
 
 	* As a platform that load various apps on to a single page.
 	
@@ -74,7 +97,7 @@
 	* The code for the App should be brief.
 
 
-	## Measures
+	### Measures
 
 	* Should support bootstrap.
 	
@@ -83,7 +106,7 @@
 	* Could adapt jQuery UI as is.
 
 
-# Way
+## Way
 
 * Use HTML elements as just placeholders for dynamic javascript objects.
 
@@ -104,17 +127,16 @@
 * No type checks are fallbacks are to be implemented (on the execution level, not the construction level), as this would ensure structure and maintainability.
 
 
-# Usage
+## Usage
 
 * The keyAttr can't be a '**$**'.
 
 * The order of properties in the objects, that are passed as parameters matters; they are processed in the order they are declared. So its better to have the init at last.
 
-	## O\_O.box
-
+	### O\_O.box
 	* 'el' can't be set inside the constructor.
 
-		### '$' properties
+		#### '$' properties
 
 		* Relates to the elements properties such as *html, prop, attr* etc.
 
@@ -124,40 +146,45 @@
 
 		* Calling a $.*property* without parameters generally gets the value.
 
-			#### $.val
+			##### $.val
 
 			* With input controls, it serializes the given box (generally a form) and returns the data as an object.
 
-	## O\_O.pod
+			
+	### O\_O.pod
 	* Item should be a constructor function.
-
-
-	## O\_O.value
-
+	
+	* Item's children should be inside the item element.
+	
+	### O\_O.value
 	* The 'change' is triggered only when the new value doesn't '**===**' the old value.
+	
+	### O\_O.list
+	* **Never**, change the _id attribute of the items.
 
-
-	## O\_O.trans
-
+	### O\_O.trans
 	* Could be used inline. Ex: text = O\_O.trans(pluralify)(itemCount)
 
-
-	## O\_O.listen
-
+	### O\_O.listen
 	* Don't use listen as private variables of objects; it might cause memory leaks.
 
-
-	## O\_O.watch
-
+	### O\_O.watch
 	* Don't use watch as private variables of objects; it might cause memory leaks.
 
+	
+## Tips
 
-# General
+* Use the $.$el to set static properties; as they are faster and chainable.
+
+* Use $.$el.<methods> to work around default kiss functionalities like 'one handler per event'. **But use it only when it's absolutely necessary, as this coud break the structure**.
+
+
+## General
 
 * Constructor functions like O\_O.box and O\_O.pod modifies the passed options object.
 
 
-# How to kiss (recipe style)
+## How to kiss (recipe style)
 
 * First define the observable values, with sensible defaults.
 
@@ -168,19 +195,14 @@
 * And at last the UI initiation.
 
 
-# Structure
+## Structure
 
 * The components communicate through an API.
 
 * Classes are to be with the bare mininmum of functionality, in order to avoid bloating. Needed futures could be added through extensions.
 
 
-# Decisions
-
-* O_O.list won't have methods or events related to sorting.
-
-
-# Questions
+## Questions
 
 * *Could html be automatically injected for collections, without the needed mark-up in the document?*
 
@@ -191,7 +213,7 @@
 * *How does a spreadsheet achieve data bindings?*
 
 
-# Noted
+## Noted
 
 * HTML's Custom tag-names appear to be case insensitive.
 
@@ -206,9 +228,11 @@
 * Chrome was a lot faster than firefox.
 
 
-# Decisions
+## Decisions
 
-* An element could only have one handler per event; as this would ensure simplicity. If multiple events are needed a host could be used. Or a 'queue' could be made as a plugin.
+* Native objects are not to be extended, in oder to avoid collisions other libraries.
+
+* An element could only have one handler per event; as this would ensure simplicity. If multiple events are needed, a host handler could be used. Or a 'queue' could be made as a plugin.
 
 * Events of O\_O objects are exposed through a O\_O.value name .event, instead of the usual on-off pattern. This is to maintain structure and improve efficiency (as multiple events tend affect a same set of values in slightly different ways). O\_O.listen on this events could act as 'controllers'.
 
@@ -218,9 +242,15 @@
 
 * Plugins do not replace their placeholder tags (as this might bring in unwanted complexities); but they still could by injecting code with a custom **$.at** method.
 
+* The base classes weren't checked for extendability; as it's thought that extensions to the core could make the lib complex and unexpected, thus unusable.
 
-# Performance
-## 1000 todos test
+* O\_O.list won't have methods or events related to sorting.
+
+* O\_O.pod item is to be a constructor function, as it simplifies every-day coding. Though it makes extensions to the the 'item' harder; there still has ways to extend the 'item' (ref: O_O.podSelect).
+
+
+## Performance
+### 1000 todos test
 
 * kiss is 2.5x faster than angular in rendering, modifying the items and in changing the state.
 
@@ -230,7 +260,9 @@
 
 * kiss took a lot of time with the bulk-modifications right after the page load, but picked up speed, after it warmed up. This could be because of the browser might not have allocated resources as there weren't any bulk operation till then.
 
-## Possible improvements
+### Possible improvements
+
+* document.getElementById is considerabbly faster than querySelectors; but it needs unique ids. Unique ids could be enabled by using IdMaps and having data-id as the keyAttr.
 
 * After some performance tuning microDOM's overhead is 61ms on 1000 todos, previoulsy it was 107 ms.
 
@@ -247,7 +279,7 @@
 * .pod.item-s could be compiled / fabricated (in a factory) to increase init/change performances. Even, .box-es could be compiled.
 
 
-## DOM Manipulation
+### DOM Manipulation
 
 * DOM-manipulation is the most costly process (tuning it will be highly beneficial).
 
@@ -258,21 +290,21 @@
 * The cost of inserting 1000 todoItems via .list is 840ms, the cost of inserting directly to the pod is 800ms.
 
 
-# Known issues
+## Known issues
 
 * Though some performance check has been done; this is still a proof of concept. So it has to be checked for performance issues, memory leaks etc.
 
 * kiss is not yet unit tested.
 
 
-# Uses
+## Uses
 
 * Could be used as a report generator like crystal reports.
 
 * Could be used to support drop-in plugins like 'share via facebook' etc.
 
 
-# Future
+## Future
 
 * A plugin for undoable values.
 
@@ -285,7 +317,7 @@
 * Adopting the SPA projects' #-less history (this will need the SPA to be adopted completed, as the server has to parse the requests).
 
 
-# Thoughts
+## Thoughts
 
 * Plugins may use lower level functions for performance (they don't have to depend on kiss).
 

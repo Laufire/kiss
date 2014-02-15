@@ -1,8 +1,4 @@
-﻿//? O_O.filter / .list.filter (.restrict)
-//? passing the models around
-//? master list
-
-//? localStorage as a data source for O_O.values
+﻿//? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
 
 /*!
@@ -263,10 +259,10 @@ NO2 Liscence
 							if(child.$)
 								child.$.val(val); //the child is ui element
 
-							else if(child.data) //the child is a data source
-								child.data(val);
-
-							else //the child is a value
+							else if(typeof child != 'function') //the child is a unlinked property
+								child = val;
+								
+							else //the child is a O_O.value
 								child(val);
 					}
 
@@ -442,16 +438,19 @@ NO2 Liscence
 						eName = name;
 					}
 
-					if(events[name]) //the event already has a handler
-						el.off(eName, events[name]); //remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
-
-
-					if(handler) //allows to remove the event listener by not passing a handler
+					if(handler) {//allows to remove the event listener by not passing a handler
+						
+						if(events[name])//the event already has a handler
+							el.off(eName, events[name]); //remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
+					
 						el.on(eName, events[name] = function(e)
 						{
 							//!'this' context is lost, that could be got through the e.target
 							handler(e, self);
-						});
+						});			
+					}
+					else
+						return events[name];
 
 					return _$;
 				}
@@ -616,11 +615,20 @@ NO2 Liscence
 					itemNode,
 					options = undefined; //cleaning the var
 
-				self.$ = extend({}, box.$);
+				self.$ = extend({}, box.$); //add the pre-$.at box.$ properties to self.$
 				
 				self.$.at = function(query, parent)
 				{
-					box.$.at(query, parent);
+					var box$ = box.$;
+					
+					box$.at(query, parent);
+					
+					extend(self.$, {
+					
+						$el: box$.$el,
+						el: box$.el,
+						id: box$.id
+					}); //add the remaining box.$ properties to self.$
 					
 					getItemNode();
 
@@ -628,7 +636,7 @@ NO2 Liscence
 						self.source(source);					
 				}
 				
-				self.item = function(_item, html)
+				self.item = function(_item, html) //changes the item constructor
 				{
 					box.$.html(html);
 					
@@ -708,9 +716,11 @@ NO2 Liscence
 				
 				self.refresh = function() //mirror the order changes in the source
 				{
-					var i = 0, data, id, sId, item$, _items = {},
+					var data, id, sId, item$,
+						_items = {},
 						sOrder = source.order,
-						items = source.items;
+						items = source.items,
+						i = 0;
 				
 					for(; i < sOrder.length; i++)
 					{
@@ -833,11 +843,12 @@ NO2 Liscence
 				
 				self.add = function(data)
 				{
-					var id = data._id;
-
-					id = id !== undefined  ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
+					if(data._id === undefined)
+						data._id = getFreeKey(items); //convert the id to string to maintain type safety
 					
-					order.push(data._id = id);
+					var id = data._id + ''
+					
+					order.push(id);
 					items[id] = data;
 					
 					self.length(order.length);
