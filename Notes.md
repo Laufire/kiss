@@ -28,6 +28,11 @@
 * kiss recipes: a set of examples to demonstrate recipe style programming.
 
 
+## Issues
+
+* Minifying breaks the code.
+
+
 ## Plugins
 
 * O_O.filter.
@@ -155,6 +160,8 @@
 	* Item should be a constructor function.
 	
 	* Item's children should be inside the item element.
+	
+	* Passing 'undefined' values to the item constructors will cause the properties to be missed pass '{}' instead.
 	
 	### O\_O.value
 	* The 'change' is triggered only when the new value doesn't '**===**' the old value.

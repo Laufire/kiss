@@ -209,3 +209,7 @@
 
 140214_0000	O_O.plugin.podSelect added.
 
+140218_1140	Bug fixed. The item O_O.pod was being inserted to the DOM before the data is applied. Fixed it by changing the sequence in O_O.pod.add.
+
+140219_1920	Performance improvement: O_O.pod's listen on 'change' event, now applies only the changes to the item instead of all the data. This avoids re-setting unchanged properties.
+140219_2000	Re-indented the code.

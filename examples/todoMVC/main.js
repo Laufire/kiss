@@ -1,5 +1,5 @@
-﻿(function()
-{
+﻿(function() {
+
 "use strict";
 
 /*Define the variables
@@ -11,16 +11,16 @@ allChecked = O_O.value(0),
 activeCount = O_O.value(0),
 completedCount = O_O.value(0),
 
-noTodos = O_O.trans(function(val)
-{
+noTodos = O_O.trans(function(val) {
+
 	return !val;
 	
 })(todoList.length),
 
 todoPod,
 
-todoApp = O_O.box(new function()
-{
+todoApp = O_O.box(new function() {
+
 	this.newTodo = {$: { event: {
 
 		keyup: function(e)
@@ -161,16 +161,16 @@ todoApp = O_O.box(new function()
 		}
 	});
 	
-	this.footer = new function()
-	{
+	this.footer = new function() {
+	
 		this.$ = { class: {
 		
 			hidden: noTodos
 		
 		}}
 		
-		this.todoCount = O_O.trans(function(val) //!inline-trans
-		{
+		this.todoCount = O_O.trans(function(val) { //!inline-trans
+		
 			if(val > 1)
 				return val + ' items left';
 				
@@ -187,8 +187,8 @@ todoApp = O_O.box(new function()
 			
 				class: {
 				
-					hidden: O_O.trans(function(val)
-					{
+					hidden: O_O.trans(function(val){
+					
 						return val == 0;
 						
 					})(completedCount)
@@ -196,8 +196,8 @@ todoApp = O_O.box(new function()
 				
 				event: {
 				
-					click: function(e)
-					{
+					click: function(e) {
+					
 						var i, id,
 							items = todoList.items,
 							keys = Object.keys(todoList.items);
@@ -217,24 +217,24 @@ todoApp = O_O.box(new function()
 --------------*/
 O_O.state.routes = {
 
-	'*': function()
-	{
+	'*': function() {
+		
 		filterState = 2;
 	},
 	
-	'active': function()
-	{
+	'active': function() {
+	
 		filterState = 1;
 	},	
 	
-	'completed': function()
-	{
+	'completed': function() {
+	
 		filterState = 0;
 	}
 };
 
-O_O.listen(O_O.state.change, function()
-{
+O_O.listen(O_O.state.change, function() {
+
 	//var start = Date.now();
 	var i = 0, item,
 		keys = Object.keys(todoPod.items);
@@ -242,8 +242,8 @@ O_O.listen(O_O.state.change, function()
 	DOM.$('#filters a.selected').class('selected', 0);
 	DOM.$('#filters li:nth-of-type(' + (3 - filterState) + ') a').class('selected', 1);
 	
-	for(; i < keys.length;)
-	{
+	for(; i < keys.length;) {
+	
 		item = todoPod.items[keys[i++]];
 		
 		item.isHidden(filterState == 2 ? false : filterState == item.isDone());
@@ -252,14 +252,14 @@ O_O.listen(O_O.state.change, function()
 	//console.log(Date.now() - start);
 });
 
-O_O.listen(todoList.event, function(e, list)
-{
+O_O.listen(todoList.event, function(e, list) {
+
 	var active, completed, isDone,
 		type = e.type,
 		data = e.data;
 	
-	if(type == 'change')
-	{
+	if(type == 'change') {
+	
 		isDone = e.changes.isDone;
 		
 		if(isDone === undefined)
@@ -268,8 +268,8 @@ O_O.listen(todoList.event, function(e, list)
 		completed = isDone ? 1 : -1;
 		active = completed * -1;
 	}
-	else
-	{
+	else {
+	
 		isDone = data.isDone;
 		
 		if(type == 'add')
@@ -290,8 +290,8 @@ O_O.listen(todoList.event, function(e, list)
 
 /*Finally load the todoApp
 ------------------------*/
-O_O.ready(function()
-{
+O_O.ready(function() {
+
 	var start = Date.now();
 	
 	var count = 10;
