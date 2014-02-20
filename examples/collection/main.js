@@ -13,8 +13,8 @@ var Server = mockServer
 
 , random = {
 
-	add: function()
-	{
+	add: function()	{
+		
 		var ret;
 
 		while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
@@ -31,8 +31,8 @@ var Server = mockServer
 		}
 	},
 
-	change: function()
-	{
+	change: function() {
+	
 		return {
 			
 			age: rndBtwn(5, 90),
@@ -45,8 +45,8 @@ var Server = mockServer
 , selection = O_O.value()
 , genderFilter = O_O.value(2)
 
-, genderTrans = O_O.trans(function(val, source, data) //this hides the filtered gender when genderfilter changes. Note: this doen't hide the elements when their data changes; for that to hapen use .watch(genderFilter, this.isMale) on the iten, and set the results to a this.isVisible which determines the visibility
-{
+, genderTrans = O_O.trans(function(val, source, data) { //this hides the filtered gender when genderfilter changes. Note: this doen't hide the elements when their data changes; for that to hapen use .watch(genderFilter, this.isMale) on the iten, and set the results to a this.isVisible which determines the visibility
+	
 	var val = parseInt(val, 10);
 	
 	return !(val == 2 || val == data.isMale);
@@ -62,8 +62,8 @@ var Server = mockServer
 
 	App.toolbar = {
 
-		add: function()
-		{
+		add: function() {
+		
 			App.people.add(random.add());
 		},
 
@@ -78,8 +78,8 @@ var Server = mockServer
 
 				event: {
 
-					click: function()
-					{
+					click: function() {
+					
 						var selected = selection();
 						
 						if(selected)
@@ -100,8 +100,8 @@ var Server = mockServer
 
 				event: {
 
-					click: function()
-					{
+					click: function() {
+					
 						var selected = selection();
 						
 						if(selected)
@@ -122,18 +122,17 @@ var Server = mockServer
 
 			event: {
 
-				click: function(e)
-				{
+				click: function(e) {
+				
 					selection('');
 				}
 			}
 		},
 
-		item: function(itemData)
-		{
+		item: function(itemData) {
 
-			var sayName = function(e, box)
-			{
+			var sayName = function(e, box) {
+			
 				alert('My name is: ' + box.$.html());
 			};
 			
@@ -141,15 +140,15 @@ var Server = mockServer
 
 				event: {
 
-					click: function(e, item)
-					{
+					click: function(e, item) {
+					
 						selection(item);
 						e.stopPropagation();
 					},
 
-					'click .close': function(e, item)
-					{
-						App.people.remove(item.$.id); //? here
+					'click .close': function(e, item) {
+					
+						App.people.remove(item.$.id);
 						e.stopPropagation();
 					}
 				},

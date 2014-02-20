@@ -1,5 +1,5 @@
-.container
-{
+.container {
+
 	padding: 1em;
 	background: #eee;
 	border: 1px solid #ddd;
@@ -8,39 +8,39 @@
 	text-align: center;
 }
 
-.autocomplete input
-{
+.autocomplete input {
+
 	width: 90%;
 }
 
-.autocomplete
-{
+.autocomplete {
+
 	text-align: left;
 }
 
-.autocomplete #suggestions
-{
+.autocomplete #suggestions {
+
 	position: relative;
 }
 
-.autocomplete .suggestion
-{
+.autocomplete .suggestion {
+
 	border: 1px solid #333;
 }
 
-.autocomplete .selected
-{
+.autocomplete .selected {
+
 	background: #ddf;
 }
 
-#possibleValues
-{
+#possibleValues {
+
 	margin: 1em;
 	padding: 1em;
 	border: 1px solid #888;
 }
 
-.hidden
-{
+.hidden {
+
 	display: none;
 }

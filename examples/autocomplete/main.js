@@ -8,20 +8,20 @@ var values = [],
 
 autocomplete,
 
-App = O_O.box(new function()
-{
+App = O_O.box(new function() {
+
 	var self = this;
 
-	self.autocomplete = autocomplete = O_O.plugin.autocomplete(function(e)
-	{
+	self.autocomplete = autocomplete = O_O.plugin.autocomplete(function(e) {
+	
 		if(e.keyCode == 13)
 			alert(autocomplete.$.val());
 	});
 	
 	self.possibleValues = {}
 	
-	self.live = O_O.plugin.autocomplete(function(e)
-	{
+	self.live = O_O.plugin.autocomplete(function(e) {
+	
 		if(e.keyCode == 13)
 			alert(App.live.$.val());
 			
@@ -29,16 +29,16 @@ App = O_O.box(new function()
 	
 });
 
-O_O.ready(function()
-{
+O_O.ready(function() {
+
 	App.$.at('App');
 	
 	Server.request({
 
 		url: 'all',
 		
-		success: function(response)
-		{
+		success: function(response) {
+		
 			values = JSON.parse(response);
 			
 			autocomplete.values(values);
@@ -47,16 +47,16 @@ O_O.ready(function()
 	});
 });
 
-function requestFunction(str, callback)
-{
+function requestFunction(str, callback) {
+
 	Server.request({
 
 		url: 'filter',
 		
 		data: str,
 		
-		success: function(response)
-		{
+		success: function(response) {
+		
 			values = JSON.parse(response);
 			
 			callback(values);

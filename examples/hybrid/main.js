@@ -4,23 +4,23 @@ var modules = [{//the root module
 
 	commands: {
 
-		clear: function()
-		{
+		clear: function() {
+		
 			UI.clear();		
 		},
 		
-		load: function(moduleName)
-		{
-			require([['modules/', moduleName, '/', moduleName].join('')], function(module)
-			{
+		load: function(moduleName) {
+		
+			require([['modules/', moduleName, '/', moduleName].join('')], function(module) {
+			
 				modules.push(currentModule); //pushes the module into the queue
 				
 				UI.notifyUser(['module \'', moduleName, '\' loaded.'].join(''));
 			});
 		},
 		
-		unload: function()
-		{
+		unload: function() {
+		
 			if(modules.length > 1) //do not unload the root module
 				UI.notifyUser([
 					'module \'',
@@ -35,8 +35,8 @@ var modules = [{//the root module
 //exposed
 var Client = {
 
-	processInput: function(input)
-	{
+	processInput: function(input) {
+	
 		var params = input.match(/"(?:\\"|[^"])*?"|[^\s]+/g);
 
 		for(var i in params)
@@ -47,18 +47,18 @@ var Client = {
 		var ret;		
 		var processed;
 		
-		for(var i = 0, l = modules.length; i < l; ++i) //check the module queue for the specified action
-		{
-			if(modules[i].commands[command])
-			{
+		for(var i = 0, l = modules.length; i < l; ++i) { //check the module queue for the specified action
+		
+			if(modules[i].commands[command]) {
+			
 				ret = modules[i].commands[command].apply(null, [params, command]);
 				processed = true;
 				break;
 			}
 		}
 		
-		if(!processed) //the command is not available in the module queue
-		{
+		if(!processed) { //the command is not available in the module queue
+		
 			var defaultAction = modules[modules.length - 1].defaultAction;
 			
 			if(defaultAction) //check the end of the module queue for a 'defaultAction'
@@ -71,10 +71,10 @@ var Client = {
 			UI.notifyUser(ret); //?here requirejs circular dependencies
 	},
 	
-	processResponse: function(response)
-	{
-		switch(response.type)
-		{
+	processResponse: function(response) {
+	
+		switch(response.type) {
+		
 			case 'error':
 				UI.notifyUser(response.data, 'error');
 			break;
@@ -93,13 +93,13 @@ var Client = {
 	}
 }
 
-var Connection = new function()
-{
-	this.request = function(requestParams)
-	{
+var Connection = new function() {
+
+	this.request = function(requestParams) {
+	
 		$.ajax($.extend(requestParams, {//load the requestParams with the defaults and make an ajax request
 		
-			success: function(response){Client.processResponse(response)},
+			success: function(response) {Client.processResponse(response)},
 			dataType: 'json'
 		}));
 	}
@@ -107,8 +107,8 @@ var Connection = new function()
 
 var UI = new function()
 {
-	var appendToOutput = function($frag)
-	{
+	var appendToOutput = function($frag) {
+	
 		outputNode.append($frag);
 		
 		outputNode.scrollTop(outputNode[0].scrollHeight); //scroll to the bottom after new content is added
@@ -116,15 +116,15 @@ var UI = new function()
 	
 	var self = this;
 	
-	self.clear = function()
-	{
+	self.clear = function() {
+	
 		outputNode.html('');			
 	}	
 
-	self.notifyUser = function(data, type)
-	{
-		switch(type)
-		{
+	self.notifyUser = function(data, type) {
+	
+		switch(type) {
+		
 			case 'error':
 				appendToOutput($('<div class="result error"></div>').html(data));
 			break;
@@ -138,30 +138,30 @@ var UI = new function()
 		}			
 	}
 	
-	self.createTable = function(table)
-	{
+	self.createTable = function(table) {
+	
 		if(!table.rows.length)
 			UI.notifyUser('No results!', 'warning');
 			
-		else
-		{
+		else {
+		
 			var $frag = $('<div class="result"><table><thead></thead><tbody></tbody></table></div>');
 			
 			var $thead = $frag.find('thead');
 			
-			$.each(table.fields, function(index, name)
-			{
+			$.each(table.fields, function(index, name) {
+			
 				$thead.append($('<td>').html(/[^.]+$/.exec(name)));
 			});
 			
 			var $tbody = $frag.find('tbody');
 			
-			$.each(table.rows, function(index, row)
-			{
+			$.each(table.rows, function(index, row) {
+			
 				var $tr = $('<tr>');
 				
-				$.each(row, function(index, data)
-				{
+				$.each(row, function(index, data) {
+				
 					$tr.append($('<td>').html(data));
 				});
 				
@@ -173,33 +173,33 @@ var UI = new function()
 	}
 }
 
-var App = new O_O.element(new function()
-	{
-		this.name = 'App';
+var App = new O_O.element(new function() {
+
+	this.name = 'App';
+	
+	this.output = {};
+	
+	this.input = {
+	
+		inputText: {
 		
-		this.output = {};
-		
-		this.input = {
-		
-			inputText: {
-			
-				$: {
-					event: {
+			$: {
+				event: {
+				
+					keydown: function(e) {
 					
-						keydown: function(e){
+						if(e.keyCode == 13) {
 						
-							if(e.keyCode == 13)
-							{
-								Client.processInput(e.currentTarget.value);
-								e.currentTarget.value = '';
-							}
-							
+							Client.processInput(e.currentTarget.value);
+							e.currentTarget.value = '';
 						}
+						
 					}
 				}
 			}
-		}		
-	});
+		}
+	}		
+});
 	
 O_O.ready(function()
 {

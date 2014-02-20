@@ -1,13 +1,13 @@
-window.currentModule = (function()
-{
+window.currentModule = (function() {
+
 	return {
 	
 		name: 'litmus',
 		
 		commands: {
 	
-			login: function(params)
-			{
+			login: function(params) {
+			
 				if(!params.length)
 					return {type: 'error', data: 'We need the connection parameters'};
 				
@@ -18,8 +18,8 @@ window.currentModule = (function()
 				});
 			},
 			
-			logout: function()
-			{
+			logout: function() {
+			
 				Connection.request({
 			
 					url: 'modules/litmus/connect.php'
@@ -27,8 +27,8 @@ window.currentModule = (function()
 			}
 		},
 		
-		defaultAction: function(params, command)
-		{
+		defaultAction: function(params, command) {
+		
 			Connection.request({
 			
 				url: 'modules/litmus/exec.php',

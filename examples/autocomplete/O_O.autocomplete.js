@@ -1,15 +1,15 @@
 /**
 	The plugin could be written more efficiently
-	but is written, so to be used as an example.	
+	but is written, so to be used as an example.
 */
-(function()
-{
+(function() {
+
 	"use strict";
 
 	//a O_O plugin for autocomplete
 
-	O_O.plugin('autocomplete', function autocomplete(callback /*to be executed on every keyup event*/, reqFunc /*to request data*/)
-	{
+	O_O.plugin('autocomplete', function autocomplete(callback /*to be executed on every keyup event*/, reqFunc /*to request data*/) {
+	
 		var prev, selection,
 			matches = [],
 			values = [],
@@ -26,8 +26,8 @@
 
 				event: {
 
-					keyup: function(e)
-					{
+					keyup: function(e) {
+					
 						var code = e.keyCode;
 
 						if(code == 38) //up arrow
@@ -36,13 +36,12 @@
 						else if(code == 40) //down arrow
 							select(1);
 
-						else if(code == 27) //esc
-						{
+						else if(code == 27) { //esc
 							setValue('');
 							clear();
 						}
-						else if(code == 13) //enter
-						{
+						else if(code == 13) { //enter
+						
 							clear();
 							input.$.prop('selectionStart', input.$.val().length)
 						}
@@ -53,8 +52,8 @@
 				},
 				
 				/** init functions execute after all the $ props have been loaded an before the children are loaded*/
-				init: function(autocomplete)
-				{
+				init: function(autocomplete) {
+				
 					inputEl = autocomplete.$.$el.$('input').el;
 				}
 			},
@@ -65,24 +64,24 @@
 
 					event: {
 
-						keyup: function(e)
-						{
+						keyup: function(e) {
+						
 							var str = e.target.value.toLowerCase();
 
-							if(str !== prev)
-							{
+							if(str !== prev) {
+							
 								prev = str;
 
-								if(reqFunc) //request for data
-								{
-									if(str === '') //to avoid un-necessary requests
-									{
+								if(reqFunc) { //request for data
+								
+									if(str === '') { //to avoid un-necessary requests
+									
 										clear();
 										return;
 									}
 									
-									reqFunc(str, function(vals)
-									{
+									reqFunc(str, function(vals) {
+									
 										values = vals;
 										populate(str);
 									});
@@ -92,8 +91,8 @@
 							}
 						},
 						
-						blur: function()
-						{
+						blur: function() {
+						
 							clear();
 						}
 					}
@@ -102,8 +101,8 @@
 
 			suggestions: O_O.pod({
 
-				item: function(data)
-				{
+				item: function(data) {
+				
 					this.$ = {
 
 						text: data.text
@@ -112,8 +111,8 @@
 
 			}),
 
-			values: function(vals)
-			{
+			values: function(vals) {
+			
 				values = vals;
 			},
 			
@@ -126,15 +125,15 @@
 			inputEl,
 			suggestions = autocomplete.suggestions;
 
-		function populate(str)
-		{
+		function populate(str) {
+		
 			var value;
 			
 			matches = [];
 
 			if(str)
-				for(var i = 0; i < values.length; ++i)
-				{
+				for(var i = 0; i < values.length; ++i) {
+				
 					value = values[i];
 
 					if(value.indexOf(str) == 0)
@@ -148,16 +147,16 @@
 			suggestions.reset(matches);
 		}
 		
-		function select(dir)
-		{
+		function select(dir) {
+		
 			var count = matches.length,
 				prevSel, items = suggestions.items;
 
 			if(selection === undefined)
 				selection = dir == 1 ? 0 : count - 1;
 
-			else
-			{
+			else {
+			
 				prevSel = selection;
 				selection = (selection + dir + count) % count;
 				items[prevSel].$.class('selected', 0);
@@ -168,20 +167,20 @@
 			setValue(matches[selection].text);
 		}
 
-		function clear()
-		{
+		function clear() {
+		
 			suggestions.reset();
 			selection = undefined;
 		}
 
-		function setValue(val)
-		{
+		function setValue(val) {
+		
 			input.$.val(prev = val).el.select();
 		}
 		
 		/** a custom override on the .box.$.val method*/
-		autocomplete.$.val = function(val)
-		{
+		autocomplete.$.val = function(val) {
+		
 			if(!val)
 				return inputEl.value;
 				

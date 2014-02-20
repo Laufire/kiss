@@ -213,3 +213,12 @@
 
 140219_1920	Performance improvement: O_O.pod's listen on 'change' event, now applies only the changes to the item instead of all the data. This avoids re-setting unchanged properties.
 140219_2000	Re-indented the code.
+140219_2115	Bug fixed. In O_O.pod.add; adding an item without an _id caused troubles.
+
+140220_2315	Added credits.
+
+140221_0125	Removing an array of items using O_O.list.remove dropped (in order to keep the API's lower level)
+140221_0200	Annotated the source.
+140221_0340	Reindented and cleaned up the examples.
+140221_0340	Redine the stale example 'State'.
+

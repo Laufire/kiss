@@ -1,25 +1,25 @@
-div
-{
+div {
+
 	padding: 1em;
 	background: white;
 	border: 1px solid #eee;
 }
 
-#loginForm
-{
+#loginForm {
+
 	width: 300px;
 	background: #eee;
 	margin: 3em auto;
 }
 
-#loginForm input, #loginForm button
-{
+#loginForm input, #loginForm button {
+
 	display: block;
 	margin: 1em auto;
 	padding: 0.25em;
 }
 
-.hidden
-{
+.hidden {
+
 	display: none;
 }

@@ -8,12 +8,12 @@ var usernameListener, textWatch,
 
 falsy = O_O.plugin.trans.falsy,
 
-passwordStrength = O_O.trans(function(val)
-{
+passwordStrength = O_O.trans(function(val) {
+
 	var strength = 0;
 	
 	val.length > 3 && strength++;
-		
+	
 	val.length > 7 && strength++;
 	
 	/[a-z]/.test(val) && strength++;
@@ -24,8 +24,8 @@ passwordStrength = O_O.trans(function(val)
 	return strength;
 }),
 
-App = O_O.box(new function()
-{
+App = O_O.box(new function() {
+
 	var self = this;
 
 	self.data = O_O.object({
@@ -53,15 +53,18 @@ App = O_O.box(new function()
 
 		password: O_O.plugin.keyUpText(self.data.password),
 
-		login: function(e)
-		{
+		login: function(e) {
+		
 			console.log(App.data());
+			
 			Server.request({
 
 				url: 'login',
+				
 				data: App.loginForm.$.val(),
-				success: function(response)
-				{
+				
+				success: function(response) {
+				
 					usernameListener.stop();
 
 					if(response)
@@ -87,20 +90,20 @@ App = O_O.box(new function()
 	}
 });
 
-O_O.ready(function()
-{
-	App.$.at('App');	
+O_O.ready(function() {
+
+	App.$.at('App');
 
 	App.data.username(localStorage.user || 'user');
 
-	usernameListener = O_O.listen(App.data.username, function(val)
-	{
+	usernameListener = O_O.listen(App.data.username, function(val) {
+	
 		console.log(val);
 	});
 
 	textWatch = O_O.watch(App.data.username, App.data.password)
-		.action(function(val, source)
-		{
+		.action(function(val, source) {
+		
 			if(source == App.data.username)
 				localStorage.user = val;
 			else

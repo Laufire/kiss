@@ -1,6 +1,4 @@
-﻿(function() {
-
-"use strict";
+﻿"use strict";
 
 /*Define the variables
 ---------------------*/
@@ -23,10 +21,10 @@ todoApp = O_O.box(new function() {
 
 	this.newTodo = {$: { event: {
 
-		keyup: function(e)
-		{
-			if(e.keyCode == 13)
-			{
+		keyup: function(e) {
+		
+			if(e.keyCode == 13) {
+			
 				todoList.add({
 					
 					isDone: false,
@@ -44,8 +42,8 @@ todoApp = O_O.box(new function() {
 
 			event: {
 
-				change: function(e)
-				{
+				change: function(e) {
+				
 					//var start = Date.now();
 					var i, checked = e.target.checked,
 						items = todoPod.items,
@@ -74,8 +72,8 @@ todoApp = O_O.box(new function() {
 
 		source:  todoList,
 		
-		item: function(data)
-		{
+		item: function(data) {
+		
 			var self = this;
 			
 			this.isHidden = O_O.value(filterState == 2 ? false : Boolean(filterState) == data.isDone);
@@ -86,12 +84,12 @@ todoApp = O_O.box(new function() {
 
 				event: {
 
-					'click .destroy': function(e, item)
-					{
+					'click .destroy': function(e, item) {
+					
 						item.$.class('fadeOutUp', 1);
 						
-						setTimeout(function()
-						{
+						setTimeout(function() {
+						
 							todoList.remove(item.$.id);
 							
 						}, 400);
@@ -108,10 +106,10 @@ todoApp = O_O.box(new function() {
 			
 			this.title = {$: {event: {
 
-				dblclick: function(e, box)
-				{
+				dblclick: function(e, box) {
+				
 					var item =  box.$.parent,
-						item$ = item.$;						
+						item$ = item.$;
 					
 					item$.class('editing', 1);
 					item.edit.$.val(todoList.items[item$.id].data.title).el.select();
@@ -120,8 +118,8 @@ todoApp = O_O.box(new function() {
 			
 			this.edit = {$: {event: {
 			
-				keyup: function(e, box)
-				{
+				keyup: function(e, box) {
+				
 					if(e.keyCode == 13)
 						changeTitle(e, box);
 				},
@@ -131,8 +129,8 @@ todoApp = O_O.box(new function() {
 			
 			this.completed = this.isDone;
 			
-			O_O.listen(this.isDone, function(val, source)
-			{
+			O_O.listen(this.isDone, function(val, source) {
+			
 				self.isHidden(filterState == 2 ? false : filterState == val);
 				
 				self.$.data({
@@ -141,13 +139,13 @@ todoApp = O_O.box(new function() {
 				});
 			});
 			
-			function changeTitle(e, box)
-			{
+			function changeTitle(e, box) {
+			
 				var $ = box.$.parent.$,
 					value = e.target.value;
 				
-				if(value)
-				{
+				if(value) {
+				
 					$.data({
 					
 						title: value
@@ -187,7 +185,7 @@ todoApp = O_O.box(new function() {
 			
 				class: {
 				
-					hidden: O_O.trans(function(val){
+					hidden: O_O.trans(function(val) {
 					
 						return val == 0;
 						
@@ -225,7 +223,7 @@ O_O.state.routes = {
 	'active': function() {
 	
 		filterState = 1;
-	},	
+	},
 	
 	'completed': function() {
 	
@@ -323,4 +321,3 @@ O_O.ready(function() {
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);
 });
-})();

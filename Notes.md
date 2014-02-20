@@ -77,6 +77,8 @@
 
 * To build a simple and powerful front-end-framework that enables "truly" rapid development.
 
+* To achieve scalability, performance and flibility through the simplicty of design
+
 * It should work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).
 
 * The learning curve should be very small; as unwanted complexity might hurt agility.
@@ -95,12 +97,13 @@
 
 	* As a platform that load various apps on to a single page.
 	
+	* As a low-level library that could serve as the base for other libraries.
+	
 	* Should incorporate emerging technologies as soon as they are standardized. As the goal is agile development.
 	
 	* As a library that acts as the base to handle modules. I.e. if bootstrap has to be used, jQuery and Bootstrap will be loaded after KISS.
 	
 	* The code for the App should be brief.
-
 
 	### Measures
 
@@ -234,6 +237,8 @@
 
 * Chrome was a lot faster than firefox.
 
+* As of 140221, O_O.object and O_O.watch weren't used, even once.
+
 
 ## Decisions
 
@@ -315,7 +320,9 @@
 
 * A plugin for undoable values.
 
-* IE11 supports getters and setters; a rewrite might be needed to utilize it.
+* When IE11 supports getters and setters; a rewrite could be done to utilize it.
+
+* The code could be low-leveled for performance (ie: removing the higher level abstrations like enumerate).
 
 * A module + plugin manager (with bundling etc).
 
