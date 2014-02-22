@@ -24,7 +24,7 @@
 
 131204_2000	Added 'Intro' page, in order to serve both as a 'intro' and a 'demo'.
 
-131209_0000	Hiding the page before rendering achieved.
+131209_0000	Hiding the page before rendering, achieved.
 
 131211_0000	RequireJs wrapper discarded (moved for a more common global variable approach).
 131211_0000	KISS now exports a global O_O.
@@ -92,7 +92,7 @@
 131225_1100	data-binding within pod items achieved.
 131225_1100	typos in Change_log.txt corrected.
 131225_1430	.box.val modified to handle 'select' elements.
-131225_1715	.trans now supports passing a third paramater to the trans function along with the val and the host.
+131225_1715	.trans now supports passing a third parameter to the trans function along with the val and the host.
 131225_1725	.val now exposes a .prev property to get the previous value.
 131225_2225	.list.count added.
 
@@ -101,7 +101,7 @@
 131226_0530	.list.wrap removed; .list.data added; .list.count renamed to .list.length.
 131226_0530	box.digest got split into box.$ and box.$.set.
 131226_0530	pod.digest renamed into pod.set.
-131226_0850	the var 'self' refering to O_O got renamed to 'O_O' to enable the using of O_O within O_O.
+131226_0850	the var 'self' referring to O_O got renamed to 'O_O' to enable the using of O_O within O_O.
 131226_0915	basic state handling added through O_O.state.
 131226_2250	.list.data can now handle both arrays and non arrays.
 
@@ -119,15 +119,15 @@
 
 131229_0550 .box.$.default introduced as a bug fix.
 131229_1200 .box'es internals tuned.
-131229_1400 pluggables assigned to .box'es defaults now fire the respective events, when they are changed. This allows the manipulation of .box-es through .value-s. This also enable better co-ordination with server data (the element id could care about the css, where as the values name could correspond to the server data).
+131229_1400 pluggables assigned to .box'es defaults now fire the respective events, when they are changed. This allows the manipulation of .box-es through .value-s. This also enables better co-ordination with server data (the element id could care about the CSS, where as the values name could correspond to the server data).
 131229_1600 .list.reset introduced.
 
 131230_0000 constructors are allowed to consume the passed objects.
-131230_0000 .pod.item shold be a constructor function; simple objects are droped in favor of simplicity and performance.
+131230_0000 .pod.item shold be a constructor function; simple objects are dropped in favor of simplicity and performance.
 131230_0600 .box.$.default could have a default event.
 131230_1200 lists don't support setting initial data through the constructor anymore.
 131230_1400 tested the performance against that of angular, knockout and backbone.
-131230_1500 autofocus bug fixed (hiding the elements causes them to loose focus, so the focus has to be set again)
+131230_1500 autofocus bug fixed (hiding the elements causes them to lose focus, so the focus has to be set again)
 
 131231_0000 tested various DOM tuning methods (node removal, fragments, HTML replacement etc), only to tune the existing methods.
 131231_0905 hiding elements discarded (in favor of not-intruding into the UI flow, it has to be done at the UI layer).
@@ -135,7 +135,7 @@
 131231_1010 .pod too has an init now.
 131231_1245 v0.0.6 released.
 
-140101_0240 O_O.state changed, to support nested routes with functions and params. .state shed .add, .remove and .list; infavor of a private 'resolve' function.
+140101_0240 O_O.state changed, to support nested routes with functions and params. .state shed .add, .remove and .list; in favor of a private 'resolve' function.
 140101_0810 O_O.state improved, by adding .change and .set.
 140101_1815 .box.text introduced (it allows safer content injection by preventing HTML injections).
 140101_1815 .box.val sets the $.text instead of $.html.
@@ -147,7 +147,7 @@
 
 140103_0750 automatic sort discarded, in favor of .list.order (the added order of items). As sorting items on the DOM level, is to be delegated to a 'sorter' plugin.
 140103_0815 .list.length is a O_O.value now.
-140103_1010 Bug fixed. Caused by calling .list.remove on non exisiting items.
+140103_1010 Bug fixed. Caused by calling .list.remove on non-existing items.
 140103_1025 .list.data removed.
 140103_1530 Performance improvement discovered. .pod.add was passing the item's id for creating a .box; now it passes the element instead, this cuts the time for searching for the node. This improves the performance by 12% (on 1000 todos).
 
@@ -160,15 +160,15 @@
 140105_1330 .pod.event removed (a list has to be used if the events have to be watched for).
 140105_1700 Bugs caused by detaching .list from .pod fixed.
 140105_1755 .pod.order added.
-140105_1800 .pod.event reintroduced with 'add' and 'remove' events (considering to ease UI development)
+140105_1800 .pod.event reintroduced with 'add' and 'remove' events (considered as it'll ease UI development)
 140105_1910 .pod.refresh added (used tp refresh the data from the 'source list' after its order has been sorted (by a third part lib).
-140105_1930 Bug fixed. .order of .list and .pod had type conversion errors (string <-> int); for type safety the have to be strings.
+140105_1930 Bug fixed. .order of .list and .pod had type conversion errors (string <-> int); for type safety they have to be strings.
 140105_2045 event dispatching in .box.default tweaked.
-140105_2140 Bug fixed. .list's model.id-s weren't type safed.
-140105_2255 .list.add needs a model as it's paramter; it could assign an id to the model if an id isn't present in the paramater.
+140105_2140 Bug fixed. .list's model.id-s weren't type-safe.
+140105_2255 .list.add needs a model as it's parameter; it could assign an id to the model if an id isn't present in the parameter.
 
-140106_1400 Started writting an auto-complete plugin.
-140106_1600 Bug fixed. Loaading the children after setting .box.html caused some errors; and so was removed.
+140106_1400 Started writing an auto-complete plugin.
+140106_1600 Bug fixed. Loading the children after setting .box.html caused some errors; and so was removed.
 140106_1915 .box.init is to be executed after applying $ properties.
 140106_2010 Example plugin - AutoComplete done.
 140106_2020 convention to add .BASE to the plugins introduced. It denotes the version of kiss the plug-in is based on.
@@ -176,24 +176,24 @@
 
 140107_1600 Bug fixed. .box.$.val on elType '0' had undefined values for buttons.
 140107_1830 Bug fixed. Error while setting strings as the defaults for .box-es.
-140107_2120 Bug fixed. helper method extend had some issues with looping.
+140107_2120 Bug fixed. helper method 'extend' had some issues with looping.
 
 140110_1220 Double quotes removed form get$el's selector string.
-140110_1420 Bug fixed. State was set after the 'ready' function is fired, this caused some complexities. It's neen moved before executiong the ready function.
+140110_1420 Bug fixed: State was set after the 'ready' function is fired, this caused some complexities. It's now moved before executing the ready function.
 140110_1455 Bug fix revoked. Bug fix 0n 140110_1420 revoked.
 
 140117_1945	Bug fixed. The listener syncing window.popstate with O_O.state is made to be set after O_O.ready, as the previous approach caused the state to change before O_O is 'ready'.
 
-140119_0240	Bug fixed. At .list.addItem the node has to be deep cloned.
+140119_0240	Bug fixed. At .list.addItem, the node has to be deep cloned.
 140119_0320	Plugin O_O.texter added.
 
 140127_0240	O_O.box.append added.
 140127_0240	O_O.box.remove renamed to 'clear', O_O.box'es param $.clean renamed to $.clear.
 140127_0245	O_O.box.remove now removes the specified child of the box.
 140127_0430	O_O.pod.item added (to change the item-constructor).
-140127_0430	Example - Collection rewritten (to check the changes to O_O.pod).
-140127_0455	Example - todoMVC(alt) fixed (to check the agility of kiss - it took around 5 mins).
-140127_2005	pod.item.$.modelId removed. items now have the id of their models as their own id. And they change along with the changes to the model. This was done in order to simplify the process.
+140127_0430	Example - Collection, rewritten (to check the changes to O_O.pod).
+140127_0455	Example - todoMVC(alt), fixed (to check the 'maintainability' of kiss - it took around 5 mins).
+140127_2005	pod.item.$.modelId removed; items now have the id of their models as their own id. And they change along with the changes to the model. This was done in order to simplify the process.
 
 140128_2140	O_O.list supports loading data while being constructed through options.data.
 
@@ -209,7 +209,7 @@
 
 140214_0000	O_O.plugin.podSelect added.
 
-140218_1140	Bug fixed. The item O_O.pod was being inserted to the DOM before the data is applied. Fixed it by changing the sequence in O_O.pod.add.
+140218_1140	Bug fixed. The items of O_O.pod were inserted to the DOM before the data is applied. Fixed it, by changing the sequence in O_O.pod.add.
 
 140219_1920	Performance improvement: O_O.pod's listen on 'change' event, now applies only the changes to the item instead of all the data. This avoids re-setting unchanged properties.
 140219_2000	Re-indented the code.
@@ -219,6 +219,14 @@
 
 140221_0125	Removing an array of items using O_O.list.remove dropped (in order to keep the API's lower level)
 140221_0200	Annotated the source.
-140221_0340	Reindented and cleaned up the examples.
-140221_0340	Redine the stale example 'State'.
+140221_0340	Re-indented and cleaned up the examples.
+140221_0340	Re-done the stale example 'State'.
+140221_1530	Performance tweaks.
+140221_1540	Bug fixed: .reset of O_O.pod and O_O.list had some issues with looping.
+140221_1615	O_O.pod.options could now have a 'data' attribute to hold initial data.
+140221_1855	O_O.pod.item rewritten. It doesn't reset the pod, but applies the changes quietly (doesn't raise add / remove events).
+140221_1940	helper function O_O.pod.addExisting has been merged into O_O.source.
+140221_2140	Bug fixed: In helper method O_O.pod.addItem, $.data was not defined when calling $.set.
 
+140222_1710	Corrected typos on Change_Log.txt and Notes.md.
+140222_1725	v0.0.8 released (on bug-fixes, performance tuning and new features).

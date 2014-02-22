@@ -14,16 +14,16 @@
 	
 		<h1>todos</h1>
 		<section id="todoApp" class="hidden fadeIn">
-			<header id="header">				
+			<header id="header">
 				<input id="newTodo" placeholder="What needs to be done?" autofocus>
 			</header>
 			<section id="main">
 				<input id="toggleAll" type="checkbox">
 				<label for="toggleAll">Mark all as complete</label>
-				<ul id="todoPod">				
+				<ul id="todoPod">
 					<li class="fadeIn">
 						<div class="view">
-							<input id="completed" class="toggle" type="checkbox"/>
+							<input id="isComplete" class="toggle" type="checkbox"/>
 							<label id="title"></label>
 							<button class="destroy"></button>
 						</div>
@@ -35,7 +35,7 @@
 				
 				<span id="todoCount"></span>
 				
-				<ul id="filters">				
+				<ul id="filters">
 					<li><a class="selected" href="#">All</a></li>
 					<li><a href="#active">Active</a></li>
 					<li><a href="#completed">Completed</a></li>

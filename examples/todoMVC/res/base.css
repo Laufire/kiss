@@ -262,7 +262,7 @@ label[for='toggleAll'] {
 	transition: color 0.4s;
 }
 
-#todoPod li.completed label {
+#todoPod li.isComplete label {
 	color: #a9a9a9;
 	text-decoration: line-through;
 }

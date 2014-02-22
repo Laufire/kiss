@@ -4,7 +4,7 @@
 
 /*!
 	KISS		-	a stupid js lib, that enables the easy development of structured and data driven Applications.
-	Version		-	0.0.7
+	Version		-	0.0.8
 	Liscence	-	NO2 Liscence
 	Dependencies	-	microDOM-v0.0.5
 	
@@ -33,7 +33,6 @@
 			keyAttr = 'id', //the keyAttr that marks the element to be KISSed (the default is 'id')
 
 			//helpers functions
-			isArray = Array.isArray,
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
 
@@ -65,27 +64,30 @@
 
 		function enumerate(obj, func) {
 		
-			var key, i = 0,
-				keys = getKeys(obj);
+			var key,
+				keys = getKeys(obj),
+				i = 0, l = keys.length;
 
-			for(; i < keys.length;)
+			for(; i < l;)
 				func(key = keys[i++], obj[key]);
 		}
 
 		function extend(target) {
 
-			var i = 1, source, keys;
+			var source, keys,
+				i = 1, l = arguments.length;
 
-			for(; i < arguments.length;) {
+			for(; i < l;) {
 			
 				source = arguments[i++];
 				keys = getKeys(source);
 
-				var j = 0, key, prop;
+				var key, prop,
+					i1 = 0, l1 = keys.length;
 
-				for(; j < keys.length;) {
+				for(; i1 < l1;) {
 				
-					key = keys[j++], prop = source[key];
+					key = keys[i1++], prop = source[key];
 
 					if(prop !== undefined)
 						target[key] = prop;
@@ -97,16 +99,16 @@
 		
 		function clone(source, depth) {
 
-			var i = 0,
-				target = {},
+			var target = {},
 				source,
 				key, prop,
-				keys = getKeys(source);
+				keys = getKeys(source),
+				i = 0, l = keys.length;
 			
 			if(!depth)
 				depth = 1;
 			
-			for(; i < keys.length;) {
+			for(; i < l;) {
 			
 				key = keys[i++], prop = source[key];
 
@@ -162,9 +164,10 @@
 
 		function load(target, source, props) {
 
-			var i = 0, prop;
+			var prop,
+				i = 0, l = props.length;
 
-			for(; i < props.length;)
+			for(; i < l;)
 				prop = props[i++], target[prop] = source[prop];
 
 			return target;
@@ -204,7 +207,7 @@
 
 				wrap = this.wrap = function(val, source) { //set the value and fire the event
 					
-					for(var i = 0; i < plugs.length;)
+					for(var i = 0, l = plugs.length; i < l;)
 						plugs[i++](val, source);
 				};
 
@@ -226,7 +229,7 @@
 
 			//UI classes
 			
-			,box: function box(data/*consists of $data and child element data. the spplied object is modified*/) {
+			, box: function box(elm/*consists of $data and child element data. the spplied object is modified*/) {
 				
 				// helps handling trees
 				
@@ -236,14 +239,16 @@
 					events = {},
 					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
 
-					$data = data.$,
+					$data = elm.$,
 
-					children = getKeys(extend(self, data));
+					children = getKeys(elm);
 
 				remove(children, '$'); //remove the $ from the children
+				
+				extend(self, elm); //load the properties from elm
 
-				/* overload the provided data.$, to enable 'self' reference inside the object's constructor*/
-				data.$ = _$ = self.$ = function(data) {
+				/* overload the provided elm.$, to enable 'self' reference inside the object's constructor*/
+				elm.$ = _$ = self.$ = function(data) {
 				
 					// helps to get and set values and events; and to plug observables
 
@@ -267,9 +272,10 @@
 
 					// sets the data of the children
 					
-					var i = 0, keys = getKeys(data);
+					var keys = getKeys(data),
+						i = 0, l = keys.length;
 
-					for(; i < keys.length;) {
+					for(; i < l;) {
 
 						var key = keys[i++],
 							val = data[key],
@@ -278,7 +284,7 @@
 						if(child) {
 						
 							if(child.$)
-								child.$.val(val); //the child is ui element
+								child.$.val(val); //the child is a kiss element
 
 							else if(typeof child != 'function') //the child is a unlinked property
 								child = val;
@@ -316,14 +322,11 @@
 					return _$;
 				}
 				
-				_$.clear = function(name, tagName, boxProps) {
+				_$.clear = function() {
 				
 					//destructor, that clears all the children and unplugs the existing plugs
 
-					var child, childName,
-						i = 0;
-
-					for(; i < children.length;) //remove all children (boxes and pods)
+					for(var i = 0; i < children.length;) //remove all children (boxes and pods)
 						_$.remove(children[i++]);
 
 					enumerate(plugs, function(key, branch) { //clear all plugs
@@ -343,9 +346,10 @@
 				_$.append = function(childName, tagName, boxProps) {
 				
 					//append a child
-
-					var $el = self.$.$el.append(tagName).attr('id', childName),
-						box = self[childName] = O_O.box(boxProps);
+					
+					self.$.$el.append(tagName).attr('id', childName);
+					
+					var box = self[childName] = O_O.box(boxProps);
 					
 					return box.$.at(childName, self);
 				}
@@ -398,9 +402,8 @@
 							if(!length) //the element has no children
 								return _$.text(); //so return its text
 								
-							var i = 0,
-								length = children.length,
-								ret = {};
+							var ret = {},
+								i = 0;
 								
 							for(; i < length;) { // the element has children so get the nested data
 
@@ -630,9 +633,7 @@
 
 				function loadChildren() {
 
-					var child, child$el, i = 0;
-
-					for(; i < children.length;) //load child objects with matching elements
+					for(var i = 0, l = children.length; i < l;) //load child objects with matching elements
 						loadChild(children[i++]);
 				}
 				
@@ -662,21 +663,26 @@
 				}
 			}
 
-			,pod: function pod(options) {
+			, pod: function pod(options) {
 			
 				// helps to manage a collection of identical objects
 
-				var source = options.source,
+				var freeId = 0, itemNode,
+				
+					// options
+					source = options.source,
+					data = options.data,
+					itemConstructor = options.item,
+					box = O_O.box({$: options.$}),
+					mode = options.mode || 'append', //mode: append || prepend
+					
+					//public
 					self = this,
 					items = self.items = {}, //holds all the items
-					order = self.order = [], //holds the list of ids in the order of addition
+					order = self.order = [], //holds the list of ids in the order of addition; use this array to iterate over the items in the pod
 					event = self.event = O_O.host(), // could be listened for changes to the pod
-					item = options.item,
-					mode = options.mode || 'append', //mode: append || prepend
-					freeId = 0,
-					box = O_O.box({$: options.$}),
-					itemNode,
-					options = undefined, //cleaning the var
+					
+					options = undefined, //cleaning the options var
 
 				_$ = self.$ = extend({}, box.$); //add the pre-$.at box.$ properties to self.$
 				
@@ -695,55 +701,58 @@
 						id: box$.id
 					}); //add the remaining box.$ properties to self.$
 					
-					getItemNode();
+					extractItemNode();
 
-					if(source)
+					if(data) {
+						
+						self.reset(data);
+						data = undefined;
+					}
+						
+					else if(source)
 						self.source(source);
 				}
 				
-				self.item = function(_item, html) { //changes the item constructor
-				
-					box.$.html(html);
+				self.item = function(item, html) { //changes the item constructor				
 					
-					if(_item)
-						item = _item;
+					if(item)
+						itemConstructor = item;
 					
-					if(html)
-						getItemNode();
+					if(html) {
+						
+						box.$.html(html);
+						extractItemNode();
+					}
 					
-					if(source)
-						addExisting();
+					if(source) {
+						//apply the new constructor to all the existing items					
+						
+						var _order = order,
+							data = source.items,
+							i = 0, l = order.length;
+						
+						//clean the item cache, it will be repopulated the items are added again
+						order = self.order = [];
+						items = self.items = {};
+						
+						for(; i < l;)
+							addItem(data[_order[i++]]);
+					}
 				}
 				
 				self.add = function(data) {
 				
 					//adds an item
 
-					var _item,
-						node = itemNode.cloneNode(true), //deep clone the node
-						id = data._id;
-
-					id = id !== undefined ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
-					order.push(id);
-					node.setAttribute(keyAttr, id); //set the id as the key attribute.
-					
-					/*/passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group*/
-					_item = items[id] = O_O.box(new item(data)); //make a new box and register it to the items array
-					
-					_item.$
-						.at(node, self)
-						.set(data)
-						.data = setItemData; //set the items el, its data and $.data method
-					
-					box.$.$el[mode](node); //add it to the pod
+					var item = addItem(data);
 					
 					event({
 					
 						type: 'add',
-						item: _item
+						item: item
 					});
 				}
-
+				
 				self.remove = function(id) {
 				
 					//removes an item
@@ -769,30 +778,29 @@
 					
 					self.reset();
 					
-					addExisting();
+					//add the existing items from the source
+					var _order = source.order,
+						sItems = source.items,
+						i = 0, l = _order.length;
 					
-					source.event.plug(listen); // listen to the changes to the source for reflecting them
+					for(; i < l;)
+						self.add(sItems[_order[i++]]);
+					
+					source.event.plug(listen); // listen to the changes to the source, for reflecting them
 				}
 				
-				self.reset = function(items) {
+				self.reset = function(newItems) {
 				
 					// clean the existing and add the new items (if available)
 
-					var i = 0, l = order.length;
-					
-					for(; i < l;) //remove the existing items in the pod
-
-						self.remove(order[i++]);
+					while(order.length) //remove the existing items in the pod
+						self.remove(order[0]);
 					
 					freeId = 0;
 					
-					if(items) { //add the given items
-						
-						i = 0, l = items.length;
-						
-						for(; i < l;)
-							self.add(items[i++]);
-					}
+					if(newItems) //add the given items
+						for(var i = 0, l = newItems.length; i < l;)
+							self.add(newItems[i++]);
 				}
 				
 				self.refresh = function() {
@@ -800,46 +808,61 @@
 					//reflect the order changes in the source
 
 					var data, id, sId, item$,
-						_items = {},
+						itemsBuffer = {},
 						sOrder = source.order,
-						items = source.items,
-						i = 0;
+						sItems = source.items,
+						i = 0, l = sOrder.length;
 				
-					for(; i < sOrder.length; i++) {
+					for(; i < l; i++) {
 
 						sId = sOrder[i];
 						id = order[i];
 						
-						_items[id] = items[sId];
-						data = source.items[sId];
+						itemsBuffer[id] = items[sId];
+						data = sItems[sId];
 						
 						item$ = items[id].$;
 						item$.id = order[i] = data._id;
 						item$.set(data);
 					}
 					
-					self.items = items = _items;
+					self.items = items = itemsBuffer;
 					self.order = order;
 				}
 				
 				//helpers
 				
-				function getItemNode() {
+				function addItem(data) {
+				
+					// used by self.item and self.add to construct and add an item to the pod
+				
+					var item, item$,
+						node = itemNode.cloneNode(true), //deep clone the node
+						id = data._id;
+
+					id = id !== undefined ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
+					order.push(id);
+					node.setAttribute(keyAttr, id); //set the id as the key attribute.
+					
+					/*/passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group*/
+					item = items[id] = O_O.box(new itemConstructor(data)); //make a new box and register it to the items array
+					item$ = item.$;
+					
+					item$
+						.at(node, self)
+						.data = setItemData; //set the items el, its data and $.data method
+						
+					item$.set(data);
+					
+					box.$.$el[mode](node); //add it to the pod
+					
+					return item;
+				}
+				
+				function extractItemNode() {
 
 					itemNode = box.$.prop('firstElementChild'); //use the first child element as the template for items
 					box.$.html(''); //empty the pod's box
-				}
-				
-				function addExisting() { //add the existing items from the source
-
-					var i = 0, item,
-						order = source.order;
-					
-					for(; i < order.length;) {
-
-						item = source.items[order[i++]];
-						self.add(item);
-					}
 				}
 				
 				function listen(event) { //listen to the events from the source and reflect them
@@ -865,7 +888,7 @@
 			}
 
 			//Data Classes
-			,value: function(val) {
+			, value: function(val) {
 			
 				// a host (observable) that stores a simple value
 
@@ -894,7 +917,7 @@
 				self.val.unplug = host.unplug;
 			}
 
-			,object: function(store) {
+			, object: function(store) {
 			
 				//helps with the handling dynamic objects with observable properties; could simplify the process handling comlex data
 
@@ -923,7 +946,7 @@
 				extend(this.wrap, store);
 			}
 
-			,list: function(options) {
+			, list: function(options) {
 			
 				// helps with handling observable lists (often used as the data source for O_O.pods)
 
@@ -997,22 +1020,16 @@
 					return self;
 				}
 
-				self.reset = function(_items) {
+				self.reset = function(newItems) {
+				
+					// clean the existing and add the new items (if available)
 
-					// remove all the items and add the new items (if available)
+					while(order.length) //remove the existing items in the pod
+						self.remove(order[0]);
 					
-					var i = 0, l = order.length;
-					
-					for(; i < l;)
-						self.remove(order[i++]);
-
-					if(_items) {
-					
-						i = 0, l = _items.length;
-						
-						for(; i < l;)
-							self.add(_items[i++]);
-					}
+					if(newItems) //add the given items
+						for(var i = 0, l = newItems.length; i < l;)
+							self.add(newItems[i++]);
 				}
 				
 				if(options.data)
@@ -1022,7 +1039,7 @@
 			}
 			
 			//control classes
-			,watch: function() {
+			, watch: function() {
 			
 				//? here: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
 				// watches multiple observables for changes, the watched could dynamically be added or removed
@@ -1040,9 +1057,10 @@
 
 				self.watch = function() {
 
-					var i = 0, arg;
+					var arg,
+						i = 0, l = arguments.length;
 
-					for(; i < arguments.length;) {
+					for(; i < l;) {
 
 						arg = arguments[i++];
 
@@ -1058,7 +1076,7 @@
 
 				self.unwatch = function() {
 
-					for(var i = 0; i < arguments.length;) {
+					for(var i = 0, l = arguments.length; i < l;) {
 
 						plug = remove(plugs, arguments[i++]);
 
@@ -1071,7 +1089,7 @@
 
 				self.clear = function() {
 
-					for(var i = 0; i < plugs.length;)
+					for(var i = 0, l = plugs.length; i < l;)
 						plugs[i++].unplug(plug);
 
 					plugs = [];
@@ -1133,9 +1151,10 @@
 
 		O_O.watch = function() {
 
-			var i = 0, _watch = new O_O.class.watch;
+			var _watch = new O_O.class.watch,
+				i = 0, l = arguments.length;
 
-			for(; i < arguments.length;)
+			for(; i < l;)
 				_watch.watch(arguments[i++]);
 
 			return _watch;

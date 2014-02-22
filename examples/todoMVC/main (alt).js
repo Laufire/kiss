@@ -1,5 +1,5 @@
-﻿(function()
-{
+﻿(function() {
+
 "use strict";
 
 /*Define the variables
@@ -15,14 +15,14 @@ noTodos = O_O.value(true),
 
 todoPod,
 
-todoApp = O_O.box(new function()
-{
+todoApp = O_O.box(new function() {
+
 	this.newTodo = {$: { event: {
 
-		keyup: function(e)
-		{
-			if(e.keyCode == 13)
-			{
+		keyup: function(e) {
+		
+			if(e.keyCode == 13) {
+			
 				todoList.add({
 				
 					id: Date.now(),
@@ -44,8 +44,8 @@ todoApp = O_O.box(new function()
 
 			event: {
 
-				change: function(e)
-				{
+				change: function(e) {
+				
 					//var start = Date.now();
 					var i, checked = e.target.checked,
 						items = todoPod.items,
@@ -74,8 +74,8 @@ todoApp = O_O.box(new function()
 
 		source:  todoList,
 		
-		item: function(data)
-		{
+		item: function(data) {
+		
 			var self = this;
 			
 			this.isHidden = O_O.value(filterState() == 2 ? false : Boolean(filterState()) == data.isDone);
@@ -86,13 +86,13 @@ todoApp = O_O.box(new function()
 
 				event: {
 
-					'click .destroy': function(e, item)
-					{
+					'click .destroy': function(e, item) {
+					
 						item.$.event('click .destroy'); //remove the event listener so it isn't invoked during the fade out
 						item.$.class('fadeOutUp', 1);
 						
-						setTimeout(function()
-						{
+						setTimeout(function() {
+						
 							todoList.remove(item.$.id);
 						}, 400);
 					}
@@ -102,11 +102,11 @@ todoApp = O_O.box(new function()
 
 					hidden: this.isHidden,
 
-					completed: this.isDone
+					isComplete: this.isDone
 				},
 				
-				clean: function()
-				{
+				clean: function() {
+				
 					alterCounts(self.isDone(), -1);
 					noTodos(todoList.length() == 0);
 				}
@@ -114,11 +114,11 @@ todoApp = O_O.box(new function()
 			
 			this.title = {$: {event: {
 
-				dblclick: function(e, box)
-				{
+				dblclick: function(e, box) {
+				
 					var item =  box.$.parent,
 						item$ = item.$,
-						edit$ = item.edit.$;						
+						edit$ = item.edit.$;
 					
 					item$.class('editing', 1);
 					edit$.val(todoList.items[item$.id].data.title);
@@ -128,8 +128,8 @@ todoApp = O_O.box(new function()
 			
 			this.edit = {$: {event: {
 			
-				keyup: function(e, box)
-				{
+				keyup: function(e, box) {
+				
 					if(e.keyCode == 13)
 						changeTitle(e, box);
 				},
@@ -137,23 +137,23 @@ todoApp = O_O.box(new function()
 				blur: changeTitle
 			}}}
 			
-			this.completed = this.isDone;
+			this.isComplete = this.isDone;
 			
-			O_O.listen(this.isDone, function(val, source)
-			{
+			O_O.listen(this.isDone, function(val, source) {
+			
 				self.$.data({
 				
 					isDone: val
 				});
 			});
 			
-			function changeTitle(e, box)
-			{
+			function changeTitle(e, box) {
+			
 				var $ = box.$.parent.$,
 					value = e.target.value;
 				
-				if(value)
-				{
+				if(value) {
+				
 					$.data({
 					
 						title: value
@@ -171,16 +171,15 @@ todoApp = O_O.box(new function()
 		}
 	});
 	
-	this.footer = new function()
-	{
+	this.footer = new function() {
+	
 		this.$ = { class: {
 		
 			hidden: noTodos
 		
 		}}
 		
-		this.todoCount = O_O.trans(function(val) //!inline-trans
-		{
+		this.todoCount = O_O.trans(function(val) { //!inline-trans
 			if(val > 1)
 				return val + ' items left';
 				
@@ -197,8 +196,8 @@ todoApp = O_O.box(new function()
 			
 				class: {
 				
-					hidden: O_O.trans(function(val)
-					{
+					hidden: O_O.trans(function(val) {
+					
 						return val == 0;
 						
 					})(completedCount)
@@ -206,8 +205,8 @@ todoApp = O_O.box(new function()
 				
 				event: {
 				
-					click: function(e)
-					{
+					click: function(e) {
+					
 						var i, id,
 							items = todoList.items,
 							keys = Object.keys(todoList.items);
@@ -223,8 +222,8 @@ todoApp = O_O.box(new function()
 	}
 });
 
-function alterCounts(isDone, change)
-{
+function alterCounts(isDone, change) {
+
 	if(isDone)
 		completedCount(completedCount() + change);
 	else
@@ -239,15 +238,15 @@ O_O.state.routes = new function(){
 
 	var states = ['active', 'completed']
 	
-	this['*'] = function(hash)
-	{
+	this['*'] = function(hash) {
+	
 		filterState(1 - states.indexOf(hash));
 	}
 }
 
-O_O.listen(O_O.state.change, function()
-{
-	//var start = Date.now();	
+O_O.listen(O_O.state.change, function() {
+
+	//var start = Date.now();
 	var i = 0, item,
 		keys = Object.keys(todoList.items),
 		state = filterState();
@@ -255,8 +254,8 @@ O_O.listen(O_O.state.change, function()
 	DOM.$('#filters a.selected').class('selected', 0);
 	DOM.$('#filters li:nth-of-type(' + (3 - state) + ') a').class('selected', 1);
 	
-	for(; i < keys.length; ++i)
-	{
+	for(; i < keys.length; ++i) {
+	
 		item = todoPod.items[keys[i]];
 		item.isHidden(state == 2 ? false : state == item.isDone());
 	}
@@ -264,10 +263,10 @@ O_O.listen(O_O.state.change, function()
 	//console.log(Date.now() - start);
 });
 
-O_O.listen(todoList.event, function(e, list)
-{
-	if(e.type == 'change')
-	{
+O_O.listen(todoList.event, function(e, list) {
+
+	if(e.type == 'change') {
+	
 		var item = todoPod.items[e.data._id],
 			state = filterState(),
 			completed, change;
@@ -284,8 +283,8 @@ O_O.listen(todoList.event, function(e, list)
 		completedCount(completedCount() + completed);
 		activeCount(activeCount() + completed * -1);
 	}
-	else if(e.type == 'remove')
-	{
+	else if(e.type == 'remove') {
+	
 		if(e.data.isDone)
 			completedCount(completedCount() - 1);
 		else
@@ -295,8 +294,8 @@ O_O.listen(todoList.event, function(e, list)
 
 /*Finally load the todoApp
 ------------------------*/
-O_O.ready(function()
-{
+O_O.ready(function() {
+
 	var start = Date.now();
 	
 	for(var i = 0; i < 10; ++i)

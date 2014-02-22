@@ -8,16 +8,24 @@
 
 ## Idea
 
-* Using the same application stucture with all the frontend technologies (HTML, JS, CSS)
+* Using the same application structure with all the frontend technologies (HTML, JS, CSS)
 
 
 ## ToDos
 
+* O\_O.bind (to bind data to the UI. ? Could O\_O.value be used instead?).
+
+* An exmaple to demonstrate the features; it could serve as a stability tester, during development.
+
+* Redo O\_O.pod.item to resemble box construction, without modifying the object.
+
+* A custom toggle (with data bindings).
+
+* \n instead of \r\n at the next stable release (as git treats all the lines ad modified, diff-ing wouldn't be possible).
+
 * default event for contenteditable tags: blur.
 
-* O_O.kebab
-
-* O_O.podSelect
+* O\_O.kebab
 
 * A cheat sheet.
 
@@ -30,22 +38,20 @@
 
 ## Issues
 
-* Minifying breaks the code.
+* Compressing breaks the code; where as mangling works fine.
 
 
 ## Plugins
 
-* O_O.filter.
+* O\_O.filter.
 
-* O_O.masterList: to handle complex data interactions like undoing etc. This is achieved by passing models between multiple (child-)lists.
+* O\_O.masterList: to handle complex data interactions like undoing etc. This is achieved by passing models between multiple (child-)lists.
 
 * Limited pod (a pod with a limited number of items, to enable pagination, infinite scrolling etc), in which removed nodes are cached for reuse.
 
 * Labeled checkbox.
 
 * To communicate with the server.
-
-* Texter: a simple i18n plugin for kiss that sets the textContet of the boxes.
 
 * Iterator: a plugin to linearly move through a collection (like a slide show).
 
@@ -77,7 +83,7 @@
 
 * To build a simple and powerful front-end-framework that enables "truly" rapid development.
 
-* To achieve scalability, performance and flibility through the simplicty of design
+* To achieve scalability, performance and flexibility through the simplicity of design.
 
 * It should work well with other libraries; as the goal is to design a host for plugins (mainly UI controls).
 
@@ -89,7 +95,7 @@
 
 * The focus is on the developers ease, in creating and maintaining projects.
 
-* The code should make sense on the first glance. So no gimmicks nor circuses.
+* The code should make sense on the first glance. So no gimmicks, nor circuses.
 
 * Should easily communicate with the Server (so to reduce the burdens of the front end developer).
 
@@ -160,9 +166,11 @@
 
 			
 	### O\_O.pod
-	* Item should be a constructor function.
+	* options.item should be a constructor function.
 	
 	* Item's children should be inside the item element.
+	
+	* Use *options.data* for **static lists**, where as *options.source* for **dynamic lists**.
 	
 	* Passing 'undefined' values to the item constructors will cause the properties to be missed pass '{}' instead.
 	
@@ -209,7 +217,7 @@
 
 * The components communicate through an API.
 
-* Classes are to be with the bare mininmum of functionality, in order to avoid bloating. Needed futures could be added through extensions.
+* Classes are to be with the bare minimum of functionality, in order to avoid bloating. Needed futures could be added through extensions.
 
 
 ## Questions
@@ -237,7 +245,9 @@
 
 * Chrome was a lot faster than firefox.
 
-* As of 140221, O_O.object and O_O.watch weren't used, even once.
+* As of 140221, O\_O.object and O\_O.watch weren't used, even once.
+
+* Code Mangling is safer than code compression. As the structure is left intact (Code mangled by uglify.js works fine, where as the compressed fails).
 
 
 ## Decisions
@@ -250,15 +260,13 @@
 
 * kiss does not affect the UI, as it's to be a separate concern.
 
-* Minifying kiss, breeaks the code. It's decided not to minify the code until a stable release.
-
 * Plugins do not replace their placeholder tags (as this might bring in unwanted complexities); but they still could by injecting code with a custom **$.at** method.
 
-* The base classes weren't checked for extendability; as it's thought that extensions to the core could make the lib complex and unexpected, thus unusable.
+* The base classes weren't checked for extensibility; as it's thought that extensions to the core could make the lib complex and unexpected, thus unusable.
 
 * O\_O.list won't have methods or events related to sorting.
 
-* O\_O.pod item is to be a constructor function, as it simplifies every-day coding. Though it makes extensions to the the 'item' harder; there still has ways to extend the 'item' (ref: O_O.podSelect).
+* O\_O.pod item is to be a constructor function, as it simplifies every-day coding. Though it makes extensions to the the 'item' harder; there still has ways to extend the 'item' (ref: O\_O.podSelect).
 
 
 ## Performance
@@ -322,7 +330,7 @@
 
 * When IE11 supports getters and setters; a rewrite could be done to utilize it.
 
-* The code could be low-leveled for performance (ie: removing the higher level abstrations like enumerate).
+* The code could be low-leveled for performance (ie: removing the higher level abstractions like enumerate).
 
 * A module + plugin manager (with bundling etc).
 
@@ -332,6 +340,8 @@
 
 
 ## Thoughts
+
+* First line of every function could be logger.
 
 * Plugins may use lower level functions for performance (they don't have to depend on kiss).
 

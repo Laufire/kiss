@@ -2,7 +2,7 @@
 
 /*Define the variables
 ---------------------*/
-var todoList = O_O.list(),
+var todoList = O_O.list(), todoList1 = O_O.list(),
 
 filterState = 2,
 allChecked = O_O.value(0),
@@ -45,12 +45,13 @@ todoApp = O_O.box(new function() {
 				change: function(e) {
 				
 					//var start = Date.now();
-					var i, checked = e.target.checked,
+					var checked = e.target.checked,
 						items = todoPod.items,
-						keys = Object.keys(items);
+						order = todoPod.order,
+						i = 0, l = order.length;
 
-					for(i = 0; i < keys.length; ++i)
-						items[keys[i]].isDone(checked);
+					for(; i < l; ++i)
+						items[order[i]].isDone(checked);
 						
 					//console.log(Date.now() - start);
 				}
@@ -78,7 +79,7 @@ todoApp = O_O.box(new function() {
 			
 			this.isHidden = O_O.value(filterState == 2 ? false : Boolean(filterState) == data.isDone);
 			
-			this.isDone = O_O.value(data.isDone);
+			this.isDone = O_O.value();
 			
 			this.$ = {
 
@@ -100,7 +101,7 @@ todoApp = O_O.box(new function() {
 
 					hidden: this.isHidden,
 
-					completed: this.isDone
+					isComplete: this.isDone
 				}
 			}
 			
@@ -127,7 +128,7 @@ todoApp = O_O.box(new function() {
 				blur: changeTitle
 			}}}
 			
-			this.completed = this.isDone;
+			this.isComplete = this.isDone;
 			
 			O_O.listen(this.isDone, function(val, source) {
 			
@@ -292,7 +293,7 @@ O_O.ready(function() {
 
 	var start = Date.now();
 	
-	var count = 10;
+	var count = 6;
 	
 	for(var i = 0; i < count; ++i)
 		todoList.add({
@@ -302,7 +303,7 @@ O_O.ready(function() {
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
 	console.log(Date.now() - start);
-	
+	/*
 	var start = Date.now();
 	
 	var i = 0,
@@ -317,7 +318,7 @@ O_O.ready(function() {
 		});
 		
 	console.log(Date.now() - start);
-	
+	*/
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);
 });
