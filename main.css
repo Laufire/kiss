@@ -1,28 +1,28 @@
-div
-{
+div {
+
 	padding: 1em;
 	background: white;
 	border: 1px solid #eee;
 }
 
-.section
-{
+.section {
+
 	background: #fee;
 }
 
-.hidden
-{
+.hidden {
+
 	display: none;
 }
 
-.item
-{
+.item {
+
 	background: #ddf;
 }
 
 /*try custom tags*/
-scrollbar
-{
+scrollbar {
+
 	display: block;
 	width: 1em;
 	min-height: 2em;

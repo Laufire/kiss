@@ -6,7 +6,7 @@ var modules = [{//the root module
 
 		clear: function() {
 		
-			UI.clear();		
+			UI.clear();
 		},
 		
 		load: function(moduleName) {
@@ -28,7 +28,7 @@ var modules = [{//the root module
 					.name,
 					'\' unloaded.'
 				].join(''));
-		}			
+		}
 	}
 }];
 
@@ -44,7 +44,7 @@ var Client = {
 		
 		var command = params.shift();
 		
-		var ret;		
+		var ret;
 		var processed;
 		
 		for(var i = 0, l = modules.length; i < l; ++i) { //check the module queue for the specified action
@@ -118,8 +118,8 @@ var UI = new function()
 	
 	self.clear = function() {
 	
-		outputNode.html('');			
-	}	
+		outputNode.html('');
+	}
 
 	self.notifyUser = function(data, type) {
 	
@@ -135,7 +135,7 @@ var UI = new function()
 			
 			default:
 				appendToOutput($('<div class="result"></div>').html(data));
-		}			
+		}
 	}
 	
 	self.createTable = function(table) {
@@ -173,7 +173,7 @@ var UI = new function()
 	}
 }
 
-var App = new O_O.element(new function() {
+var App = new O_O.box(new function() {
 
 	this.name = 'App';
 	
@@ -198,12 +198,12 @@ var App = new O_O.element(new function() {
 				}
 			}
 		}
-	}		
+	}
 });
 	
 O_O.ready(function()
 {
-	App('el', 'App');
+	App.$.at('App');
 	
 	outputNode = $('#output');
 	//onload here

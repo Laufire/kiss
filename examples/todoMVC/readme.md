@@ -1,4 +1,4 @@
-# Kiss.js TodoMVC Example
+# kiss.js TodoMVC Example
 Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 
 ## History
@@ -11,11 +11,12 @@ Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 * 140102_1045	Bug fixed: in calculating completed items fixed (caused by type conversion of isDone).
 * 140104_0830	Found that the modified version has the same performance as the other version.
 * 140220_2255	Brought main.js, out of its sand-box to make it easier to debug.
+* 140222_2110	Noticed that the performance of modifying 1000-todos has increased more than 4x; the time before was **140ms** and now it stands at **30ms**. It's even lesser than pureJs as it only re-renders the **modified** data.
 
 
 ## Issues
 
-* **Fixed:** Filters are applied after the content is rendered, this causes a glitch that shows the filered-out items.
+* **Fixed:** Filters are applied after the content is rendered, this causes a glitch that shows the filtered-out items.
 
 
 ## Notes
@@ -42,6 +43,6 @@ Thanks to: [Addy Osmani](https://github.com/addyosmani) for the UI.
 
 * microDOM	203 / 62
 
-* kiss / kiss(alt)	436 / 140
+* kiss 	436 / 30
 
-* angular	2465 / 220 (on toggle all)
+* angular	2465 / 220(on toggle all)

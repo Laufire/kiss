@@ -229,4 +229,8 @@
 140221_2140	Bug fixed: In helper method O_O.pod.addItem, $.data was not defined when calling $.set.
 
 140222_1710	Corrected typos on Change_Log.txt and Notes.md.
-140222_1725	v0.0.8 released (on bug-fixes, performance tuning and new features).
+140222_1830	v0.0.8 released (on bug-fixes, performance tuning and new features).
+140222_1900	Started restructuring the project for using it with gitflow.
+140222_1945	Bug fixed. In example 'autocomplete'. The plugin O_O.autocomplete was using an older API.
+140222_2000	Cleaned the examples.
+140222_2010	Bug fixed. In example 'hybrid'. The API was a bit older.

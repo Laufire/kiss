@@ -303,7 +303,7 @@ O_O.ready(function() {
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
 	console.log(Date.now() - start);
-	/*
+	
 	var start = Date.now();
 	
 	var i = 0,
@@ -318,7 +318,7 @@ O_O.ready(function() {
 		});
 		
 	console.log(Date.now() - start);
-	*/
+	
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);
 });

@@ -1,4 +1,4 @@
-# Kiss.js AutoComplete
+# kiss.js AutoComplete
 #### an example plugin (kiss v0.0.7)
 
 ## Notes
@@ -14,3 +14,4 @@
 * 140106_1900: Written to handle cached responses.
 * 140106_2010: Addded support for live responses.
 * 140106_2030: v0.0.1 released.
+* 140222_1945: Bug fixed: the API used was outdated.

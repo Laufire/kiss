@@ -249,6 +249,8 @@
 
 * Code Mangling is safer than code compression. As the structure is left intact (Code mangled by uglify.js works fine, where as the compressed fails).
 
+* _id cannot be updated in Mongo.
+
 
 ## Decisions
 
@@ -340,6 +342,8 @@
 
 
 ## Thoughts
+
+* **Animations**.
 
 * First line of every function could be logger.
 

@@ -149,8 +149,10 @@
 		
 		function select(dir) {
 		
-			var count = matches.length,
-				prevSel, items = suggestions.items;
+			var prevSel,
+				count = matches.length,
+				items = suggestions.items,
+				order = suggestions.order;
 
 			if(selection === undefined)
 				selection = dir == 1 ? 0 : count - 1;
@@ -159,10 +161,10 @@
 			
 				prevSel = selection;
 				selection = (selection + dir + count) % count;
-				items[prevSel].$.class('selected', 0);
+				items[order[prevSel]].$.class('selected', 0);
 			}
 
-			items[selection].$.class('selected', 1);
+			items[order[selection]].$.class('selected', 1);
 
 			setValue(matches[selection].text);
 		}

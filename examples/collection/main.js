@@ -2,18 +2,16 @@
 
 /*Define the variables
 ---------------------*/
-var Server = mockServer
+var people = O_O.list()
 
-, people = O_O.list()
+, rndBtwn = function(n1, n2) {
 
-, rndBtwn = function(n1, n2)
-{
 	return n1 + (Math.floor(Math.random() * (n2 - n1 + 1)));
 }
 
 , random = {
 
-	add: function()	{
+	add: function() {
 		
 		var ret;
 
@@ -52,8 +50,8 @@ var Server = mockServer
 	return !(val == 2 || val == data.isMale);
 })
 
-, App = O_O.box(new function()
-{
+, App = O_O.box(new function() {
+
 	var App = this;
 
 	App.people = people;
@@ -182,14 +180,9 @@ var Server = mockServer
 	});
 });
 
-/*Initial setup
---------------*/
-
-Server.add(routes); //setting up mockServer
-
 //Managing selection
-O_O.listen(selection, function(val, source)
-{
+O_O.listen(selection, function(val, source) {
+
 	var prev = source.prev;
 	
 	if(prev)
@@ -200,8 +193,8 @@ O_O.listen(selection, function(val, source)
 });
 
 //Responding to collection events
-O_O.listen(App.peoplePod.event, function(e)
-{
+O_O.listen(App.peoplePod.event, function(e) {
+
 	var item = e.item;
 	
 	if(e.type == 'add')
@@ -211,16 +204,16 @@ O_O.listen(App.peoplePod.event, function(e)
 		selection('');
 });
 
-O_O.listen(App.toolbar.gender, function(val)
-{
+O_O.listen(App.toolbar.gender, function(val) {
+
 	//App.toolbar.gender could be listened until the box is loaded as a child (then this property will be replaced by a box; when a lasting connection is needed use an independent variable like 'genderFilter'
 	console.log(val);
 });
 
 /*Finally load the App
 --------------------*/
-O_O.ready(function()
-{
+O_O.ready(function() {
+
 	App.$.at('App');
 	
 	people.add({
