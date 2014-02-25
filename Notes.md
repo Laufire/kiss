@@ -15,7 +15,7 @@
 
 * O\_O.bind (to bind data to the UI. ? Could O\_O.value be used instead?).
 
-* An exmaple to demonstrate the features; it could serve as a stability tester, during development.
+* An example to demonstrate the features; it could serve as a stability tester, during development.
 
 * Redo O\_O.pod.item to resemble box construction, without modifying the object.
 

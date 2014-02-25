@@ -234,3 +234,15 @@
 140222_1945	Bug fixed. In example 'autocomplete'. The plugin O_O.autocomplete was using an older API.
 140222_2000	Cleaned the examples.
 140222_2010	Bug fixed. In example 'hybrid'. The API was a bit older.
+
+140224_1730	gitflow inited.
+140224_1730	Strated working on 'binding pod items to their list items'.
+140224_1750	Change_Log.txt renamed to history.txt (as the history of the project too will be recorded, along with the changes to it).
+140224_1815	.pod.item.data removed (to leave the data passed to the elements, untouched, in order to enable nested items within the pod).
+140224_1815	pod.item constructor now recieves a second argument 'id', in order to enable changing data from within the item constructor.
+140224_1915	Succesfully nested boxes inside pod items.
+140224_1915	Succesfully nested pods inside pod items.
+
+140225_0025	Plugin O_O.trans got a new method 'template', for simple templating.
+140225_0015	Plugin O_O.trans got a new method 'apply', for calling a method of the val.
+140225_0315	Changing the values of the 'hosts', plugged to INPUT elements do not trigger events anymore, as it might cause circular changes, when the eement is bound to a data source.

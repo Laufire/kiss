@@ -73,7 +73,7 @@ todoApp = O_O.box(new function() {
 
 		source:  todoList,
 		
-		item: function(data) {
+		item: function(data, id) {
 		
 			var self = this;
 			
@@ -134,7 +134,7 @@ todoApp = O_O.box(new function() {
 			
 				self.isHidden(filterState == 2 ? false : filterState == val);
 				
-				self.$.data({
+				todoList.change(id, {
 				
 					isDone: val
 				});
@@ -147,11 +147,11 @@ todoApp = O_O.box(new function() {
 				
 				if(value) {
 				
-					$.data({
-					
+					todoList.change(id, {
+				
 						title: value
 					});
-					
+				
 					$.class('editing', 0);
 				}
 				else

@@ -1,4 +1,5 @@
-﻿//? O_O.list.save: add / change
+﻿//? pods from arrays (without an item constructor)
+//? O_O.list.save: add / change
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
 
@@ -229,7 +230,7 @@
 
 			//UI classes
 			
-			, box: function box(elm/*consists of $data and child element data. the spplied object is modified*/) {
+			, box: function box(data/*consists of $data and child element data*/) {
 				
 				// helps handling trees
 				
@@ -239,22 +240,20 @@
 					events = {},
 					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
 
-					$data = elm.$,
-
-					children = getKeys(elm);
+					children = getKeys(data);
 
 				remove(children, '$'); //remove the $ from the children
 				
-				extend(self, elm); //load the properties from elm
+				load(self, data, children); //load the children on to the box (to enable 'parent.child' access of un-kissable properties)
 
-				/* overload the provided elm.$, to enable 'self' reference inside the object's constructor*/
-				elm.$ = _$ = self.$ = function(data) {
+				/* overload the provided data.$, to enable 'self' reference inside the object's constructor*/
+				_$ = self.$ = function(data) {
 				
 					// helps to get and set values and events; and to plug observables
 
 					enumerate(data, function(key, val) {
 
-						if(typeof val == 'object') { //the prop is an enumerable
+						if(typeof val == 'object') { // the prop should be enumarated
 							
 							enumerate(val, function(k) {
 
@@ -283,8 +282,8 @@
 
 						if(child) {
 						
-							if(child.$)
-								child.$.val(val); //the child is a kiss element
+							if(child.$) //the child is a kissable
+								typeof val != 'object' ? child.$.val(val) : child.$.set(val);
 
 							else if(typeof child != 'function') //the child is a unlinked property
 								child = val;
@@ -297,18 +296,18 @@
 					return _$;
 				}
 
-				_$.at = function(query/*keyAttr, a DOM.$.el or a DOM element*/, parent) { /*sets the el for the element and loads it with existing html, attrs etc*/
+				_$.at = function(elm/*keyAttr, a DOM.$.el or a DOM element*/, parent) { /*sets the el for the element and loads it with existing html, attrs etc*/
 
 					// sets the node for the box
 					
 					if(!parent) {
 						
-						$el = get$el(query, document);
+						$el = get$el(elm, document);
 					}
 					else {
 
 						self.$.parent = parent;
-						$el = get$el(query, parent.$.el);
+						$el = elm.el ? elm : get$el(elm, parent.$.el); //get the $el of the box
 					}
 
 					_$.$el = $el; // microDOM's $ object; use this to set one-time values
@@ -407,8 +406,8 @@
 								
 							for(; i < length;) { // the element has children so get the nested data
 
-								var name = children[i++],
-									child = self[name],
+								var childName = children[i++],
+									child = self[childName],
 									val;
 
 								if(child && child.$) {
@@ -416,7 +415,7 @@
 									val = child.$.val()
 									
 									if(val !== undefined) //to skip buttons and the like
-										ret[name] = val;
+										ret[childName] = val;
 										
 								}
 							}
@@ -507,12 +506,13 @@
 				//helpers
 				function init() { //sets the default values (when hosts are directly assigned they are plugged)
 
+					var $data = data.$;
+					
 					if($data) {
 
 						var init = extract($data, 'init'),
 							def = extract($data, 'default'); //default is used to bind a function to the default event (varies by element type), and to set the event that triggers the bound O_O.value to change
-							
-						cleanUp = extract($data, 'clear');
+							cleanUp = extract($data, 'clear');
 						
 						if(def) {
 						
@@ -530,12 +530,6 @@
 									def.plug(function(val) {
 									
 										$el.prop(prop, val); //set the property
-
-										//? should an event be fired
-										//dispatch an event to enable two way binding this causes an event to be triggered when the bound value is changed)
-										var event = document.createEvent('UIEvent');
-										event.initUIEvent(evt, true, true, window);
-										$el.el.dispatchEvent(event);
 									});
 
 									$el.on(evt, function(e) { //this event won't be unplugged
@@ -570,8 +564,6 @@
 							
 							init(self);
 						}
-						
-						$data = undefined; //deleting the var
 					}
 				}
 
@@ -686,13 +678,13 @@
 
 				_$ = self.$ = extend({}, box.$); //add the pre-$.at box.$ properties to self.$
 				
-				_$.at = function(query, parent) {
+				_$.at = function(elm, parent) {
 				
 					// sets the node for the pod
 
 					var box$ = box.$;
 					
-					box$.at(query, parent);
+					box$.at(elm, parent);
 					
 					extend(self.$, {
 					
@@ -836,7 +828,7 @@
 				
 					// used by self.item and self.add to construct and add an item to the pod
 				
-					var item, item$,
+					var item,
 						node = itemNode.cloneNode(true), //deep clone the node
 						id = data._id;
 
@@ -845,14 +837,11 @@
 					node.setAttribute(keyAttr, id); //set the id as the key attribute.
 					
 					/*/passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group*/
-					item = items[id] = O_O.box(new itemConstructor(data)); //make a new box and register it to the items array
-					item$ = item.$;
+					item = items[id] = O_O.box(new itemConstructor(data, id)); //make a new box and register it to the items array
 					
-					item$
+					item.$
 						.at(node, self)
-						.data = setItemData; //set the items el, its data and $.data method
-						
-					item$.set(data);
+						.set(data);
 					
 					box.$.$el[mode](node); //add it to the pod
 					
