@@ -246,3 +246,8 @@
 140225_0025	Plugin O_O.trans got a new method 'template', for simple templating.
 140225_0015	Plugin O_O.trans got a new method 'apply', for calling a method of the val.
 140225_0315	Changing the values of the 'hosts', plugged to INPUT elements do not trigger events anymore, as it might cause circular changes, when the eement is bound to a data source.
+
+140226_1230	Removed the helper function 'extract', as it didn't seem to work as expected and it's decided not to alter the objects passed to the constructors.
+140226_1240	Bug fixed. The props data.$ weren't applied, in the presence of a default value.
+140226_2045	data.$.trans added to O_O.box, for transforming data passed 'val functions.
+

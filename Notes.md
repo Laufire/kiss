@@ -332,6 +332,8 @@
 
 * When IE11 supports getters and setters; a rewrite could be done to utilize it.
 
+* Wait for Object.observe.
+
 * The code could be low-leveled for performance (ie: removing the higher level abstractions like enumerate).
 
 * A module + plugin manager (with bundling etc).
@@ -345,6 +347,8 @@
 
 * **Animations**.
 
+* Wiring the default events to the triggers of 'flow'.
+
 * First line of every function could be logger.
 
 * Plugins may use lower level functions for performance (they don't have to depend on kiss).
@@ -352,3 +356,7 @@
 * Building kiss entirely over microDOM will allow the easy replacement of microDOM, as microDOM does only simple tasks.
 
 * If jQuery were to be used instead of microDOM, a wrapper over jQuery may be built to suuport the microDOM API. Or they might work along.
+
+* Data driven UI: using JSON + OOCSS + Build Tools (could be built for target browsers).
+
+* Getters and Setters along with Object.observe could simplify the structure of kiss.

@@ -1,4 +1,8 @@
-﻿//? pods from arrays (without an item constructor)
+﻿//? data for boxes
+//? Could $.html and $.text be cleaned?
+//? renaming .reset to .data
+//? treating displays as clickables
+//? pods from arrays (without an item constructor)
 //? O_O.list.save: add / change
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
@@ -138,15 +142,6 @@
 			return key;
 		}
 
-		function extract(obj, prop) {
-
-			var ret = obj[prop];
-
-			delete obj[prop];
-
-			return ret;
-		}
-
 		function get$el(key, parent) {
 
 			if(typeof key != 'object')
@@ -235,7 +230,7 @@
 				// helps handling trees
 				
 				var self = this,
-					_$, $el, elType, cleanUp,
+					_$, $el, elType, cleanUp, trans,
 
 					events = {},
 					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
@@ -370,6 +365,9 @@
 				_$.val = function(newVal) {
 
 					/*/helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val*/
+					
+					if(trans)
+						return trans(newVal, self); //add a custom value function; could both set and return values
 					
 					var prop;
 
@@ -510,16 +508,21 @@
 					
 					if($data) {
 
-						var init = extract($data, 'init'),
-							def = extract($data, 'default'); //default is used to bind a function to the default event (varies by element type), and to set the event that triggers the bound O_O.value to change
-							cleanUp = extract($data, 'clear');
+						var init = $data.init,
+							def = $data.default; //default is used to bind a function to the default event (varies by element type), and to set the event that triggers the bound O_O.value to change
+							
+						cleanUp = $data.clear; //store the clear function for later use
+						trans = $data.trans; //store the clear function for later use
 						
 						if(def) {
 						
-							var evt = 'change';
+							var evt = def.event;
 
-							if(def.event)
-								evt = def.event, def = def.value;
+							if(evt)
+								def = def.value;
+								
+							else
+								evt = 'change'
 
 							if(elType > 1) { //the element is an editable control (input, textarea, select) or a check box
 
@@ -532,27 +535,25 @@
 										$el.prop(prop, val); //set the property
 									});
 
-									$el.on(evt, function(e) { //this event won't be unplugged
+									$el.on(evt, function(e) { //this plug circumvents the one-event per event type
 									
 										def(e.target[prop]);
 									});
 
-									$el.prop(prop, def()); //run the function with initial value
+									$el.prop(prop, def()); //set the prop with initial value
 								}
 
 								else {
 								
-									return $el.prop(prop, getVal(def)); //set the value
+									$el.prop(prop, getVal(def)); //set the value
 								}
-
-								return _$;
 							}
 
 							else if(elType == 1) { //the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
 								
 								_$.event('click', def);
 							}
-							else { //he element is a display; set its text
+							else { //the element is a display; set its text
 							
 								_$.text(def);
 							}
