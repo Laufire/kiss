@@ -8,12 +8,14 @@
 
 ## Idea
 
+* Keeping it simple and stupid by , providing a simple API to access the available tech stack.
+
 * Using the same application structure with all the frontend technologies (HTML, JS, CSS)
 
 
 ## ToDos
 
-* O\_O.bind (to bind data to the UI. ? Could O\_O.value be used instead?).
+* O\_O.bind: to bind data to the UI, and avoid repeating the UI code (? Could O\_O.value be used instead?). Or automatic bindings between the source list and its pod items.
 
 * An example to demonstrate the features; it could serve as a stability tester, during development.
 
@@ -57,7 +59,7 @@
 
 * To parse custom tags.
 
-* To parse KO like data-binding attribute (without the evaluations of the expressions).
+* To parse KO like data-binding html attributes could be JSON or JS vars like O_O.list, O_O.value etc.
 
 * A UI platform that digests an API based JSON to render standard UI controls. The JSON should be minimal.
 
@@ -360,3 +362,5 @@
 * Data driven UI: using JSON + OOCSS + Build Tools (could be built for target browsers).
 
 * Getters and Setters along with Object.observe could simplify the structure of kiss.
+
+* For faster DOM slection, document.getElementById could be used in conjunction with '/' separated ids.

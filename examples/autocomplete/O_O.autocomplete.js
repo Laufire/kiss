@@ -136,7 +136,7 @@
 				
 					value = values[i];
 
-					if(value.indexOf(str) == 0)
+					if(value.indexOf(str) == 0) //if the input is in the beginning of the value
 						matches.push({
 
 							text: value

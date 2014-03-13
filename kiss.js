@@ -1,9 +1,12 @@
-﻿//? data for boxes
+﻿//? box.data
+// pods for O_O.kebab (a pod for boxes with different structures), popups
+//? pod->box : list->?
+//? box.reset / using null or ''
+//? remove O_O.object
 //? Could $.html and $.text be cleaned?
-//? renaming .reset to .data
 //? treating displays as clickables
-//? pods from arrays (without an item constructor)
-//? O_O.list.save: add / change
+//? pods from arrays (automatic data bindings without an item constructor)
+//? an idAttribute: 'RollNo' for the options of pod and list.
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
 
@@ -575,7 +578,7 @@
 
 						var type = el.type;
 
-						if(type == 'checkbox') //? radio
+						if(type == 'checkbox' || type == 'radio')
 							return 2;
 						
 						else if(type == 'submit')
@@ -664,6 +667,7 @@
 				
 					// options
 					source = options.source,
+					idProp = '_id',
 					data = options.data,
 					itemConstructor = options.item,
 					box = O_O.box({$: options.$}),
@@ -768,6 +772,7 @@
 					//sets the data source for the pod (a source could be a O_O.list or some other plugin that implements the same interface)
 
 					source = _source;
+					idProp = _source.idProp;
 					
 					self.reset();
 					
@@ -815,7 +820,7 @@
 						data = sItems[sId];
 						
 						item$ = items[id].$;
-						item$.id = order[i] = data._id;
+						item$.id = order[i] = data[idProp];
 						item$.set(data);
 					}
 					
@@ -831,7 +836,7 @@
 				
 					var item,
 						node = itemNode.cloneNode(true), //deep clone the node
-						id = data._id;
+						id = data[idProp];
 
 					id = id !== undefined ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
 					order.push(id);
@@ -858,7 +863,7 @@
 				function listen(event) { //listen to the events from the source and reflect them
 
 					var data = event.data,
-						id = data._id,
+						id = data[idProp],
 						type = event.type;
 					
 					if(type == 'add')
@@ -943,7 +948,8 @@
 				var self = this,
 					items = self.items = {},
 					order = self.order = [], //holds the list of ids in the order of addition, is used by .pod-s to refresh data.
-					event = self.event = O_O.host();
+					event = self.event = O_O.host(),
+					idProp = self.idProp = options.idProp || '_id';
 
 				self.length = O_O.value(0);
 				
@@ -951,10 +957,10 @@
 				
 					// add a new item
 
-					if(data._id === undefined)
-						data._id = getFreeKey(items); //convert the id to string to maintain type safety
+					if(data[idProp] === undefined)
+						data[idProp] = getFreeKey(items); //convert the id to string to maintain type safety
 					
-					var id = data._id + ''
+					var id = data[idProp] + '';
 					
 					order.push(id);
 					items[id] = data;
@@ -1008,6 +1014,17 @@
 					}, self);
 					
 					return self;
+				}
+				
+				self.update = function(data) {
+				
+					var id = data[idProp];
+					
+					if(id && items[id])
+						self.change(id, data);
+						
+					else
+						self.add(data);
 				}
 
 				self.reset = function(newItems) {

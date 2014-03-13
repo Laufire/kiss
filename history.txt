@@ -207,7 +207,7 @@
 140211_1000	Bug fixed. Bug fixed. box.$.set failed when the data had values for 'untouched' properties.
 140211_1155	Calling $.event with just the name returns the handler. To turn off existing event a falsy value should be passed for the handler.
 
-140214_0000	O_O.plugin.podSelect added.
+140214_0000	O_O.plugin.podSelect added (helps with managing pods with a single selectable item).
 
 140218_1140	Bug fixed. The items of O_O.pod were inserted to the DOM before the data is applied. Fixed it, by changing the sequence in O_O.pod.add.
 
@@ -251,3 +251,11 @@
 140226_1240	Bug fixed. The props data.$ weren't applied, in the presence of a default value.
 140226_2045	data.$.trans added to O_O.box, for transforming data passed 'val functions.
 
+140301_1905	O_O.plugin.kebab added
+
+140304_0415	Support for 'radio' elements added.
+
+140306_1810	O_O.list.update added.
+
+140313_1935	O_O.list.optionsd.idProp added, to support idProps other than the default '_id' prop.
+140313_2255	Bugc fixed: '_id' wasn't set as the defult idProp in O_O.pod.
