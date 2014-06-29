@@ -258,4 +258,6 @@
 140306_1810	O_O.list.update added.
 
 140313_1935	O_O.list.optionsd.idProp added, to support idProps other than the default '_id' prop.
-140313_2255	Bugc fixed: '_id' wasn't set as the defult idProp in O_O.pod.
+140313_2255	Bug fixed: '_id' wasn't set as the defult idProp in O_O.pod.
+
+140509_1850	Bug fixed: default values to the Boxes weren't applied, when the given value is falsy.

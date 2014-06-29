@@ -15,6 +15,14 @@
 
 ## ToDos
 
+* **A guide**, it's hard to remebmber things when being out of touch.
+
+* Support {$: {class: 'string'}}
+
+* **Think of**: $.bind('*', value) to replace $.*(value); and $.$el.* to be $.* (as $.$el.* is used more than $.*).
+
+* **Think of**: d3 like function syntax for kiss. circles.enter().append('circle').attr('cx', function(d) { return d.x })
+
 * O\_O.bind: to bind data to the UI, and avoid repeating the UI code (? Could O\_O.value be used instead?). Or automatic bindings between the source list and its pod items.
 
 * An example to demonstrate the features; it could serve as a stability tester, during development.
@@ -23,11 +31,7 @@
 
 * A custom toggle (with data bindings).
 
-* \n instead of \r\n at the next stable release (as git treats all the lines ad modified, diff-ing wouldn't be possible).
-
 * default event for contenteditable tags: blur.
-
-* O\_O.kebab
 
 * A cheat sheet.
 
@@ -175,6 +179,8 @@
 	* Use *options.data* for **static lists**, where as *options.source* for **dynamic lists**.
 	
 	* Passing 'undefined' values to the item constructors will cause the properties to be missed pass '{}' instead.
+	
+	* pod.items[_id] gives the O_O.box of the item; which could be used to change the props of the box (note: this doesn't change any underlying data).
 	
 	### O\_O.value
 	* The 'change' is triggered only when the new value doesn't '**===**' the old value.

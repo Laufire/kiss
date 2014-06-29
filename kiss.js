@@ -283,7 +283,7 @@
 							if(child.$) //the child is a kissable
 								typeof val != 'object' ? child.$.val(val) : child.$.set(val);
 
-							else if(typeof child != 'function') //the child is a unlinked property
+							else if(typeof child != 'function') //the child is a property thatsn't a pluggable
 								child = val;
 								
 							else //the child is a O_O.value
@@ -517,7 +517,7 @@
 						cleanUp = $data.clear; //store the clear function for later use
 						trans = $data.trans; //store the clear function for later use
 						
-						if(def) {
+						if(def !== undefined) {
 						
 							var evt = def.event;
 
