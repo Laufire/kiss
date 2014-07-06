@@ -15,6 +15,8 @@
 
 ## ToDos
 
+* Get rid of develop.json of the examples (even /index.html isn't working).
+
 * **A guide**, it's hard to remebmber things when being out of touch.
 
 * Support {$: {class: 'string'}}

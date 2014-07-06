@@ -28,25 +28,25 @@
 	"use strict";
 
 	var changeState,
-		ready, //stores the ready function
+		ready, // stores the ready function
 	
-	O_O = window.O_O = new function() { //the library
+	O_O = window.O_O = new function() { // the library
 
 		var O_O = this,
 
-			//helpers
+			// helpers
 			$ = DOM.$,
 
-			//init
-			keyAttr = 'id', //the keyAttr that marks the element to be KISSed (the default is 'id')
+			// init
+			keyAttr = 'id', // the keyAttr that marks the element to be KISSed (the default is 'id')
 
-			//helpers functions
+			// helpers functions
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
 
 		O_O.VERSION = '0.0.7';
 
-		O_O.keyAttr = function(attr) { //change the keyAttr to be KISSed
+		O_O.keyAttr = function(attr) { // change the keyAttr to be KISSed
 		
 			keyAttr = attr;
 		}
@@ -56,7 +56,7 @@
 			ready = func;
 		}
 
-		//helpers
+		// helpers
 		function emptyFunction() {
 		
 			return function(){}
@@ -132,7 +132,7 @@
 			return target;
 		}
 		
-		function getFreeKey(obj) { //returns a 'free' key name (with alpha-numeric) characters for the given object;
+		function getFreeKey(obj) { // returns a 'free' key name (with alpha-numeric) characters for the given object;
 
 			var key = '';
 
@@ -192,8 +192,8 @@
 			return prop = value;
 		}
 
-		//public
-		//classes
+		// public
+		// classes
 		O_O.class = {
 
 			// base classes
@@ -204,29 +204,29 @@
 
 				var plugs = [],
 
-				wrap = this.wrap = function(val, source) { //set the value and fire the event
+				wrap = this.wrap = function(val, source) { // set the value and fire the event
 					
 					for(var i = 0, l = plugs.length; i < l;)
 						plugs[i++](val, source);
 				};
 
-				wrap.plug = function(func) { //plugs a function to this host
+				wrap.plug = function(func) { // plugs a function to this host
 					
 					plugs.push(func);
 
-					return function() { //this function can be stored and called to unplug fron the host
+					return function() { // this function can be stored and called to unplug fron the host
 					
 						wrap.unplug(func);
 					}
 				}
 
-				wrap.unplug = function(func) { //unplug a plugged function
+				wrap.unplug = function(func) { // unplug a plugged function
 				
 					remove(plugs, func);
 				}
 			}
 
-			//UI classes
+			// UI classes
 			
 			, box: function box(data/*consists of $data and child element data*/) {
 				
@@ -240,9 +240,9 @@
 
 					children = getKeys(data);
 
-				remove(children, '$'); //remove the $ from the children
+				remove(children, '$'); // remove the $ from the children
 				
-				load(self, data, children); //load the children on to the box (to enable 'parent.child' access of un-kissable properties)
+				load(self, data, children); // load the children on to the box (to enable 'parent.child' access of un-kissable properties)
 
 				/* overload the provided data.$, to enable 'self' reference inside the object's constructor*/
 				_$ = self.$ = function(data) {
@@ -251,7 +251,7 @@
 
 					enumerate(data, function(key, val) {
 
-						if(typeof val == 'object') { // the prop should be enumarated
+						if(typeof val == 'object') { // the prop should be enumerated
 							
 							enumerate(val, function(k) {
 
@@ -280,13 +280,13 @@
 
 						if(child) {
 						
-							if(child.$) //the child is a kissable
+							if(child.$) // the child is a kissable
 								typeof val != 'object' ? child.$.val(val) : child.$.set(val);
 
-							else if(typeof child != 'function') //the child is a property thatsn't a pluggable
+							else if(typeof child != 'function') // the child is a property thatsn't a pluggable
 								child = val;
 								
-							else //the child is a O_O.value
+							else // the child is a O_O.value
 								child(val);
 						}
 					}
@@ -305,13 +305,13 @@
 					else {
 
 						self.$.parent = parent;
-						$el = elm.el ? elm : get$el(elm, parent.$.el); //get the $el of the box
+						$el = elm.el ? elm : get$el(elm, parent.$.el); // get the $el of the box
 					}
 
 					_$.$el = $el; // microDOM's $ object; use this to set one-time values
 					_$.el = $el.el; // the DOM element
-					_$.id = $el.attr(keyAttr); //give the element an id
-					elType = getElType($el.el); //the type of the element (to be used in .val and .default);
+					_$.id = $el.attr(keyAttr); // give the element an id
+					elType = getElType($el.el); // the type of the element (to be used in .val and .default);
 					
 					init();
 					loadChildren();
@@ -321,16 +321,16 @@
 				
 				_$.clear = function() {
 				
-					//destructor, that clears all the children and unplugs the existing plugs
+					// destructor, that clears all the children and unplugs the existing plugs
 
-					for(var i = 0; i < children.length;) //remove all children (boxes and pods)
+					for(var i = 0; i < children.length;) // remove all children (boxes and pods)
 						_$.remove(children[i++]);
 
-					enumerate(plugs, function(key, branch) { //clear all plugs
+					enumerate(plugs, function(key, branch) { // clear all plugs
 
 						enumerate(branch, function(key, unplug) {
 						
-							unplug(); //unplug the plug
+							unplug(); // unplug the plug
 						});
 					});
 					
@@ -342,7 +342,7 @@
 				
 				_$.append = function(childName, tagName, boxProps) {
 				
-					//append a child
+					// append a child
 					
 					self.$.$el.append(tagName).attr('id', childName);
 					
@@ -367,17 +367,17 @@
 
 				_$.val = function(newVal) {
 
-					/*/helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val*/
+					/*/ helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val */ 
 					
 					if(trans)
-						return trans(newVal, self); //add a custom value function; could both set and return values
+						return trans(newVal, self); // add a custom value function; could both set and return values
 					
 					var prop;
 
-					if(elType == 3) //the element is an editable control (input, textarea, select)
+					if(elType == 3) // the element is an editable control (input, textarea, select)
 						prop = 'value';
 
-					else if(elType == 2) //the element is a checkable //? radio
+					else if(elType == 2) // the element is a checkable //? radio
 						prop = 'checked';
 
 					if(newVal !== undefined) {
@@ -395,12 +395,12 @@
 						if(prop)
 							return _$.prop(prop);
 
-						else if(elType == 0) { //the element is an HTML element
+						else if(elType == 0) { // the element is an HTML element
 							
 							var length = children.length;
 							
-							if(!length) //the element has no children
-								return _$.text(); //so return its text
+							if(!length) // the element has no children
+								return _$.text(); // so return its text
 								
 							var ret = {},
 								i = 0;
@@ -415,7 +415,7 @@
 								
 									val = child.$.val()
 									
-									if(val !== undefined) //to skip buttons and the like
+									if(val !== undefined) // to skip buttons and the like
 										ret[childName] = val;
 										
 								}
@@ -428,7 +428,7 @@
 
 				_$.html = function(newVal) {
 				
-					//plug / unplug an observable or get / set some value to the node's html; prefer $.text, as it's fater and safer
+					// plug / unplug an observable or get / set some value to the node's html; prefer $.text, as it's fater and safer
 
 					if(!arguments.length)
 						return $el.html()
@@ -438,7 +438,7 @@
 				
 				_$.text = function(newVal) {
 
-					//plug / unplug a host to the node's text
+					// plug / unplug a host to the node's text
 					
 					if(!arguments.length)
 						return $el.text()
@@ -448,21 +448,21 @@
 
 				_$.prop = function(prop, newVal) {
 
-					//plug / unplug a host to a particular (js) property of the DOMElement
+					// plug / unplug a host to a particular (js) property of the DOMElement
 					
 					return $elRouter('prop', prop, newVal);
 				}
 
 				_$.attr = function(attr, newVal) {
 
-					//plug / unplug a host to a particular attribute of the node
+					// plug / unplug a host to a particular attribute of the node
 					
 					return $elRouter('attr', attr, newVal);
 				}
 
 				_$.class = function(_class, newVal) {
 
-					//plug / unplug a host to a classList of the node
+					// plug / unplug a host to a classList of the node
 					
 					return $elRouter('class', _class, newVal);
 				}
@@ -485,14 +485,14 @@
 						eName = name;
 					}
 
-					if(handler) {//allows to remove the existing event handler by not passing a handler
+					if(handler) {// allows to remove the existing event handler by not passing a handler
 						
-						if(events[name])//the event already has a handler
-							el.off(eName, events[name]); //remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
+						if(events[name])// the event already has a handler
+							el.off(eName, events[name]); // remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 					
 						el.on(eName, events[name] = function(e) {
 						
-							//!'this' context is lost, that could be got through the e.target
+							// !'this' context is lost, that could be got through the e.target
 							handler(e, self);
 						});
 					}
@@ -504,18 +504,18 @@
 					return _$;
 				}
 
-				//helpers
-				function init() { //sets the default values (when hosts are directly assigned they are plugged)
+				// helpers
+				function init() { // sets the default values (when hosts are directly assigned they are plugged)
 
 					var $data = data.$;
 					
 					if($data) {
 
 						var init = $data.init,
-							def = $data.default; //default is used to bind a function to the default event (varies by element type), and to set the event that triggers the bound O_O.value to change
+							def = $data.default; // default is used to bind a function to the default event (varies by element type), and to set the event that triggers the bound O_O.value to change
 							
-						cleanUp = $data.clear; //store the clear function for later use
-						trans = $data.trans; //store the clear function for later use
+						cleanUp = $data.clear; // store the clear function for later use
+						trans = $data.trans; // store the clear function for later use
 						
 						if(def !== undefined) {
 						
@@ -527,7 +527,7 @@
 							else
 								evt = 'change'
 
-							if(elType > 1) { //the element is an editable control (input, textarea, select) or a check box
+							if(elType > 1) { // the element is an editable control (input, textarea, select) or a check box
 
 								var prop = elType == 2 ? 'checked' : 'value';
 
@@ -535,34 +535,34 @@
 								
 									def.plug(function(val) {
 									
-										$el.prop(prop, val); //set the property
+										$el.prop(prop, val); // set the property
 									});
 
-									$el.on(evt, function(e) { //this plug circumvents the one-event per event type
+									$el.on(evt, function(e) { // this plug circumvents the one-event per event type
 									
 										def(e.target[prop]);
 									});
 
-									$el.prop(prop, def()); //set the prop with initial value
+									$el.prop(prop, def()); // set the prop with initial value
 								}
 
 								else {
 								
-									$el.prop(prop, getVal(def)); //set the value
+									$el.prop(prop, getVal(def)); // set the value
 								}
 							}
 
-							else if(elType == 1) { //the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
+							else if(elType == 1) { // the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
 								
 								_$.event('click', def);
 							}
-							else { //the element is a display; set its text
+							else { // the element is a display; set its text
 							
 								_$.text(def);
 							}
 						}
 						
-						_$($data); //load $data on to the element
+						_$($data); // load $data on to the element
 						
 						if(init) {
 							
@@ -572,7 +572,7 @@
 				}
 
 				//? could this be exposed as $.type?
-				function getElType(el) { //returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
+				function getElType(el) { // returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
 
 					if(el.required !== undefined) {
 
@@ -585,43 +585,43 @@
 							return 1;
 						
 						else
-							return 3; //the element is an editable
+							return 3; // the element is an editable
 					}
-					else if($el.el.formAction !== undefined) //the element is a button
+					else if($el.el.formAction !== undefined) // the element is a button
 						return 1;
 					
 
-					return 0; //the element is a display
+					return 0; // the element is a display
 				}
 
-				function $elRouter(method, prop, newVal) { //sets attr/prop/etc via $
+				function $elRouter(method, prop, newVal) { // sets attr/prop/etc via $
 
-					if(newVal === undefined) { //!arguments.length won't work here as the interface functions pass their undefined variables directly to this function
+					if(newVal === undefined) { // !arguments.length won't work here as the interface functions pass their undefined variables directly to this function
 						
 						return $el[method](prop);
 					}
 
-					if(plugs[method][prop]) { //if there already is a plug
+					if(plugs[method][prop]) { // if there already is a plug
 
-						plugs[method][prop](); //unplug the existing plug
+						plugs[method][prop](); // unplug the existing plug
 						delete plugs[method][prop];
 					}
 
 					if(newVal.plug) {
 
-						var func = function(val) { //a function to change the value
+						var func = function(val) { // a function to change the value
 						
 							$el[method](prop, val);
 						}
 
-						plugs[method][prop] = newVal.plug(func); //plug into the value and get the unplug function
+						plugs[method][prop] = newVal.plug(func); // plug into the value and get the unplug function
 
-						func(newVal()); //run the function with initial value
+						func(newVal()); // run the function with initial value
 					}
 
 					else {
 					
-						return $el[method](prop, getVal(newVal)); //set the value
+						return $el[method](prop, getVal(newVal)); // set the value
 					}
 
 					return _$;
@@ -629,7 +629,7 @@
 
 				function loadChildren() {
 
-					for(var i = 0, l = children.length; i < l;) //load child objects with matching elements
+					for(var i = 0, l = children.length; i < l;) // load child objects with matching elements
 						loadChild(children[i++]);
 				}
 				
@@ -639,22 +639,22 @@
 
 					child$el = get$el(childName, $el.el);
 
-					if(child$el.el) { //tags without matching objects are left intact; so to play nice with other libs
+					if(child$el.el) { // tags without matching objects are left intact; so to play nice with other libs
 
 						child = self[childName];
 
 						if(typeof child == 'object') {
 						
-							/*/Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class*/
-							if(child.constructor.name == '' || child.constructor.name == 'Object') //a plain object containing self attrs and children
-								self[childName] = O_O.box(child); //build a box using the given 'data' and replace the data with it
+							/*/ Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class */ 
+							if(child.constructor.name == '' || child.constructor.name == 'Object') // a plain object containing self attrs and children
+								self[childName] = O_O.box(child); // build a box using the given 'data' and replace the data with it
 						}
 						else {
 							
-							self[childName] = O_O.box({$:{default: child}}); //create a box with the assigned object as its default value
+							self[childName] = O_O.box({$:{default: child}}); // create a box with the assigned object as its default value
 						}
 
-						self[childName].$.at(child$el, self); //plugins may have a plugin.$.at function to merge themself with the tree.
+						self[childName].$.at(child$el, self); // plugins may have a plugin.$.at function to merge themselves with the tree.
 					}
 				}
 			}
@@ -671,17 +671,17 @@
 					data = options.data,
 					itemConstructor = options.item,
 					box = O_O.box({$: options.$}),
-					mode = options.mode || 'append', //mode: append || prepend
+					mode = options.mode || 'append', // mode: append || prepend
 					
-					//public
+					// public
 					self = this,
-					items = self.items = {}, //holds all the items
-					order = self.order = [], //holds the list of ids in the order of addition; use this array to iterate over the items in the pod
+					items = self.items = {}, // holds all the items
+					order = self.order = [], // holds the list of ids in the order of addition; use this array to iterate over the items in the pod
 					event = self.event = O_O.host(), // could be listened for changes to the pod
 					
-					options = undefined, //cleaning the options var
+					options = undefined, // cleaning the options var
 
-				_$ = self.$ = extend({}, box.$); //add the pre-$.at box.$ properties to self.$
+				_$ = self.$ = extend({}, box.$); // add the pre-$.at box.$ properties to self.$
 				
 				_$.at = function(elm, parent) {
 				
@@ -696,7 +696,7 @@
 						$el: box$.$el,
 						el: box$.el,
 						id: box$.id
-					}); //add the remaining box.$ properties to self.$
+					}); // add the remaining box.$ properties to self.$
 					
 					extractItemNode();
 
@@ -710,7 +710,7 @@
 						self.source(source);
 				}
 				
-				self.item = function(item, html) { //changes the item constructor				
+				self.item = function(item, html) { // changes the item constructor				
 					
 					if(item)
 						itemConstructor = item;
@@ -722,13 +722,13 @@
 					}
 					
 					if(source) {
-						//apply the new constructor to all the existing items					
+						// apply the new constructor to all the existing items					
 						
 						var _order = order,
 							data = source.items,
 							i = 0, l = order.length;
 						
-						//clean the item cache, it will be repopulated the items are added again
+						// clean the item cache, it will be repopulated the items are added again
 						order = self.order = [];
 						items = self.items = {};
 						
@@ -739,7 +739,7 @@
 				
 				self.add = function(data) {
 				
-					//adds an item
+					// adds an item
 
 					var item = addItem(data);
 					
@@ -752,7 +752,7 @@
 				
 				self.remove = function(id) {
 				
-					//removes an item
+					// removes an item
 
 					var item = items[id];
 					
@@ -769,14 +769,14 @@
 
 				self.source = function(_source) {
 				
-					//sets the data source for the pod (a source could be a O_O.list or some other plugin that implements the same interface)
+					// sets the data source for the pod (a source could be a O_O.list or some other plugin that implements the same interface)
 
 					source = _source;
 					idProp = _source.idProp;
 					
 					self.reset();
 					
-					//add the existing items from the source
+					// add the existing items from the source
 					var _order = source.order,
 						sItems = source.items,
 						i = 0, l = _order.length;
@@ -791,19 +791,19 @@
 				
 					// clean the existing and add the new items (if available)
 
-					while(order.length) //remove the existing items in the pod
+					while(order.length) // remove the existing items in the pod
 						self.remove(order[0]);
 					
 					freeId = 0;
 					
-					if(newItems) //add the given items
+					if(newItems) // add the given items
 						for(var i = 0, l = newItems.length; i < l;)
 							self.add(newItems[i++]);
 				}
 				
 				self.refresh = function() {
 				
-					//reflect the order changes in the source
+					// reflect the order changes in the source
 
 					var data, id, sId, item$,
 						itemsBuffer = {},
@@ -828,39 +828,39 @@
 					self.order = order;
 				}
 				
-				//helpers
+				// helpers
 				
 				function addItem(data) {
 				
 					// used by self.item and self.add to construct and add an item to the pod
 				
 					var item,
-						node = itemNode.cloneNode(true), //deep clone the node
+						node = itemNode.cloneNode(true), // deep clone the node
 						id = data[idProp];
 
-					id = id !== undefined ? id + '' : getFreeKey(items); //convert the id to string to maintain type safety
+					id = id !== undefined ? id + '' : getFreeKey(items); // convert the id to string to maintain type safety
 					order.push(id);
-					node.setAttribute(keyAttr, id); //set the id as the key attribute.
+					node.setAttribute(keyAttr, id); // set the id as the key attribute.
 					
-					/*/passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group*/
-					item = items[id] = O_O.box(new itemConstructor(data, id)); //make a new box and register it to the items array
+					/*/ passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group */ 
+					item = items[id] = O_O.box(new itemConstructor(data, id)); // make a new box and register it to the items array
 					
 					item.$
 						.at(node, self)
 						.set(data);
 					
-					box.$.$el[mode](node); //add it to the pod
+					box.$.$el[mode](node); // add it to the pod
 					
 					return item;
 				}
 				
 				function extractItemNode() {
 
-					itemNode = box.$.prop('firstElementChild'); //use the first child element as the template for items
-					box.$.html(''); //empty the pod's box
+					itemNode = box.$.prop('firstElementChild'); // use the first child element as the template for items
+					box.$.html(''); // empty the pod's box
 				}
 				
-				function listen(event) { //listen to the events from the source and reflect them
+				function listen(event) { // listen to the events from the source and reflect them
 
 					var data = event.data,
 						id = data[idProp],
@@ -872,7 +872,7 @@
 					else if(type == 'change')
 						items[id].$.set(event.changes);
 						
-					else //remove the item
+					else // remove the item
 						self.remove(id);
 				}
 				
@@ -882,7 +882,7 @@
 				}
 			}
 
-			//Data Classes
+			// Data Classes
 			, value: function(val) {
 			
 				// a host (observable) that stores a simple value
@@ -895,12 +895,12 @@
 					
 					if(arguments.length) {
 
-						if(newVal === val) //this equality check is to break circular references (when the value is bound to a UI control) and false changes (the value is reset to the same value)
+						if(newVal === val) // this equality check is to break circular references (when the value is bound to a UI control) and false changes (the value is reset to the same value)
 							return;
 
 						self.val.prev = val;
 						val = newVal;
-						host(newVal, self.val); //fires the change; self.val() could be called to get the prevVal
+						host(newVal, self.val); // fires the change; self.val() could be called to get the prevVal
 					}
 
 					return val;
@@ -914,7 +914,7 @@
 
 			, object: function(store) {
 			
-				//helps with the handling dynamic objects with observable properties; could simplify the process handling comlex data
+				// helps with the handling dynamic objects with observable properties; could simplify the process handling complex data
 
 				this.wrap = function(newData) {
 
@@ -947,7 +947,7 @@
 
 				var self = this,
 					items = self.items = {},
-					order = self.order = [], //holds the list of ids in the order of addition, is used by .pod-s to refresh data.
+					order = self.order = [], // holds the list of ids in the order of addition, is used by .pod-s to refresh data.
 					event = self.event = O_O.host(),
 					idProp = self.idProp = options.idProp || '_id';
 
@@ -958,7 +958,7 @@
 					// add a new item
 
 					if(data[idProp] === undefined)
-						data[idProp] = getFreeKey(items); //convert the id to string to maintain type safety
+						data[idProp] = getFreeKey(items); // convert the id to string to maintain type safety
 					
 					var id = data[idProp] + '';
 					
@@ -1031,10 +1031,10 @@
 				
 					// clean the existing and add the new items (if available)
 
-					while(order.length) //remove the existing items in the pod
+					while(order.length) // remove the existing items in the pod
 						self.remove(order[0]);
 					
-					if(newItems) //add the given items
+					if(newItems) // add the given items
 						for(var i = 0, l = newItems.length; i < l;)
 							self.add(newItems[i++]);
 				}
@@ -1042,10 +1042,10 @@
 				if(options.data)
 					self.reset(options.data);
 				
-				options = undefined; //clear the variable
+				options = undefined; // clear the variable
 			}
 			
-			//control classes
+			// control classes
 			, watch: function() {
 			
 				//? here: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
@@ -1055,7 +1055,7 @@
 
 					action = emptyFunction(),
 
-					plug = function(val, source) { //the action to take whent one of the watches change
+					plug = function(val, source) { // the action to take when one of the watches change
 
 						action(val, source);
 					},
@@ -1071,7 +1071,7 @@
 
 						arg = arguments[i++];
 
-						if(plugs.indexOf(arg) == -1) { //don't watch the val if it's being watched already
+						if(plugs.indexOf(arg) == -1) { // don't watch the val if it's being watched already
 						
 							plugs.push(arg);
 							arg.plug(plug);
@@ -1113,20 +1113,20 @@
 			}
 		}
 
-		//Decorators (simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance)
+		// Decorators (simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance)
 		
-		//UI wrappers
-		O_O.box = function(data) { //an element that could have children
+		// UI wrappers
+		O_O.box = function(data) { // an element that could have children
 
 			return new O_O.class.box(data || {});
 		}
 
-		O_O.pod = function(data) { //an element that acts as a collection
+		O_O.pod = function(data) { // an element that acts as a collection
 
 			return new O_O.class.pod(data || {});
 		}
 
-		//Data wrappers
+		// Data wrappers
 		O_O.host = function() {
 
 			return new O_O.class.host().wrap;
@@ -1147,7 +1147,7 @@
 			return new O_O.class.list(options || {});
 		}
 
-		//control wrappers
+		// control wrappers
 		O_O.listen = function(val, func) {
 
 			return {
@@ -1167,14 +1167,14 @@
 			return _watch;
 		}
 
-		//Factories
+		// Factories
 		O_O.trans = function(transform) {
 		
-			//O_O.trans: generates a wrapper a that transforms values supplied by observables
+			// O_O.trans: generates a wrapper a that transforms values supplied by observables
 
 			return function(host, param) {
 
-				var wrap = function(){ //this function wraps the observable and alter the value provided by it
+				var wrap = function(){ // this function wraps the observable and alter the value provided by it
 				
 					return transform(host(), host, param)
 				};
@@ -1191,33 +1191,33 @@
 			}
 		}
 
-		//Monoliths
+		// Monoliths
 		O_O.state = new function() {
 
 			var self = this;
 			
-			/*/use 'change' to change the state and set the history*/
+			/*/ use 'change' to change the state and set the history */ 
 			self.change = O_O.value();
 			
-			self.routes = {}; // to be overrided by the user provided routes
+			self.routes = {}; // to be overridden by the user provided routes
 
-			/*/use 'set' if the state has to be changed without affecting the history*/
-			self.set = function(hash) { //processes the hash, ececutes the related function and changes the hash on sucessful execution
+			/*/  use 'set' if the state has to be changed without affecting the history */ 
+			self.set = function(hash) { // processes the hash, executes the related function and changes the hash on sucessful execution
 
-				if(!hash) //firefox sets an 'undefined' has when there's no hash
-					hash = ''; //the default hash
+				if(!hash) // firefox sets an 'undefined' has when there's no hash
+					hash = ''; // the default hash
 					
-				if(resolve(self.routes, hash)) //the state is set if the route is resolved successfully (a non-truthy value is returned)
+				if(resolve(self.routes, hash)) // the state is set if the route is resolved successfully (a non-truthy value is returned)
 					return;
 			}
 
-			self.change.plug(function(hash) { //listens to the hash changes and sets the route
+			self.change.plug(function(hash) { // listens to the hash changes and sets the route
 
 				self.set(hash);
 				window.location.hash = hash;
 			});
 			
-			/*/route resolution
+			/*/ route resolution
 			
 				state.routes = {
 				
@@ -1229,7 +1229,7 @@
 							
 								'*': function(finalParam, otherCollectedParamsArray) {
 								
-									//
+									// 
 								}
 							}
 						}
@@ -1237,11 +1237,11 @@
 				}
 				
 				state.change('a/param1/b/param/2') resolves to a.*.b('param/2', [param1])
-			*/
-			function resolve(route, path, params) { //resolves the route
+			 */ 
+			function resolve(route, path, params) { // resolves the route
 
 				if(!route)
-					return 1; //notify failure if the route is not suresolved
+					return 1; // notify failure if the route is not resolved
 				
 				if(!params)
 					params = [];
@@ -1260,11 +1260,11 @@
 					target = route['*'];
 				}
 				
-				return resolve(target, rest, params); //move one level deeper
+				return resolve(target, rest, params); // move one level deeper
 			}
 		}
 
-		//plugin wrap
+		// plugin wrap
 		O_O.plugin = function(name, plugin) {
 
 			if(!plugin)
@@ -1280,24 +1280,24 @@
 
 		var hash = location.hash.substr(1);
 		
-		if(ready) { //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
+		if(ready) { // ! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
 
 			ready();
-			initState(hash); //resolve the provided state
+			initState(hash); // resolve the provided state
 		}
 
-		else //a ready function is not available
-			O_O.ready = function(func) { //so execute it as soon as it's available
+		else // a ready function is not available
+			O_O.ready = function(func) { // so execute it as soon as it's available
 
 				func();
-				initState(hash); //resolve the provided state
+				initState(hash); // resolve the provided state
 			}
 	});
 	
-	//listen to changes in history
+	// listen to changes in history
 	function initState(hash) {
 
-		changeState(hash); //resolve the provided state
+		changeState(hash); // resolve the provided state
 		
 		window.addEventListener('popstate', function() {
 

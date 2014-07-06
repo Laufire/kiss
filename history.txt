@@ -261,3 +261,5 @@
 140313_2255	Bug fixed: '_id' wasn't set as the defult idProp in O_O.pod.
 
 140509_1850	Bug fixed: default values to the Boxes weren't applied, when the given value is falsy.
+
+140703_0030	Fixed the comments.
