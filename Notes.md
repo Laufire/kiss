@@ -43,6 +43,10 @@
 
 * kiss recipes: a set of examples to demonstrate recipe style programming.
 
+* Opensource the project.
+
+* Implement testing.
+
 
 ## Issues
 
@@ -279,6 +283,12 @@
 * O\_O.list won't have methods or events related to sorting.
 
 * O\_O.pod item is to be a constructor function, as it simplifies every-day coding. Though it makes extensions to the the 'item' harder; there still has ways to extend the 'item' (ref: O\_O.podSelect).
+
+* Decided not to have a $ less box data ({text:'a'} instead of {$:{text:'a'}}), as this might lead to bugs(by mistake).
+
+* O\_O.pod wouldn't have an idProp in its options; as it's considered to be in the domain O_O.list.
+
+* Decided to ensure type-safety to save the valuable developer time.
 
 
 ## Performance

@@ -1,18 +1,17 @@
-﻿//? box.data
-// pods for O_O.kebab (a pod for boxes with different structures), popups
+﻿//? treating displays as clickables
 //? pod->box : list->?
 //? box.reset / using null or ''
 //? remove O_O.object
+//? box.data (for live data)
 //? Could $.html and $.text be cleaned?
-//? treating displays as clickables
 //? pods from arrays (automatic data bindings without an item constructor)
-//? an idAttribute: 'RollNo' for the options of pod and list.
 //? localStorage as a data source for O_O.values
 //? data stores, as interfaces to existing data objects like localStorage
+//? Renaming list.update to list.save.
 
 /*!
 	KISS		-	a stupid js lib, that enables the easy development of structured and data driven Applications.
-	Version		-	0.0.8
+	Version		-	0.0.9
 	Liscence	-	NO2 Liscence
 	Dependencies	-	microDOM-v0.0.5
 	
@@ -34,17 +33,16 @@
 
 		var O_O = this,
 
-			// helpers
+			/* Defaults */
+			keyAttr = 'id', // the keyAttr that marks the element to be KISSed (the default is 'id')
+			
+			/* Helpers */
 			$ = DOM.$,
 
-			// init
-			keyAttr = 'id', // the keyAttr that marks the element to be KISSed (the default is 'id')
-
-			// helpers functions
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
 
-		O_O.VERSION = '0.0.7';
+		O_O.VERSION = '0.0.9';
 
 		O_O.keyAttr = function(attr) { // change the keyAttr to be KISSed
 		
@@ -56,7 +54,7 @@
 			ready = func;
 		}
 
-		// helpers
+		/* Utility Functions */
 		function emptyFunction() {
 		
 			return function(){}
@@ -193,14 +191,12 @@
 		}
 
 		// public
-		// classes
-		O_O.class = {
+		/* Classes */
+		O_O.class = { 
 
-			// base classes
+			/* Base classes */
 			
-			host: function() {
-			
-				// a base class to implement observables
+			host: function() { // a base class to implement observables
 
 				var plugs = [],
 
@@ -226,17 +222,15 @@
 				}
 			}
 
-			// UI classes
+			/* UI classes */
 			
-			, box: function box(data/*consists of $data and child element data*/) {
-				
-				// helps handling trees
+			, box: function box(data/*consists of $data and child element data*/) { // helps handling trees
 				
 				var self = this,
 					_$, $el, elType, cleanUp, trans,
 
 					events = {},
-					plugs = {prop: {}, attr: {}, class: {}}, /*stores the 'unplug' functions from the hosts*/
+					plugs = {prop: {}, attr: {}, class: {}}, // stores the 'unplug' functions from the hosts
 
 					children = getKeys(data);
 
@@ -244,10 +238,8 @@
 				
 				load(self, data, children); // load the children on to the box (to enable 'parent.child' access of un-kissable properties)
 
-				/* overload the provided data.$, to enable 'self' reference inside the object's constructor*/
-				_$ = self.$ = function(data) {
-				
-					// helps to get and set values and events; and to plug observables
+				//! overload the provided data.$, to enable 'self' reference inside the object's constructor
+				_$ = self.$ = function(data) { // helps to get and set values and events; and to plug observables
 
 					enumerate(data, function(key, val) {
 
@@ -265,9 +257,7 @@
 					return _$;
 				}
 
-				_$.set = function(data) {
-
-					// sets the data of the children
+				_$.set = function(data) { // sets the data of the children
 					
 					var keys = getKeys(data),
 						i = 0, l = keys.length;
@@ -294,9 +284,7 @@
 					return _$;
 				}
 
-				_$.at = function(elm/*keyAttr, a DOM.$.el or a DOM element*/, parent) { /*sets the el for the element and loads it with existing html, attrs etc*/
-
-					// sets the node for the box
+				_$.at = function(elm/*keyAttr, a DOM.$.el or a DOM element*/, parent) { // sets the node for the box (sets the el for the element and loads it with existing html, attrs etc)
 					
 					if(!parent) {
 						
@@ -319,9 +307,7 @@
 					return _$;
 				}
 				
-				_$.clear = function() {
-				
-					// destructor, that clears all the children and unplugs the existing plugs
+				_$.clear = function() { // destructor, that clears all the children and unplugs the existing plugs
 
 					for(var i = 0; i < children.length;) // remove all children (boxes and pods)
 						_$.remove(children[i++]);
@@ -340,9 +326,7 @@
 					$el.el.remove();
 				}
 				
-				_$.append = function(childName, tagName, boxProps) {
-				
-					// append a child
+				_$.append = function(childName, tagName, boxProps) { // append a child
 					
 					self.$.$el.append(tagName).attr('id', childName);
 					
@@ -351,9 +335,7 @@
 					return box.$.at(childName, self);
 				}
 				
-				_$.remove = function(childName) {
-				
-					// remove a child
+				_$.remove = function(childName) { // remove a child
 
 					var $child = self[childName].$;
 
@@ -361,13 +343,11 @@
 
 						$child.clear();
 						delete self[childName];
-						children.splice(children.indexOf(childName), 1);
+						remove(children, childName);
 					}
 				}
 
-				_$.val = function(newVal) {
-
-					/*/ helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val */ 
+				_$.val = function(newVal) { // helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val
 					
 					if(trans)
 						return trans(newVal, self); // add a custom value function; could both set and return values
@@ -426,9 +406,7 @@
 					}
 				}
 
-				_$.html = function(newVal) {
-				
-					// plug / unplug an observable or get / set some value to the node's html; prefer $.text, as it's fater and safer
+				_$.html = function(newVal) { // plug / unplug an observable or get / set some value to the node's html; prefer $.text, as it's fater and safer
 
 					if(!arguments.length)
 						return $el.html()
@@ -436,9 +414,7 @@
 					$elRouter('prop', 'innerHTML', newVal);
 				}
 				
-				_$.text = function(newVal) {
-
-					// plug / unplug a host to the node's text
+				_$.text = function(newVal) { // plug / unplug a host to the node's text
 					
 					if(!arguments.length)
 						return $el.text()
@@ -446,30 +422,22 @@
 					$elRouter('prop', 'textContent', newVal);
 				}
 
-				_$.prop = function(prop, newVal) {
-
-					// plug / unplug a host to a particular (js) property of the DOMElement
+				_$.prop = function(prop, newVal) { // plug / unplug a host to a particular (js) property of the DOMElement
 					
 					return $elRouter('prop', prop, newVal);
 				}
 
-				_$.attr = function(attr, newVal) {
-
-					// plug / unplug a host to a particular attribute of the node
+				_$.attr = function(attr, newVal) { // plug / unplug a host to a particular attribute of the node
 					
 					return $elRouter('attr', attr, newVal);
 				}
 
-				_$.class = function(_class, newVal) {
-
-					// plug / unplug a host to a classList of the node
+				_$.class = function(_class, newVal) { // plug / unplug a host to a classList of the node
 					
 					return $elRouter('class', _class, newVal);
 				}
 
-				_$.event = function(name, handler) {
-
-					// add / remove an event listener; an event could have only one listener (this is to maintain simplicity in the design of apps)
+				_$.event = function(name, handler) { // add / remove an event listener; an event could have only one listener (this is to maintain simplicity in the design of apps)
 					
 					var el, eName,
 						pos = name.indexOf(' ');
@@ -485,14 +453,14 @@
 						eName = name;
 					}
 
-					if(handler) {// allows to remove the existing event handler by not passing a handler
+					if(handler) { // allows to remove the existing event handler by not passing a handler
 						
 						if(events[name])// the event already has a handler
 							el.off(eName, events[name]); // remove the handler; having a single handler per event is by design, this is to maintain simplicity and structure. 'A button could turn on only a single light'.
 					
 						el.on(eName, events[name] = function(e) {
 						
-							// !'this' context is lost, that could be got through the e.target
+							//! 'this' context is lost, that could be got through the e.target
 							handler(e, self);
 						});
 					}
@@ -504,7 +472,7 @@
 					return _$;
 				}
 
-				// helpers
+				/* Helpers */
 				function init() { // sets the default values (when hosts are directly assigned they are plugged)
 
 					var $data = data.$;
@@ -596,7 +564,7 @@
 
 				function $elRouter(method, prop, newVal) { // sets attr/prop/etc via $
 
-					if(newVal === undefined) { // !arguments.length won't work here as the interface functions pass their undefined variables directly to this function
+					if(newVal === undefined) { //! arguments.length won't work here as the interface functions pass their undefined variables directly to this function
 						
 						return $el[method](prop);
 					}
@@ -645,7 +613,7 @@
 
 						if(typeof child == 'object') {
 						
-							/*/ Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class */ 
+							//! Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class3
 							if(child.constructor.name == '' || child.constructor.name == 'Object') // a plain object containing self attrs and children
 								self[childName] = O_O.box(child); // build a box using the given 'data' and replace the data with it
 						}
@@ -659,9 +627,7 @@
 				}
 			}
 
-			, pod: function pod(options) {
-			
-				// helps to manage a collection of identical objects
+			, pod: function pod(options) { // helps to manage a collection of identical objects
 
 				var freeId = 0, itemNode,
 				
@@ -683,9 +649,7 @@
 
 				_$ = self.$ = extend({}, box.$); // add the pre-$.at box.$ properties to self.$
 				
-				_$.at = function(elm, parent) {
-				
-					// sets the node for the pod
+				_$.at = function(elm, parent) { // sets the node for the pod
 
 					var box$ = box.$;
 					
@@ -721,8 +685,7 @@
 						extractItemNode();
 					}
 					
-					if(source) {
-						// apply the new constructor to all the existing items					
+					if(source) { // apply the new constructor to all the existing items					
 						
 						var _order = order,
 							data = source.items,
@@ -737,9 +700,7 @@
 					}
 				}
 				
-				self.add = function(data) {
-				
-					// adds an item
+				self.add = function(data) { // adds an item
 
 					var item = addItem(data);
 					
@@ -750,15 +711,15 @@
 					});
 				}
 				
-				self.remove = function(id) {
+				self.remove = function(id) { // removes an item
 				
-					// removes an item
+					id += ''; // ensure type safety
 
 					var item = items[id];
 					
 					item.$.clear();
 					delete items[id];
-					order.splice(order.indexOf(id), 1);
+					remove(order, id);
 					
 					event({
 					
@@ -767,9 +728,7 @@
 					});
 				}
 
-				self.source = function(_source) {
-				
-					// sets the data source for the pod (a source could be a O_O.list or some other plugin that implements the same interface)
+				self.source = function(_source) { // sets the data source for the pod (a source could be a O_O.list or some other plugin that implements the same interface)
 
 					source = _source;
 					idProp = _source.idProp;
@@ -787,9 +746,7 @@
 					source.event.plug(listen); // listen to the changes to the source, for reflecting them
 				}
 				
-				self.reset = function(newItems) {
-				
-					// clean the existing and add the new items (if available)
+				self.reset = function(newItems) { // clean the existing and add the new items (if available)
 
 					while(order.length) // remove the existing items in the pod
 						self.remove(order[0]);
@@ -801,9 +758,7 @@
 							self.add(newItems[i++]);
 				}
 				
-				self.refresh = function() {
-				
-					// reflect the order changes in the source
+				self.refresh = function() { // reflect the order changes in the source
 
 					var data, id, sId, item$,
 						itemsBuffer = {},
@@ -828,11 +783,9 @@
 					self.order = order;
 				}
 				
-				// helpers
+				/* Helpers */
 				
-				function addItem(data) {
-				
-					// used by self.item and self.add to construct and add an item to the pod
+				function addItem(data) { // used by self.item and self.add to construct and add an item to the pod
 				
 					var item,
 						node = itemNode.cloneNode(true), // deep clone the node
@@ -842,7 +795,7 @@
 					order.push(id);
 					node.setAttribute(keyAttr, id); // set the id as the key attribute.
 					
-					/*/ passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group */ 
+					//! passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
 					item = items[id] = O_O.box(new itemConstructor(data, id)); // make a new box and register it to the items array
 					
 					item.$
@@ -863,7 +816,7 @@
 				function listen(event) { // listen to the events from the source and reflect them
 
 					var data = event.data,
-						id = data[idProp],
+						id = data[idProp] + '',
 						type = event.type;
 					
 					if(type == 'add')
@@ -882,16 +835,13 @@
 				}
 			}
 
-			// Data Classes
-			, value: function(val) {
+			/* Data Classes */
 			
-				// a host (observable) that stores a simple value
+			, value: function(val) { // a host (observable) that stores a simple value
 
 				var self = this;
 
-				self.val = function(newVal) {
-
-					// sets or returns the value
+				self.val = function(newVal) { // sets or returns the value
 					
 					if(arguments.length) {
 
@@ -912,9 +862,7 @@
 				self.val.unplug = host.unplug;
 			}
 
-			, object: function(store) {
-			
-				// helps with the handling dynamic objects with observable properties; could simplify the process handling complex data
+			, object: function(store) { // helps with the handling dynamic objects with observable properties; could simplify the process handling complex data
 
 				this.wrap = function(newData) {
 
@@ -941,9 +889,7 @@
 				extend(this.wrap, store);
 			}
 
-			, list: function(options) {
-			
-				// helps with handling observable lists (often used as the data source for O_O.pods)
+			, list: function(options) { // helps with handling observable lists (often used as the data source for O_O.pods)
 
 				var self = this,
 					items = self.items = {},
@@ -953,9 +899,7 @@
 
 				self.length = O_O.value(0);
 				
-				self.add = function(data) {
-				
-					// add a new item
+				self.add = function(data) { // add a new item
 
 					if(data[idProp] === undefined)
 						data[idProp] = getFreeKey(items); // convert the id to string to maintain type safety
@@ -975,9 +919,9 @@
 					}, self);
 				}
 				
-				self.change = function(id, changes) {
-
-					// change an existing item
+				self.change = function(id, changes) { // change an existing item
+					
+					id += ''; // ensure type safety
 					
 					var data = items[id];
 					
@@ -992,9 +936,9 @@
 					}, self);
 				}
 				
-				self.remove = function(id) {
-
-					// remove an existing item
+				self.remove = function(id) { // remove an existing item
+					
+					id += ''; // ensure type safety
 					
 					var data = items[id];
 					
@@ -1002,7 +946,7 @@
 						return;
 					
 					delete items[id];
-					order.splice(order.indexOf(id), 1);
+					remove(order, id);
 					
 					self.length(order.length);
 					
@@ -1018,7 +962,7 @@
 				
 				self.update = function(data) {
 				
-					var id = data[idProp];
+					var id = data[idProp] + '';
 					
 					if(id && items[id])
 						self.change(id, data);
@@ -1027,9 +971,7 @@
 						self.add(data);
 				}
 
-				self.reset = function(newItems) {
-				
-					// clean the existing and add the new items (if available)
+				self.reset = function(newItems) { // clean the existing and add the new items (if available)
 
 					while(order.length) // remove the existing items in the pod
 						self.remove(order[0]);
@@ -1045,11 +987,11 @@
 				options = undefined; // clear the variable
 			}
 			
-			// control classes
-			, watch: function() {
+			/* Control classes */
 			
-				//? here: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
-				// watches multiple observables for changes, the watched could dynamically be added or removed
+			, watch: function() { // watches multiple observables for changes, the watched could dynamically be added or removed
+			
+				//? check: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
 
 				var self = this,
 
@@ -1113,9 +1055,10 @@
 			}
 		}
 
-		// Decorators (simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance)
+		/* Decorators */ // simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance
 		
-		// UI wrappers
+		/* UI wrappers */
+		
 		O_O.box = function(data) { // an element that could have children
 
 			return new O_O.class.box(data || {});
@@ -1126,7 +1069,8 @@
 			return new O_O.class.pod(data || {});
 		}
 
-		// Data wrappers
+		/* Data wrappers */
+		
 		O_O.host = function() {
 
 			return new O_O.class.host().wrap;
@@ -1147,7 +1091,8 @@
 			return new O_O.class.list(options || {});
 		}
 
-		// control wrappers
+		/* Control wrappers */
+		
 		O_O.listen = function(val, func) {
 
 			return {
@@ -1167,10 +1112,9 @@
 			return _watch;
 		}
 
-		// Factories
-		O_O.trans = function(transform) {
+		/* Factories */
 		
-			// O_O.trans: generates a wrapper a that transforms values supplied by observables
+		O_O.trans = function(transform) { // generates a wrapper a that transforms values supplied by observables
 
 			return function(host, param) {
 
@@ -1191,17 +1135,18 @@
 			}
 		}
 
-		// Monoliths
+		/* Monoliths */
+		
 		O_O.state = new function() {
 
 			var self = this;
 			
-			/*/ use 'change' to change the state and set the history */ 
+			//! use 'change' to change the state and set the history
 			self.change = O_O.value();
 			
 			self.routes = {}; // to be overridden by the user provided routes
 
-			/*/  use 'set' if the state has to be changed without affecting the history */ 
+			//!  use 'set' if the state has to be changed without affecting the history
 			self.set = function(hash) { // processes the hash, executes the related function and changes the hash on sucessful execution
 
 				if(!hash) // firefox sets an 'undefined' has when there's no hash
@@ -1264,8 +1209,7 @@
 			}
 		}
 
-		// plugin wrap
-		O_O.plugin = function(name, plugin) {
+		O_O.plugin = function(name, plugin) { // a wrapper for plugins
 
 			if(!plugin)
 				return self.plugin[name];
@@ -1280,7 +1224,7 @@
 
 		var hash = location.hash.substr(1);
 		
-		if(ready) { // ! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
+		if(ready) { //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
 
 			ready();
 			initState(hash); // resolve the provided state
@@ -1294,8 +1238,9 @@
 			}
 	});
 	
-	// listen to changes in history
-	function initState(hash) {
+	/* Helpers */
+	
+	function initState(hash) { // listen to changes in history
 
 		changeState(hash); // resolve the provided state
 		
@@ -1304,4 +1249,5 @@
 			changeState(location.hash.substr(1));
 		});
 	}
+	
 })(window, document);

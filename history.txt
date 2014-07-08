@@ -263,3 +263,8 @@
 140509_1850	Bug fixed: default values to the Boxes weren't applied, when the given value is falsy.
 
 140703_0030	Fixed the comments.
+
+140709_0405	Bug Fixed: the remove methods of O_O.pod and O_O.list weren't type safe.
+140709_1140	Bug fixed: O_O.VERSION wasn't updated.
+140709_1210	Bug Fixed: the change and update methods of O_O.list weren't type safe.
+140709_1210	v0.0.9 released (on bug-fixes, added stability and new features).
