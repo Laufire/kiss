@@ -22,7 +22,7 @@
 	sites			-	stakeoverflow, google
 */
 
-(function(window, document) {
+(function(window, document, DOM) {
 
 	"use strict";
 
@@ -93,7 +93,8 @@
 
 				for(; i1 < l1;) {
 				
-					key = keys[i1++], prop = source[key];
+					key = keys[i1++];
+					prop = source[key];
 
 					if(prop !== undefined)
 						target[key] = prop;
@@ -102,11 +103,10 @@
 
 			return target;
 		}
-		
+		/* //? for future use
 		function clone(source, depth) {
 
 			var target = {},
-				source,
 				key, prop,
 				keys = getKeys(source),
 				i = 0, l = keys.length;
@@ -116,7 +116,8 @@
 			
 			for(; i < l;) {
 			
-				key = keys[i++], prop = source[key];
+				key = keys[i++];
+				prop = source[key];
 
 				if(prop !== undefined) {
 				
@@ -129,7 +130,7 @@
 
 			return target;
 		}
-		
+		*/
 		function getFreeKey(obj) { // returns a 'free' key name (with alpha-numeric) characters for the given object;
 
 			var key = '';
@@ -164,15 +165,14 @@
 			var prop,
 				i = 0, l = props.length;
 
-			for(; i < l;)
-				prop = props[i++], target[prop] = source[prop];
+			for(; i < l; prop = props[i++], target[prop] = source[prop]);
 
 			return target;
 		}
 
 		function getProp(obj, prop) {
 
-			var prop = obj[prop];
+			prop = obj[prop];
 
 			if(typeof prop == 'function')
 				return prop ();
@@ -182,12 +182,14 @@
 
 		function setProp(obj, prop, value) {
 
-			var prop = obj[prop];
+			var _prop = obj[prop];
 
-			if(typeof prop == 'function')
-				return prop(value);
+			if(typeof _prop == 'function')
+				return _prop(value);
 
-			return prop = value;
+			obj[prop] = value;
+			
+			return value;
 		}
 
 		// public
@@ -303,6 +305,8 @@
 					
 					init();
 					loadChildren();
+					
+					data.$ = _$; // load the $ to the passed data object, so it could be referenced through 'self' (a copy of 'this' inside the passed object)
 
 					return _$;
 				}
@@ -375,7 +379,7 @@
 						if(prop)
 							return _$.prop(prop);
 
-						else if(elType == 0) { // the element is an HTML element
+						else if(elType === 0) { // the element is an HTML element
 							
 							var length = children.length;
 							
@@ -497,7 +501,7 @@
 
 							if(elType > 1) { // the element is an editable control (input, textarea, select) or a check box
 
-								var prop = elType == 2 ? 'checked' : 'value';
+								var prop = elType === 2 ? 'checked' : 'value';
 
 								if(def.plug) {
 								
@@ -520,7 +524,7 @@
 								}
 							}
 
-							else if(elType == 1) { // the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
+							else if(elType === 1) { // the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
 								
 								_$.event('click', def);
 							}
@@ -614,7 +618,7 @@
 						if(typeof child == 'object') {
 						
 							//! Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class3
-							if(child.constructor.name == '' || child.constructor.name == 'Object') // a plain object containing self attrs and children
+							if(child.constructor.name === '' || child.constructor.name == 'Object') // a plain object containing self attrs and children
 								self[childName] = O_O.box(child); // build a box using the given 'data' and replace the data with it
 						}
 						else {
@@ -635,7 +639,7 @@
 					source = options.source,
 					idProp = '_id',
 					data = options.data,
-					itemConstructor = options.item,
+					ItemConstructor = options.item,
 					box = O_O.box({$: options.$}),
 					mode = options.mode || 'append', // mode: append || prepend
 					
@@ -643,11 +647,11 @@
 					self = this,
 					items = self.items = {}, // holds all the items
 					order = self.order = [], // holds the list of ids in the order of addition; use this array to iterate over the items in the pod
-					event = self.event = O_O.host(), // could be listened for changes to the pod
-					
-					options = undefined, // cleaning the options var
+					event = self.event = O_O.host(); // could be listened for changes to the pod
 
-				_$ = self.$ = extend({}, box.$); // add the pre-$.at box.$ properties to self.$
+					options = undefined; // cleaning the options var
+				
+				var _$ = self.$ = extend({}, box.$); // add the pre-$.at box.$ properties to self.$
 				
 				_$.at = function(elm, parent) { // sets the node for the pod
 
@@ -677,7 +681,7 @@
 				self.item = function(item, html) { // changes the item constructor				
 					
 					if(item)
-						itemConstructor = item;
+						ItemConstructor = item;
 					
 					if(html) {
 						
@@ -796,7 +800,7 @@
 					node.setAttribute(keyAttr, id); // set the id as the key attribute.
 					
 					//! passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
-					item = items[id] = O_O.box(new itemConstructor(data, id)); // make a new box and register it to the items array
+					item = items[id] = O_O.box(new ItemConstructor(data, id)); // make a new box and register it to the items array
 					
 					item.$
 						.at(node, self)
@@ -827,11 +831,6 @@
 						
 					else // remove the item
 						self.remove(id);
-				}
-				
-				function setItemData(data) {
-
-					source.change(this.id, data);
 				}
 			}
 
@@ -1211,8 +1210,8 @@
 
 		O_O.plugin = function(name, plugin) { // a wrapper for plugins
 
-			if(!plugin)
-				return self.plugin[name];
+			if(plugin === undefined)
+				return O_O.plugin[name];
 
 			O_O.plugin[name] = plugin;
 		}
@@ -1250,4 +1249,4 @@
 		});
 	}
 	
-})(window, document);
+})(window, document, window.DOM);

@@ -268,3 +268,9 @@
 140709_1140	Bug fixed: O_O.VERSION wasn't updated.
 140709_1210	Bug Fixed: the change and update methods of O_O.list weren't type safe.
 140709_1210	v0.0.9 released (on bug-fixes, added stability and new features).
+140709_1210	O_O.state.change renamed to O_O.state.hash.
+
+140710_2155	The object passed as the argument to O_O.box is loaded with the box.$ so to be accessed within the passed object as self.$.
+
+140717_1940	linted the source.
+140717_1955	linted plugin.kebab and microDOM.
