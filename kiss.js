@@ -54,7 +54,9 @@
 			ready = func;
 		}
 
+		
 		/* Utility Functions */
+		
 		function emptyFunction() {
 		
 			return function(){}
@@ -111,7 +113,7 @@
 				keys = getKeys(source),
 				i = 0, l = keys.length;
 			
-			if(!depth)
+			if(! depth)
 				depth = 1;
 			
 			for(; i < l;) {
@@ -185,16 +187,17 @@
 			var _prop = obj[prop];
 
 			if(typeof _prop == 'function')
-				return _prop(value);
-
-			obj[prop] = value;
-			
-			return value;
+				_prop(value);
+				
+			else
+				obj[prop] = value;
 		}
 
 		// public
+		
 		/* Classes */
-		O_O.class = { 
+		
+		O_O.class = {
 
 			/* Base classes */
 			
@@ -224,6 +227,7 @@
 				}
 			}
 
+			
 			/* UI classes */
 			
 			, box: function box(data/*consists of $data and child element data*/) { // helps handling trees
@@ -252,8 +256,10 @@
 								_$[key](k, val[k])
 							});
 						}
-						else if(_$[key])
+						else if(_$[key]) {
+						
 							_$[key](val)
+						}
 					});
 
 					return _$;
@@ -288,7 +294,7 @@
 
 				_$.at = function(elm/*keyAttr, a DOM.$.el or a DOM element*/, parent) { // sets the node for the box (sets the el for the element and loads it with existing html, attrs etc)
 					
-					if(!parent) {
+					if(! parent) {
 						
 						$el = get$el(elm, document);
 					}
@@ -376,14 +382,15 @@
 					}
 					else {
 
-						if(prop)
+						if(prop) {
+							
 							return _$.prop(prop);
-
+						}
 						else if(elType === 0) { // the element is an HTML element
 							
 							var length = children.length;
 							
-							if(!length) // the element has no children
+							if(! length) // the element has no children
 								return _$.text(); // so return its text
 								
 							var ret = {},
@@ -401,7 +408,6 @@
 									
 									if(val !== undefined) // to skip buttons and the like
 										ret[childName] = val;
-										
 								}
 							}
 
@@ -412,7 +418,7 @@
 
 				_$.html = function(newVal) { // plug / unplug an observable or get / set some value to the node's html; prefer $.text, as it's fater and safer
 
-					if(!arguments.length)
+					if(! arguments.length)
 						return $el.html()
 
 					$elRouter('prop', 'innerHTML', newVal);
@@ -420,7 +426,7 @@
 				
 				_$.text = function(newVal) { // plug / unplug a host to the node's text
 					
-					if(!arguments.length)
+					if(! arguments.length)
 						return $el.text()
 
 					$elRouter('prop', 'textContent', newVal);
@@ -476,7 +482,9 @@
 					return _$;
 				}
 
+				
 				/* Helpers */
+				
 				function init() { // sets the default values (when hosts are directly assigned they are plugged)
 
 					var $data = data.$;
@@ -673,15 +681,16 @@
 						self.reset(data);
 						data = undefined;
 					}
+					else if(source) {
 						
-					else if(source)
 						self.source(source);
+					}
 				}
 				
-				self.item = function(item, html) { // changes the item constructor				
+				self.item = function(constructor, html) { // changes the item constructor
 					
-					if(item)
-						ItemConstructor = item;
+					if(constructor)
+						ItemConstructor = constructor;
 					
 					if(html) {
 						
@@ -689,7 +698,7 @@
 						extractItemNode();
 					}
 					
-					if(source) { // apply the new constructor to all the existing items					
+					if(source) { // apply the new constructor to all the existing items
 						
 						var _order = order,
 							data = source.items,
@@ -757,9 +766,11 @@
 					
 					freeId = 0;
 					
-					if(newItems) // add the given items
+					if(newItems) { // add the given items
+						
 						for(var i = 0, l = newItems.length; i < l;)
 							self.add(newItems[i++]);
+					}
 				}
 				
 				self.refresh = function() { // reflect the order changes in the source
@@ -786,6 +797,13 @@
 					self.items = items = itemsBuffer;
 					self.order = order;
 				}
+				
+				self.nth = function(n) {
+				
+					return items[order[n]]
+					
+				}
+				
 				
 				/* Helpers */
 				
@@ -834,6 +852,7 @@
 				}
 			}
 
+			
 			/* Data Classes */
 			
 			, value: function(val) { // a host (observable) that stores a simple value
@@ -941,7 +960,7 @@
 					
 					var data = items[id];
 					
-					if(!data)
+					if(! data)
 						return;
 					
 					delete items[id];
@@ -985,6 +1004,7 @@
 				
 				options = undefined; // clear the variable
 			}
+			
 			
 			/* Control classes */
 			
@@ -1054,6 +1074,7 @@
 			}
 		}
 
+		
 		/* Decorators */ // simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance
 		
 		/* UI wrappers */
@@ -1145,10 +1166,10 @@
 			
 			self.routes = {}; // to be overridden by the user provided routes
 
-			//!  use 'set' if the state has to be changed without affecting the history
+			//! use 'set' if the state has to be changed without affecting the history
 			self.set = function(hash) { // processes the hash, executes the related function and changes the hash on sucessful execution
 
-				if(!hash) // firefox sets an 'undefined' has when there's no hash
+				if(! hash) // firefox sets an 'undefined' has when there's no hash
 					hash = ''; // the default hash
 					
 				if(resolve(self.routes, hash)) // the state is set if the route is resolved successfully (a non-truthy value is returned)
@@ -1173,7 +1194,7 @@
 							
 								'*': function(finalParam, otherCollectedParamsArray) {
 								
-									// 
+									//
 								}
 							}
 						}
@@ -1181,13 +1202,14 @@
 				}
 				
 				state.change('a/param1/b/param/2') resolves to a.*.b('param/2', [param1])
-			 */ 
+			*/
+			
 			function resolve(route, path, params) { // resolves the route
 
-				if(!route)
+				if(! route)
 					return 1; // notify failure if the route is not resolved
 				
-				if(!params)
+				if(! params)
 					params = [];
 				
 				if(typeof route == 'function')
@@ -1198,7 +1220,7 @@
 					target = route[part],
 					rest = path.substr(pos + 1);
 				
-				if(!target) {
+				if(! target) {
 
 					params.push(dCode(part));
 					target = route['*'];
@@ -1236,6 +1258,7 @@
 				initState(hash); // resolve the provided state
 			}
 	});
+	
 	
 	/* Helpers */
 	

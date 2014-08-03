@@ -15,17 +15,15 @@
 
 ## ToDos
 
-* Get rid of develop.json of the examples (even /index.html isn't working).
-
 * **A guide**, it's hard to remebmber things when being out of touch.
 
 * Support {$: {class: 'string'}}
 
 * **Think of**: $.bind('*', value) to replace $.*(value); and $.$el.* to be $.* (as $.$el.* is used more than $.*).
 
-* **Think of**: d3 like function syntax for kiss. circles.enter().append('circle').attr('cx', function(d) { return d.x })
-
 * O\_O.bind: to bind data to the UI, and avoid repeating the UI code (? Could O\_O.value be used instead?). Or automatic bindings between the source list and its pod items.
+
+* **Think of**: d3 like function syntax for kiss. circles.enter().append('circle').attr('cx', function(d) { return d.x })
 
 * An example to demonstrate the features; it could serve as a stability tester, during development.
 
@@ -155,9 +153,9 @@
 
 ## Usage
 
-* The keyAttr can't be a '**$**'.
+* The value of the keyAttr *(default: id)* can't be a '**$**'.
 
-* The order of properties in the objects, that are passed as parameters matters; they are processed in the order they are declared. So its better to have the init at last.
+* The order of properties in the objects passed as parameters, matters; they are processed in the order they are declared. So its better to have $.init at last.
 
 	### O\_O.box
 	* 'el' can't be set inside the constructor.
@@ -166,7 +164,7 @@
 
 		* Relates to the elements properties such as *html, prop, attr* etc.
 
-		* They could be accessed through the 'element.$' property like $.*property*.
+		* They could be accessed through the 'element.$' property, like element.$.*property*.
 
 		* Calling a $.*property* with parameters generally sets the value.
 
@@ -182,11 +180,11 @@
 	
 	* Item's children should be inside the item element.
 	
-	* Use *options.data* for **static lists**, where as *options.source* for **dynamic lists**.
-	
-	* Passing 'undefined' values to the item constructors will cause the properties to be missed pass '{}' instead.
+	* Use *options.data* for **static lists**, where as *options.source* to bind a **O\_O.list** for **dynamic lists**.
 	
 	* pod.items[_id] gives the O_O.box of the item; which could be used to change the props of the box (note: this doesn't change any underlying data).
+	
+	* When a O\_O.pod has a source O\_O.list; it's better not to use $.set of the items of the pod.
 	
 	### O\_O.value
 	* The 'change' is triggered only when the new value doesn't '**===**' the old value.
@@ -210,6 +208,8 @@
 
 * Use $.$el.<methods> to work around default kiss functionalities like 'one handler per event'. **But use it only when it's absolutely necessary, as this coud break the structure**.
 
+* May $.trans always return a value too, it will help with testing.
+
 
 ## General
 
@@ -224,7 +224,7 @@
 
 * Followed by listeners.
 
-* And at last the UI initiation.
+* And at last the UI initiation *O\_O.ready()*.
 
 
 ## Structure
@@ -270,7 +270,7 @@
 
 * Native objects are not to be extended, in oder to avoid collisions other libraries.
 
-* An element could only have one handler per event; as this would ensure simplicity. If multiple events are needed, a host handler could be used. Or a 'queue' could be made as a plugin.
+* An element could only have one handler per event; as this would ensure simplicity. If multiple handlers are needed, a host handler could be used. Or a 'queue' could be made as a plugin.
 
 * Events of O\_O objects are exposed through a O\_O.value name .event, instead of the usual on-off pattern. This is to maintain structure and improve efficiency (as multiple events tend affect a same set of values in slightly different ways). O\_O.listen on this events could act as 'controllers'.
 
@@ -284,11 +284,11 @@
 
 * O\_O.pod item is to be a constructor function, as it simplifies every-day coding. Though it makes extensions to the the 'item' harder; there still has ways to extend the 'item' (ref: O\_O.podSelect).
 
-* Decided not to have a $ less box data ({text:'a'} instead of {$:{text:'a'}}), as this might lead to bugs(by mistake).
+* Decided not to have a $-less box data ({text:'a'}) instead of {$:{text:'a'}}), as this might lead to bugs(by mistake).
 
 * O\_O.pod wouldn't have an idProp in its options; as it's considered to be in the domain O_O.list.
 
-* Decided to ensure type-safety to save the valuable developer time.
+* Decided to use strings for the idProp-s of O\_O.pod and O\_O.list, to ensure type-safety to save the valuable developer time.
 
 
 ## Performance

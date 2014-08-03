@@ -274,3 +274,9 @@
 
 140717_1940	linted the source.
 140717_1955	linted plugin.kebab and microDOM.
+
+140727_0515	Added pod.nth.
+140727_0955	Restyled the code.
+
+140803_2130	Cleaned the helper function setProp.
+140803_2150	Got rid of develop.js.
