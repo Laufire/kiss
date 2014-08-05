@@ -224,7 +224,7 @@
 
 * Followed by listeners.
 
-* And at last the UI initiation *O\_O.ready()*.
+* And at last the initiation *O\_O.at('root element's keyAttr', the_associated_kissEl, and_a_optional_callback)*.
 
 
 ## Structure

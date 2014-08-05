@@ -280,3 +280,7 @@
 
 140803_2130	Cleaned the helper function setProp.
 140803_2150	Got rid of develop.js.
+
+140805_0815	O_O.at was introduced, and replaced O_O.ready as the entry point.
+140805_0815	O_O.ready now directly maps to DOM.ready, thus it now could handle multiple callbacks.
+140805_0820	v0.1.0 released, in order to track the minor changes properly. Here after minor version will be changed after every change to the lib.

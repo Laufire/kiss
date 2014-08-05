@@ -11,7 +11,7 @@
 
 /*!
 	KISS		-	a stupid js lib, that enables the easy development of structured and data driven Applications.
-	Version		-	0.0.9
+	Version		-	0.1.0
 	Liscence	-	NO2 Liscence
 	Dependencies	-	microDOM-v0.0.5
 	
@@ -26,10 +26,9 @@
 
 	"use strict";
 
-	var changeState,
-		ready, // stores the ready function
+	var changeState;
 	
-	O_O = window.O_O = new function() { // the library
+	window.O_O = new function() { // the library
 
 		var O_O = this,
 
@@ -42,18 +41,25 @@
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
 
-		O_O.VERSION = '0.0.9';
+		O_O.VERSION = '0.1.0';
 
 		O_O.keyAttr = function(attr) { // change the keyAttr to be KISSed
 		
 			keyAttr = attr;
 		}
 
-		O_O.ready = function(func) { /*multiple ready functions are not implemented, as it could make the code complex*/
+		O_O.ready = DOM.ready;
+		
+		O_O.at = function(elm, kissEl, callback /* optional*/) { // this method should be called only once in a document, as it processes the hash state; for handling dynamic additions use kissEl.$.at instead
+		
+			DOM.ready(function() {
 			
-			ready = func;
+				kissEl.$.at(elm);
+				callback && callback();
+				
+				initState(location.hash.substr(1)); // resolve the provided hash state
+			});
 		}
-
 		
 		/* Utility Functions */
 		
@@ -1241,26 +1247,8 @@
 		changeState = O_O.state.change;
 	}
 
-	DOM.ready(function() {
-
-		var hash = location.hash.substr(1);
-		
-		if(ready) { //! this doesn't seem to fire (as the script of the app hasn't been fully executed on DOM ready)
-
-			ready();
-			initState(hash); // resolve the provided state
-		}
-
-		else // a ready function is not available
-			O_O.ready = function(func) { // so execute it as soon as it's available
-
-				func();
-				initState(hash); // resolve the provided state
-			}
-	});
 	
-	
-	/* Helpers */
+	/* Helpers */	
 	
 	function initState(hash) { // listen to changes in history
 
