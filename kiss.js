@@ -1,13 +1,13 @@
-﻿//? treating displays as clickables
-//? pod->box : list->?
-//? box.reset / using null or ''
-//? remove O_O.object
-//? box.data (for live data)
-//? Could $.html and $.text be cleaned?
-//? pods from arrays (automatic data bindings without an item constructor)
-//? localStorage as a data source for O_O.values
-//? data stores, as interfaces to existing data objects like localStorage
-//? Renaming list.update to list.save.
+﻿//!? treating displays as clickables
+//!? pod->box : list->?
+//!? box.reset / using null or ''
+//!? remove O_O.object
+//!? box.data (for live data)
+//!? Could $.html and $.text be cleaned?
+//!? pods from arrays (automatic data bindings without an item constructor)
+//!? localStorage as a data source for O_O.values
+//!? data stores, as interfaces to existing data objects like localStorage
+//!? Renaming list.update to list.save.
 
 /*!
 	KISS		-	a stupid js lib, that enables the easy development of structured and data driven Applications.
@@ -111,7 +111,7 @@
 
 			return target;
 		}
-		/* //? for future use
+		/* //! for future use
 		function clone(source, depth) {
 
 			var target = {},
@@ -255,16 +255,19 @@
 
 					enumerate(data, function(key, val) {
 
-						if(typeof val == 'object') { // the prop should be enumerated
+						if(_$[key]) { // process only the known properties
 							
-							enumerate(val, function(k) {
+							if(typeof val == 'object') { // the prop should be enumerated
+								
+								enumerate(val, function(k) {
 
-								_$[key](k, val[k])
-							});
-						}
-						else if(_$[key]) {
-						
-							_$[key](val)
+									_$[key](k, val[k])
+								});
+							}
+							else {
+							
+								_$[key](val)
+							}
 						}
 					});
 
@@ -373,7 +376,7 @@
 					if(elType == 3) // the element is an editable control (input, textarea, select)
 						prop = 'value';
 
-					else if(elType == 2) // the element is a checkable //? radio
+					else if(elType == 2) // the element is a checkable //!? radio
 						prop = 'checked';
 
 					if(newVal !== undefined) {
@@ -557,7 +560,7 @@
 					}
 				}
 
-				//? could this be exposed as $.type?
+				//!? could this be exposed as $.type?
 				function getElType(el) { // returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
 
 					if(el.required !== undefined) {
@@ -573,9 +576,8 @@
 						else
 							return 3; // the element is an editable
 					}
-					else if($el.el.formAction !== undefined) // the element is a button
-						return 1;
-					
+					else if(el.formAction !== undefined) // the element is a button
+						return 1;					
 
 					return 0; // the element is a display
 				}
@@ -1016,7 +1018,7 @@
 			
 			, watch: function() { // watches multiple observables for changes, the watched could dynamically be added or removed
 			
-				//? check: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
+				//! check: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
 
 				var self = this,
 

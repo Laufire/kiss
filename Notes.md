@@ -15,6 +15,8 @@
 
 ## ToDos
 
+* Example, 'state' isn't working with the older syntax.
+
 * **A guide**, it's hard to remebmber things when being out of touch.
 
 * Support {$: {class: 'string'}}

@@ -46,7 +46,8 @@ todoApp = O_O.box(new function() {
 
 				change: function(e) {
 				
-					//var start = Date.now();
+					var start = Date.now();
+					
 					var i, checked = e.target.checked,
 						items = todoPod.items,
 						keys = Object.keys(items);
@@ -54,7 +55,7 @@ todoApp = O_O.box(new function() {
 					for(i = 0; i < keys.length; ++i)
 						items[keys[i]].isDone(checked);
 						
-					//console.log(Date.now() - start);
+					console.log('Time to update :', Date.now() - start);
 				}
 			},
 			
@@ -141,7 +142,7 @@ todoApp = O_O.box(new function() {
 			
 			O_O.listen(this.isDone, function(val, source) {
 			
-				self.$.data({
+				self.$.set({
 				
 					isDone: val
 				});
@@ -292,13 +293,13 @@ O_O.listen(todoList.event, function(e, list) {
 	}
 });
 
-/*Finally load the todoApp
-------------------------*/
+/* Finally load the todoApp
+-------------------------*/
 O_O.ready(function() {
 
 	var start = Date.now();
 	
-	for(var i = 0; i < 10; ++i)
+	for(var i = 0; i < 1000; ++i)
 		todoList.add({
 			
 			_id: i,
@@ -307,11 +308,12 @@ O_O.ready(function() {
 		});
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
-	console.log(Date.now() - start);
+	
+	console.log('Time to insert :', Date.now() - start);
 	
 	var start = Date.now();
 	
-	for(var i = 0; i < 10; ++i)
+	for(var i = 0; i < 1000; ++i)
 		todoList.change(i, {
 		
 			isDone: !Boolean(i%2),
@@ -319,7 +321,7 @@ O_O.ready(function() {
 			
 		});
 		
-	console.log(Date.now() - start);
+	console.log('Time to update :', Date.now() - start);
 	
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);

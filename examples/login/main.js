@@ -28,7 +28,7 @@ App = O_O.box(new function() {
 
 	var self = this;
 
-	self.data = O_O.object({
+	self.data = {
 
 		username: O_O.value(),
 
@@ -38,7 +38,7 @@ App = O_O.box(new function() {
 		
 			a: 1, b: 2
 		})
-	});
+	};
 
 	self.title = 'Login - example';
 
@@ -50,12 +50,12 @@ App = O_O.box(new function() {
 			
 			event: 'keyup'
 		}}},
-
+		
 		password: O_O.plugin.keyUpText(self.data.password),
 
 		login: function(e) {
 		
-			console.log(App.data());
+			console.log(App.loginForm.$.val());
 			
 			Server.request({
 
@@ -93,12 +93,14 @@ App = O_O.box(new function() {
 O_O.ready(function() {
 
 	App.$.at('App');
+	
+	console.log('Username: user\nPassword: pass');
 
 	App.data.username(localStorage.user || 'user');
 
 	usernameListener = O_O.listen(App.data.username, function(val) {
 	
-		console.log(val);
+		console.log('Username changed to:', val);
 	});
 
 	textWatch = O_O.watch(App.data.username, App.data.password)

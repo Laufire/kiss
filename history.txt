@@ -284,3 +284,10 @@
 140805_0815	O_O.at was introduced, and replaced O_O.ready as the entry point.
 140805_0815	O_O.ready now directly maps to DOM.ready, thus it now could handle multiple callbacks.
 140805_0820	v0.1.0 released, in order to track the minor changes properly. Here after minor version will be changed after every change to the lib.
+
+140921_1115	Bug fixed: Helper function, getElType had an unknown variable.
+
+140928_1400	Added an index, for the examples.
+140928_1420	Fixed several outdated examples.
+140928_1420	Bug fixed: $.default raised an error, as there weren't any $-method, name default.
+140928_1420	Unknown $-data are now left unprocessed, instead of raising errors.

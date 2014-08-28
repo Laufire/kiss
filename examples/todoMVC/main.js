@@ -44,7 +44,8 @@ todoApp = O_O.box(new function() {
 
 				change: function(e) {
 				
-					//var start = Date.now();
+					var start = Date.now();
+					
 					var checked = e.target.checked,
 						items = todoPod.items,
 						order = todoPod.order,
@@ -53,7 +54,7 @@ todoApp = O_O.box(new function() {
 					for(; i < l; ++i)
 						items[order[i]].isDone(checked);
 						
-					//console.log(Date.now() - start);
+					console.log('Time to update :', Date.now() - start);
 				}
 			},
 			
@@ -293,7 +294,7 @@ O_O.ready(function() {
 
 	var start = Date.now();
 	
-	var count = 6;
+	var count = 1000;
 	
 	for(var i = 0; i < count; ++i)
 		todoList.add({
@@ -302,7 +303,8 @@ O_O.ready(function() {
 		});
 	
 	todoApp.$.at('todoApp'); //always set the root element after all the intializations have been done
-	console.log(Date.now() - start);
+	
+	console.log('Time to insert :', Date.now() - start);
 	
 	var start = Date.now();
 	
@@ -317,7 +319,7 @@ O_O.ready(function() {
 			
 		});
 		
-	console.log(Date.now() - start);
+	console.log('Time to update :', Date.now() - start);
 	
 	todoApp.$.class('hidden', 0);
 	DOM.$('#info p').class('hidden', 0);
