@@ -15,9 +15,11 @@
 
 ## ToDos
 
+* As of now state change occurs after the ready event; should this be changed in order to allow state related preparations?
+
 * Example, 'state' isn't working with the older syntax.
 
-* **A guide**, it's hard to remebmber things when being out of touch.
+* **A guide**, it's hard to remember things when being out of touch.
 
 * Support {$: {class: 'string'}}
 
@@ -43,9 +45,17 @@
 
 * kiss recipes: a set of examples to demonstrate recipe style programming.
 
+* ? Is kiss a framework or a toolkit?
+
 * Opensource the project.
 
 * Implement testing.
+
+* Check other frameworks for betterment. Event delegation from ReactJS.
+
+* Plugins with assisting css to enable really rapid UI development. They could be installed using package managers.
+
+* Wait for IE11 to get adopted, to implement getters and setters.
 
 
 ## Issues
@@ -366,6 +376,16 @@
 
 
 ## Thoughts
+
+* WebGL might replace microDOM.
+
+* A standard API for the UI, with simple commands like hide and show, and more abstract commands like notify and alert.
+
+* A simple and injectable IDE + Code generator.
+
+* Compiling pure js, from kiss.
+
+* kiss2x: a super speed version, that skips microDOM.
 
 * **Animations**.
 
