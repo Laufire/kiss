@@ -1,1 +1,4 @@
+NO2 License
+-----------
+
 The creators of the software have no objections nor obligations towards the software or its applications.

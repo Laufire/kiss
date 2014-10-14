@@ -13,6 +13,15 @@
 * Using the same application structure with all the frontend technologies (HTML, JS, CSS)
 
 
+## Intro
+
+kiss simplifies app development by simplifying the basic structure. ie: It maps *JS objects **directly** to HTML elements*, they have a **one-to-one** relationship. This makes the code easy to read, understand and maintainable.
+
+kiss simplifies the **MVC pattern** by adhering to the ***UNIX philosophy***, it just *pipes* the data from one tier to another, thus simplifying the workflow. The data could be from the server or some other module.
+
+kiss is meant to help with implementing **Data driven UI-s**. ie: that data could be from the server or from the JS itself (imagine a data driven JQuery slider).
+
+
 ## ToDos
 
 * As of now state change occurs after the ready event; should this be changed in order to allow state related preparations?
@@ -88,7 +97,7 @@
 
 ## Consider
 
-* O\_O.bind, to bind a behavior with different params (like calculator buttons).
+* O\_O.bind, to bind a behavior with different params (like calculator buttons, the number buttons do the same thing, but with different values).
 
 * returning FormData of forms with $.val calls on form elements.
 
@@ -103,7 +112,7 @@
 
 ## Goals
 
-* To build a simple and powerful front-end-framework that enables "truly" rapid development.
+* To build a simple and powerful front-end-framework that enables **"truly"** rapid development.
 
 * To achieve scalability, performance and flexibility through the simplicity of design.
 
@@ -113,7 +122,7 @@
 
 * To make it simpler, there won't be any rules but a few conventions.
 
-* Developers doesn't have to think much about the coding pattern (The framework has one itself). <- Developers shouldn't be forced to practice a coding pattern.
+* Developers do not have to think much about the coding pattern (The framework has one itself). <- Developers shouldn't be forced to practice a coding pattern.
 
 * The focus is on the developers ease, in creating and maintaining projects.
 
@@ -121,25 +130,25 @@
 
 * Should easily communicate with the Server (so to reduce the burdens of the front end developer).
 
-	### Design
+### Design
 
-	* As a platform that load various apps on to a single page.
-	
-	* As a low-level library that could serve as the base for other libraries.
-	
-	* Should incorporate emerging technologies as soon as they are standardized. As the goal is agile development.
-	
-	* As a library that acts as the base to handle modules. I.e. if bootstrap has to be used, jQuery and Bootstrap will be loaded after KISS.
-	
-	* The code for the App should be brief.
+* As a platform that load various apps on to a single page.
 
-	### Measures
+* As a low-level library that could serve as the base for other libraries.
 
-	* Should support bootstrap.
-	
-	* Should work with backbone.
-	
-	* Could adapt jQuery UI as is.
+* Should incorporate emerging technologies as soon as they are standardized. As the goal is agile development.
+
+* As a library that acts as the base to handle modules. I.e. if bootstrap has to be used, jQuery and Bootstrap will be loaded after KISS.
+
+* The code for the App should be brief.
+
+### Measures
+
+* Should support bootstrap.
+
+* Should work with backbone.
+
+* Could adapt jQuery UI as is.
 
 
 ## Way
@@ -160,7 +169,7 @@
 
 * A simple implementation of jquery under the $ symbol, which on demand could be replaced by jquery's $.
 
-* No type checks are fallbacks are to be implemented (on the execution level, not the construction level), as this would ensure structure and maintainability.
+* No type checks are fallbacks are to be implemented (on the execution level, not the construction level), as this would ensure a proper structure and maintainability.
 
 
 ## Usage
@@ -170,23 +179,22 @@
 * The order of properties in the objects passed as parameters, matters; they are processed in the order they are declared. So its better to have $.init at last.
 
 	### O\_O.box
-	* 'el' can't be set inside the constructor.
+	
+	#### '$' properties
 
-		#### '$' properties
+	* Relates to the elements properties such as *html, prop, attr* etc.
 
-		* Relates to the elements properties such as *html, prop, attr* etc.
+	* They could be accessed through the 'element.$' property, like element.$.*property*.
 
-		* They could be accessed through the 'element.$' property, like element.$.*property*.
+	* Calling a $.*property* with parameters generally sets the value.
 
-		* Calling a $.*property* with parameters generally sets the value.
+	* Calling a $.*property* without parameters generally gets the value.
 
-		* Calling a $.*property* without parameters generally gets the value.
+	##### $.val
 
-			##### $.val
+	* With input controls, it serializes the given box (generally a form) and returns the data as an object.
 
-			* With input controls, it serializes the given box (generally a form) and returns the data as an object.
 
-			
 	### O\_O.pod
 	* options.item should be a constructor function.
 	
