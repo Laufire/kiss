@@ -1144,25 +1144,26 @@
 		
 		O_O.trans = function(transform) { // generates a wrapper a that transforms values supplied by observables
 
-			return function(host, param) {
+			return function(host) {
 
-				var wrap = function(){ // this function wraps the observable and alter the value provided by it
+				var wrap = function() { // this function wraps the observable and alter the value provided by it
 				
-					return transform(host(), host, param)
+					return transform(host(), host);
 				};
 
-				wrap.plug = function(outFunc) {
+				wrap.plug = function(outFunc) { // allow the plugs to plug into the trans
 
 					return host.plug(function(val, host) {
 
-						outFunc(transform(val, host, param));
+						outFunc(transform(val, host));
 					});
 				}
 
 				return wrap;
 			}
 		}
-
+		
+		
 		/* Monoliths */
 		
 		O_O.state = new function() {

@@ -291,3 +291,4 @@
 140928_1420	Fixed several outdated examples.
 140928_1420	Bug fixed: $.default raised an error, as there weren't any $-method, name default.
 140928_1420	Unknown $-data are now left unprocessed, instead of raising errors.
+141024_0635	O_O.trans doesn't support the extra param anymore.

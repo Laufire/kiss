@@ -24,6 +24,12 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 ## ToDos
 
+* Add a bindable O_O.multi, to observe multiple O_O.values, and use it to hide / show the ToDos in the ToDoMVC example. Its result should be cached and be calculated only when one of the observables change, as a value to the multi, like the O_O.state might be bound to a vast number of elements.
+
+* The state change in the example ToDoMVC isn't working.
+
+* Implement '#' less states, for better single page sites. It should be optional, as there might be some server side gimmicks. 
+
 * As of now state change occurs after the ready event; should this be changed in order to allow state related preparations?
 
 * Example, 'state' isn't working with the older syntax.
@@ -265,6 +271,10 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 * *How does a spreadsheet achieve data bindings?*
 
 
+## Notes
+
+* kiss collects some of its own garbage, ie: when elements are removed from a pod, all of it's plugs are automaticall unplugged.
+
 ## Noted
 
 * HTML's Custom tag-names appear to be case insensitive.
@@ -384,6 +394,8 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 
 ## Thoughts
+
+* The hash states might be bound to UI states; like that in the ToDoMVC example. But instead of listening to events different page configurations might be used, or better the existing configuration could be morphed. Beware this could make the leaning and the coding harder. So, implement it only if it could simplify the task. The best option could be the binding of the **state** using a **trans** or a **watch** with the affected elements.
 
 * WebGL might replace microDOM.
 
