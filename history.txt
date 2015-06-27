@@ -257,7 +257,7 @@
 
 140306_1810	O_O.list.update added.
 
-140313_1935	O_O.list.optionsd.idProp added, to support idProps other than the default '_id' prop.
+140313_1935	O_O.list.options.idProp added, to support idProps other than the default '_id' prop.
 140313_2255	Bug fixed: '_id' wasn't set as the defult idProp in O_O.pod.
 
 140509_1850	Bug fixed: default values to the Boxes weren't applied, when the given value is falsy.
@@ -292,3 +292,11 @@
 140928_1420	Bug fixed: $.default raised an error, as there weren't any $-method, name default.
 140928_1420	Unknown $-data are now left unprocessed, instead of raising errors.
 141024_0635	O_O.trans doesn't support the extra param anymore.
+150606_0420	O_O.pod's options now support an idProp.
+150615_0420	O_O.utils added, to provide the plugins with frequently used utility functions.
+150617_0255	O_O.pod.$.set could now apply data to the items.
+150618_0100	$.data introduced. Boxes could now preserve their underlying data.
+150618_0815	O_O.pod.options.preserveData introduced. Setting it to true will cause the items to preserve their underlying data.
+150618_1220	box.$.children exposed.
+150627_2100	O_O.history introduced.
+150627_2100 v0.1.1 released.

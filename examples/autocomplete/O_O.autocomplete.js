@@ -18,8 +18,8 @@
 
 			$: {
 
-				/** have some dynamic html with some placeholders for the children*/
-				html: 	'<input type="text" id="input"/>\
+				/** have some dynamic html with some placeholders for the children */
+				html: '<input type="text" id="input"/>\
 						<div id="suggestions">\
 							<div class="suggsetion"></div>\
 						</div>',

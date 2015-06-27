@@ -11,7 +11,7 @@
 
 /*!
 	KISS		-	a stupid js lib, that enables the easy development of structured and data driven Applications.
-	Version		-	0.1.0
+	Version		-	0.1.1
 	Liscence	-	NO2 Liscence
 	Dependencies	-	microDOM-v0.0.5
 	
@@ -26,8 +26,6 @@
 
 	"use strict";
 
-	var changeState;
-	
 	window.O_O = new function() { // the library
 
 		var O_O = this,
@@ -36,7 +34,7 @@
 			keyAttr = 'id', // the keyAttr that marks the element to be KISSed (the default is 'id')
 			
 			/* Helpers */
-			$ = DOM.$,
+			$ = O_O.$ = DOM.$,
 
 			getKeys = Object.keys,
 			dCode = decodeURIComponent;
@@ -61,13 +59,18 @@
 			});
 		}
 		
-		/* Utility Functions */
+		/* Utility Functions */		
+		function isObjectLiteral(val) {
 		
-		function emptyFunction() {
-		
-			return function(){}
+			if(val) {
+
+				var constructor = val.constructor
+				
+				return constructor && (constructor.name == 'Object' || constructor.name === ''); //! Note: functions constructed with anonymous functions (ie: new function(){}), too are considered to be object literals.
+			}
 		}
 		
+		/* Public Helpers */
 		function remove(arr, val) {
 		
 			var i = arr.indexOf(val);
@@ -111,34 +114,82 @@
 
 			return target;
 		}
-		/* //! for future use
-		function clone(source, depth) {
-
-			var target = {},
-				key, prop,
-				keys = getKeys(source),
-				i = 0, l = keys.length;
+		
+		function deepExtendObj(destination, source) { //! from: http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/
+		
+			var keys = getKeys(source),
+				i = 0 , l = keys.length, key;
 			
-			if(! depth)
-				depth = 1;
-			
-			for(; i < l;) {
-			
+			for (; i < l;) {
+				
 				key = keys[i++];
-				prop = source[key];
-
-				if(prop !== undefined) {
 				
-					if(typeof prop == 'object' && depth)
-						prop = clone(prop, depth - 1);
+				if (isObjectLiteral(destination[key]) && isObjectLiteral(source[key])) {
 				
-					target[key] = prop;
+					destination[key] = destination[key] || {};
+					deepExtendObj(destination[key], source[key]);
+				}
+				else {
+				
+					destination[key] = source[key];
 				}
 			}
-
-			return target;
+			
+			return destination;
 		}
-		*/
+		
+		function deepExtend(destination) { //! from: http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/
+		
+			for(var i = 1, l = arguments.length; i < l;) {
+			
+				destination = deepExtendObj(destination, arguments[i++]);
+			}
+			
+			return destination;
+		}
+		
+		function clone(obj) { //! from: http://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-clone-an-object
+		
+			var oldState = history.state;
+			history.replaceState(obj, null);
+			
+			var clonedObj = history.state;
+			history.replaceState(oldState, null);
+			
+			return clonedObj;
+		}
+		
+		function isKissed(obj) {
+		
+			var constructor = obj.constructor;
+			
+			return constructor && constructor.name != '' && constructor.name != 'Object';
+		}
+		
+		function getElType(el) { // returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
+
+			if(el.required !== undefined) {
+
+				var type = el.type;
+
+				if(type == 'checkbox' || type == 'radio')
+					return 2;
+				
+				else if(type == 'submit')
+					return 1;
+				
+				else
+					return 3; // the element is an editable
+			}
+			else if(el.formAction !== undefined) { // the element is a button
+			
+				return 1;
+			}
+
+			return 0; // the element is a display
+		}
+		
+		/* Private Helpers */
 		function getFreeKey(obj) { // returns a 'free' key name (with alpha-numeric) characters for the given object;
 
 			var key = '';
@@ -198,15 +249,12 @@
 			else
 				obj[prop] = value;
 		}
-
-		// public
 		
+		/* Public */
 		/* Classes */
-		
 		O_O.class = {
 
 			/* Base classes */
-			
 			host: function() { // a base class to implement observables
 
 				var plugs = [],
@@ -232,48 +280,51 @@
 					remove(plugs, func);
 				}
 			}
-
 			
-			/* UI classes */
-			
-			, box: function box(data/*consists of $data and child element data*/) { // helps handling trees
+			/* UI classes */	
+			, box: function box(data/*consists of $data and child element data*/) { // helps handling DOM trees
 				
 				var self = this,
 					_$, $el, elType, cleanUp, trans,
 
 					events = {},
 					plugs = {prop: {}, attr: {}, class: {}}, // stores the 'unplug' functions from the hosts
-
+					model, // set by the $.data method
 					children = getKeys(data);
 
 				remove(children, '$'); // remove the $ from the children
 				
 				load(self, data, children); // load the children on to the box (to enable 'parent.child' access of un-kissable properties)
 
-				//! overload the provided data.$, to enable 'self' reference inside the object's constructor
-				_$ = self.$ = function(data) { // helps to get and set values and events; and to plug observables
+				//! Check: Could the construction of the box object be sped up by using a function prototype? As of now the need to access some private vars (like events and plugs by the method clear) dissallows the use of a wholesome prototype.
+				//! Check: $() doen't seem to be used a lot
+				_$ = self.$ = function(data) { // helps with setting box data after the construction of the box
 
 					enumerate(data, function(key, val) {
 
 						if(_$[key]) { // process only the known properties
 							
-							if(typeof val == 'object') { // the prop should be enumerated
+							if(typeof val != 'object') {
 								
+								_$[key](val)
+							}
+							else { // the prop should be enumerated (could be a class, attr or event)
+							
 								enumerate(val, function(k) {
-
+								
 									_$[key](k, val[k])
 								});
-							}
-							else {
-							
-								_$[key](val)
 							}
 						}
 					});
 
 					return _$;
 				}
-
+				
+				/* Props */
+				_$.children = children
+				
+				/* Method */
 				_$.set = function(data) { // sets the data of the children
 					
 					var keys = getKeys(data),
@@ -287,13 +338,15 @@
 
 						if(child) {
 						
-							if(child.$) // the child is a kissable
-								typeof val != 'object' ? child.$.val(val) : child.$.set(val);
-
-							else if(typeof child != 'function') // the child is a property thatsn't a pluggable
+							var $ = child.$;
+							
+							if($) // the child is a kissable								
+								typeof val != 'object' ? $.val(val) : $.set(val);
+							
+							else if(typeof child != 'function') // the child is a property that isn't a pluggable
 								child = val;
 								
-							else // the child is a O_O.value
+							else // the child is a pluggable
 								child(val);
 						}
 					}
@@ -301,7 +354,7 @@
 					return _$;
 				}
 
-				_$.at = function(elm/*keyAttr, a DOM.$.el or a DOM element*/, parent) { // sets the node for the box (sets the el for the element and loads it with existing html, attrs etc)
+				_$.at = function(elm/* a keyAttr, a DOM.$.el or a DOM element*/, parent) { // sets the node for the box (sets the el for the element and loads it with existing html, attrs etc)
 					
 					if(! parent) {
 						
@@ -366,7 +419,7 @@
 					}
 				}
 
-				_$.val = function(newVal) { // helps with form serialization, returns the value when data is collected custom controls may use this method to return a custom val
+				_$.val = function(newVal) { // helps with form serialization, returns the value when data is collected. Custom controls may use this method to return a custom val.
 					
 					if(trans)
 						return trans(newVal, self); // add a custom value function; could both set and return values
@@ -479,7 +532,7 @@
 					
 						el.on(eName, events[name] = function(e) {
 						
-							//! 'this' context is lost, that could be got through the e.target
+							//! Note: 'this' context is lost, that could be got through the e.target
 							handler(e, self);
 						});
 					}
@@ -490,10 +543,17 @@
 
 					return _$;
 				}
+				
+				_$.data = function(data) { // used to bind a view to a model
+				
+					if(data === undefined)
+						return model;
+						
+					model = data;
+					return _$.set(data);
+				}
 
-				
-				/* Helpers */
-				
+				/* Helpers */	
 				function init() { // sets the default values (when hosts are directly assigned they are plugged)
 
 					var $data = data.$;
@@ -510,12 +570,15 @@
 						
 							var evt = def.event;
 
-							if(evt)
+							if(evt) {
+							
 								def = def.value;
-								
-							else
+							}	
+							else {
+							
 								evt = 'change'
-
+							}
+							
 							if(elType > 1) { // the element is an editable control (input, textarea, select) or a check box
 
 								var prop = elType === 2 ? 'checked' : 'value';
@@ -540,7 +603,6 @@
 									$el.prop(prop, getVal(def)); // set the value
 								}
 							}
-
 							else if(elType === 1) { // the element is a button (only a function could be the default value for buttons (as event handlers); other elements renderrs the return values as their content though
 								
 								_$.event('click', def);
@@ -560,31 +622,9 @@
 					}
 				}
 
-				//!? could this be exposed as $.type?
-				function getElType(el) { // returns the type of an element 0: display, 1: button, 2: toggle, 3: editable
-
-					if(el.required !== undefined) {
-
-						var type = el.type;
-
-						if(type == 'checkbox' || type == 'radio')
-							return 2;
-						
-						else if(type == 'submit')
-							return 1;
-						
-						else
-							return 3; // the element is an editable
-					}
-					else if(el.formAction !== undefined) // the element is a button
-						return 1;					
-
-					return 0; // the element is a display
-				}
-
 				function $elRouter(method, prop, newVal) { // sets attr/prop/etc via $
 
-					if(newVal === undefined) { //! arguments.length won't work here as the interface functions pass their undefined variables directly to this function
+					if(newVal === undefined) { //! Note: arguments.length won't work here as the interface functions pass their undefined variables directly to this function
 						
 						return $el[method](prop);
 					}
@@ -630,18 +670,19 @@
 					if(child$el.el) { // tags without matching objects are left intact; so to play nice with other libs
 
 						child = self[childName];
-
+						
 						if(typeof child == 'object') {
 						
-							//! Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument toa box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class3
-							if(child.constructor.name === '' || child.constructor.name == 'Object') // a plain object containing self attrs and children
+							//! Note: Any plugin that needs to be loaded within a box should be constructed using a 'named' function*, else it'll be treated as an argument to a box constructor, this is simply because, I don't know how to check whether the object passed was an instanceOf a class
+							
+							if(! isKissed(child)) // a plain object containing self attrs and children
 								self[childName] = O_O.box(child); // build a box using the given 'data' and replace the data with it
 						}
 						else {
 							
 							self[childName] = O_O.box({$:{default: child}}); // create a box with the assigned object as its default value
 						}
-
+						
 						self[childName].$.at(child$el, self); // plugins may have a plugin.$.at function to merge themselves with the tree.
 					}
 				}
@@ -651,16 +692,18 @@
 
 				var freeId = 0, itemNode,
 				
-					// options
+					self = this,
+					
+					/* Options */
 					source = options.source,
-					idProp = '_id',
+					idProp = self.idProp = options.idProp || '_id',
 					data = options.data,
 					ItemConstructor = options.item,
 					box = O_O.box({$: options.$}),
 					mode = options.mode || 'append', // mode: append || prepend
+					accessor = options.preserveData ? 'data' : 'set',
 					
-					// public
-					self = this,
+					/* Public */
 					items = self.items = {}, // holds all the items
 					order = self.order = [], // holds the list of ids in the order of addition; use this array to iterate over the items in the pod
 					event = self.event = O_O.host(); // could be listened for changes to the pod
@@ -723,12 +766,10 @@
 				
 				self.add = function(data) { // adds an item
 
-					var item = addItem(data);
-					
 					event({
 					
 						type: 'add',
-						item: item
+						item: addItem(data)
 					});
 				}
 				
@@ -767,7 +808,7 @@
 					source.event.plug(listen); // listen to the changes to the source, for reflecting them
 				}
 				
-				self.reset = function(newItems) { // clean the existing and add the new items (if available)
+				self.reset = self.$.set = function(newItems) { // clean the existing and add the new items (if available)
 
 					while(order.length) // remove the existing items in the pod
 						self.remove(order[0]);
@@ -779,6 +820,17 @@
 						for(var i = 0, l = newItems.length; i < l;)
 							self.add(newItems[i++]);
 					}
+				}
+				
+				self.$.val = function() { // a getter only call
+				
+					var ret = [],
+						i = 0, l = order.length;
+					
+					for(; i < l;)
+						ret.push(items[order[i++]].$.val());
+						
+					return ret;
 				}
 				
 				self.refresh = function() { // reflect the order changes in the source
@@ -808,13 +860,10 @@
 				
 				self.nth = function(n) {
 				
-					return items[order[n]]
-					
+					return items[order[n]];
 				}
 				
-				
 				/* Helpers */
-				
 				function addItem(data) { // used by self.item and self.add to construct and add an item to the pod
 				
 					var item,
@@ -825,12 +874,12 @@
 					order.push(id);
 					node.setAttribute(keyAttr, id); // set the id as the key attribute.
 					
-					//! passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
+					//! Note: passing the itemData to the constructor function allows it to act as an 'init' function and would help in handling diverse objects as a group
 					item = items[id] = O_O.box(new ItemConstructor(data, id)); // make a new box and register it to the items array
 					
 					item.$
 						.at(node, self)
-						.set(data);
+						[accessor](data);
 					
 					box.$.$el[mode](node); // add it to the pod
 					
@@ -860,9 +909,7 @@
 				}
 			}
 
-			
 			/* Data Classes */
-			
 			, value: function(val) { // a host (observable) that stores a simple value
 
 				var self = this;
@@ -1013,16 +1060,14 @@
 				options = undefined; // clear the variable
 			}
 			
-			
 			/* Control classes */
-			
 			, watch: function() { // watches multiple observables for changes, the watched could dynamically be added or removed
 			
 				//! check: watches could be closely related to lists, spread sheet totaling (with a watch is not necessary as it could be done) with a .listen on the .list.event
 
 				var self = this,
 
-					action = emptyFunction(),
+					action = function(){},
 
 					plug = function(val, source) { // the action to take when one of the watches change
 
@@ -1081,12 +1126,9 @@
 				}
 			}
 		}
-
 		
 		/* Decorators */ // simplifies the creation of objects and makes the code readable, plugins could skip this for improved performance
-		
 		/* UI wrappers */
-		
 		O_O.box = function(data) { // an element that could have children
 
 			return new O_O.class.box(data || {});
@@ -1098,7 +1140,6 @@
 		}
 
 		/* Data wrappers */
-		
 		O_O.host = function() {
 
 			return new O_O.class.host().wrap;
@@ -1120,7 +1161,6 @@
 		}
 
 		/* Control wrappers */
-		
 		O_O.listen = function(val, func) {
 
 			return {
@@ -1141,7 +1181,6 @@
 		}
 
 		/* Factories */
-		
 		O_O.trans = function(transform) { // generates a wrapper a that transforms values supplied by observables
 
 			return function(host) {
@@ -1163,19 +1202,54 @@
 			}
 		}
 		
-		
 		/* Monoliths */
+		var changeState,
+			history = window.history,
+			location = window.location;
+		
+		O_O.history = new function() { // deals with the path instead of the hash
+		
+			var self = this,
+				base = '',
+			
+			value = self.value = O_O.value(base), // ToDo: Implement a standard way to represent history, there seems to be a lot of confussion with '', '/', '/route' and 'route'.
+			
+			updatePath = function() {
+
+				var path = location.pathname;
+				
+				if(! path.indexOf(base)) // the path starts with the base
+					value(path.substr(base.length));
+			};
+			
+			self.base = function(path) { // sets the base for the history
+			
+				base = path;
+				
+				updatePath();
+			}
+			
+			self.value.plug(function(path) { // listens to the path changes and sets the route
+
+				var whole_path = base + path;
+				
+				if(location.pathname != whole_path) // the history has been chnged programattically (ie: not through navigation)
+					history.pushState(null, null, whole_path);
+			});
+			
+			window.addEventListener('popstate', updatePath);
+		}
 		
 		O_O.state = new function() {
 
 			var self = this;
 			
-			//! use 'change' to change the state and set the history
+			//! Note: use 'change' to change the state and set the history
 			self.change = O_O.value();
 			
 			self.routes = {}; // to be overridden by the user provided routes
 
-			//! use 'set' if the state has to be changed without affecting the history
+			//! Note: use 'set' if the state has to be changed without affecting the history
 			self.set = function(hash) { // processes the hash, executes the related function and changes the hash on sucessful execution
 
 				if(! hash) // firefox sets an 'undefined' has when there's no hash
@@ -1247,13 +1321,32 @@
 			O_O.plugin[name] = plugin;
 		}
 		
-		changeState = O_O.state.change;
+		/* Utils */
+		O_O.utils = { // generic utility functions
+		
+			remove: remove,
+			enumerate: enumerate,
+			extend: extend,
+			deepExtend: deepExtend,
+			clone: clone,
+		};
+		
+		O_O.tools = { // kiss specific helpers
+		
+			isKissed: isKissed,
+			
+			getElType: function(box) {
+			
+				return getElType(box.$.el);
+			}
+		}
+		
+		/* Shortcuts */
+		var changeState = O_O.state.change;
 	}
-
 	
 	/* Helpers */	
-	
-	function initState(hash) { // listen to changes in history
+	function initState(hash) { // listen to changes in the hash
 
 		changeState(hash); // resolve the provided state
 		

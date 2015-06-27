@@ -1,7 +1,7 @@
 ﻿"use strict";
 
-/*Define the variables
----------------------*/
+/* Define the variables
+----------------------- */
 var people = O_O.list()
 
 , rndBtwn = function(n1, n2) {
@@ -15,7 +15,7 @@ var people = O_O.list()
 		
 		var ret;
 
-		while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]);
+		while(people.items[ret = String.fromCharCode(rndBtwn(65, 90))]); // generate a unique _id
 		
 		return {
 		
@@ -43,7 +43,7 @@ var people = O_O.list()
 , selection = O_O.value()
 , genderFilter = O_O.value(2)
 
-, genderTrans = O_O.trans(function(val, source, data) { //this hides the filtered gender when genderfilter changes. Note: this doen't hide the elements when their data changes; for that to hapen use .watch(genderFilter, this.isMale) on the iten, and set the results to a this.isVisible which determines the visibility
+, genderTrans = O_O.trans(function(val, source, data) { // this hides the filtered gender when genderfilter changes. Note: this doen't hide the elements when their data changes; for that to hapen use .watch(genderFilter, this.isMale) on the iten, and set the results to a this.isVisible which determines the visibility
 	
 	var val = parseInt(val, 10);
 	

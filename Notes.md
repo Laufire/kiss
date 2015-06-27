@@ -24,6 +24,14 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 ## ToDos
 
+* Revisit O_O.state, think of merging it with O_O.history.
+
+* Rename O_O.state to O_O.hash and O_O.state.change to O_O.hash.value. It hasn't been done yet because of the need for updating the examples too.
+
+* A function to iterate over the items of O_O.list & O_O.pod.
+
+* Try to bind the editables with the 'input' event.
+
 * Add a bindable O_O.multi, to observe multiple O_O.values, and use it to hide / show the ToDos in the ToDoMVC example. Its result should be cached and be calculated only when one of the observables change, as a value to the multi, like the O_O.state might be bound to a vast number of elements.
 
 * The state change in the example ToDoMVC isn't working.
@@ -72,10 +80,16 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 * Wait for IE11 to get adopted, to implement getters and setters.
 
+* Hiding the app until inited.
+
 
 ## Issues
 
 * Compressing breaks the code; where as mangling works fine.
+
+* Within boxData, *self.button = function(){}* isn't setting the function as the default hanndler, as the self refers to the boxData instead of the box itself. This is not the case for self.$, as it's loaded over the boxData (as data.$). Make this consitent.
+
+* Setting a child as O_O.box inside the boxData isn't working, but setting as O_O.pod works.
 
 
 ## Plugins
@@ -103,6 +117,8 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 ## Consider
 
+* KISS components as HTML attributes and with external data (so that apps could be written withoit the need for scripting).
+
 * O\_O.bind, to bind a behavior with different params (like calculator buttons, the number buttons do the same thing, but with different values).
 
 * returning FormData of forms with $.val calls on form elements.
@@ -111,9 +127,11 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 * A separate 'development' version, that could log all the calls etc.
 
-* Uniform API across controls, elements and plugins.
+* A uniform API across controls, elements and plugins.
 
 * Combining multiple plugins to create a new plugin. Might be as simple as "O\_O.plugin(jQuery.AutoComplete).decorate(O\_O.plugins.OnEnter)" Ex: combining the Auto complete jQuery with 'OnEnter Textbox'.
+
+* A newer API that treats boxes as displays, ie: boxes have methods like show, hide, refresh etc. Children could be accessed with a method name **child** *(ex: child('branch1/leaf2'))*. It could have additional functions like up, down, side, relative to traverse the tree.
 
 
 ## Goals
@@ -230,12 +248,15 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 	
 ## Tips
 
+* If something isn't working as expected, check the names of everything related (the box ids, var names, data keys etc); often it would be, because of wrong bindings.
+
+* Boxes are not just views, they can be used as wholesome objects withs methods props etc.
+
 * Use the $.$el to set static properties; as they are faster and chainable.
 
 * Use $.$el.<methods> to work around default kiss functionalities like 'one handler per event'. **But use it only when it's absolutely necessary, as this coud break the structure**.
 
 * May $.trans always return a value too, it will help with testing.
-
 
 ## General
 
@@ -259,6 +280,8 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 * Classes are to be with the bare minimum of functionality, in order to avoid bloating. Needed futures could be added through extensions.
 
+* kiss lacks  built-in data pre-processors (ie: view-model makers), as the idea is to use plugin wrappers instead of dropin functions to generate view-models, in order to achieve reusability. Though a low level call, namely **box.options.trans** is made availble for this puropse.
+
 
 ## Questions
 
@@ -273,7 +296,10 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 ## Notes
 
-* kiss collects some of its own garbage, ie: when elements are removed from a pod, all of it's plugs are automaticall unplugged.
+* kiss collects some of its own garbage, ie: when elements are removed from a pod, all of it's plugs are automatically unplugged.
+
+* kiss doesn't have much shortcuts, as it is meant to be extended.
+
 
 ## Noted
 
@@ -346,7 +372,7 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 
 * Hard-coding the internals (using for loops instead of enumerate) etc will increase the performance.
 
-* Prototyping/cloning/sharing the item constructor of .pod could improve the performance. (.box construction seems to take 80% of the initial execution, it's almost 4x costlier than DOM manipulation)
+* Prototyping/cloning/sharing the item constructor of .pod could improve the performance. (.box construction seems to take 80% of the initial execution, it's almost 4x costlier than DOM manipulation). Be sure to test the original implementations for performance, as an initial testing gave wildly varriying results. Also consider the cost of accessing properties. Check http://jsperf.com/comparison-of-object-construction-methods/2 for hints.
 
 * .pod.item-s could be compiled / fabricated (in a factory) to increase init/change performances. Even, .box-es could be compiled.
 
@@ -374,6 +400,8 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 * Could be used as a report generator like crystal reports.
 
 * Could be used to support drop-in plugins like 'share via facebook' etc.
+
+* Could be used as a base for a plugin based UI platform.
 
 
 ## Future
@@ -424,3 +452,7 @@ kiss is meant to help with implementing **Data driven UI-s**. ie: that data coul
 * Getters and Setters along with Object.observe could simplify the structure of kiss.
 
 * For faster DOM slection, document.getElementById could be used in conjunction with '/' separated ids.
+
+* A lib to manage modals, with a common API for all modal, regardless of their origin (from the Server or the Client).
+
+* A server side tool to convert page-templates into Kissed pages.
