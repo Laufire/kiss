@@ -300,3 +300,4 @@
 150618_1220	box.$.children exposed.
 150627_2100	O_O.history introduced.
 150627_2100 v0.1.1 released.
+150627_2105 Plugin, O_O.request added.
